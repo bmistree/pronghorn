@@ -124,7 +124,30 @@
         includeantruntime="false" />
   </target>
 
-  
+
+  <!-- RUNNING TESTS -->
+  <target
+      name="run_all"
+      depends=
+        "run_AddRemoveSwitch">
+  </target>
+
+  <!-- Single instance add/remove switch -->
+  <target
+      name="run_AddRemoveSwitch"
+      depends="compile_ralph_tests"
+      description="Add/remove switch from single pronghorn instance.">
+    <java
+        dir="${test_build_classes_dir}"
+        classpath="${test_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}"
+        classname="${test_package}.SingleTest" fork="yes">
+        <arg line="${args}"/>
+    </java>
+  </target>
+
+  <!-- classpath="${lib_class_path}" -->
   
   <!-- Delete the build directories -->
   <target name="clean" description="get rid of build dir">

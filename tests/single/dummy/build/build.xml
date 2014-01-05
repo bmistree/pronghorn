@@ -1,4 +1,10 @@
 <project name="SingleDummyTest" default="compile" basedir=".">
+
+  <!-- SingleDummyTest means that:
+       Single -> Running on a single Pronghorn instance
+       Dummy  -> Where we're simulating the connection to Flodlight
+       Test   -> We're testing.
+  -->
   
   <description>
     Test cases for pronghorn.
@@ -10,33 +16,18 @@
   />
 
   <!-- global properties for this build file -->
+
+  <!-- Ralph dependency files -->
   <property
       name="ralph_dep_dir"
       location="${single_dummy_build_dir}/../../../../externals/ralph/"/>
   <property
       name="ralph_compiler_py"
       location="${ralph_dep_dir}/bin/emit_file.py"/>
-  <property
-      name="ralph_lib"
-      location="${ralph_dep_dir}/ralph/java_lib/build/"/>
 
-  <property
-      name="test_package"
-      value="test_package"/>
-  <property
-      name="test_ralph_src_dir"
-      location="${single_dummy_build_dir}/../ralph_src"/>
-  <property
-      name="test_emitted_dir"
-      location="${single_dummy_build_dir}/../ralph_emitted"/>
-  <property
-      name="build_dir"
-      location="${single_dummy_build_dir}/classes"/>
-
-  
   <property
       name="lib_build_path"
-      location="${single_dummy_build_dir}/../../../ralph/java_lib/build"/>
+      location="${ralph_dep_dir}/ralph/java_lib/build"/>
   <property
       name="lib_class_path"
       location="${lib_build_path}/classes/"/>
@@ -47,12 +38,31 @@
       name="ralph_compiler_py"
       location="${single_dummy_build_dir}/../../emit_file.py"/>
 
+
+  <!-- Build files in singledummytests -->
+  <property
+      name="test_package"
+      value="test_package"/>
+  <property
+      name="test_ralph_src_dir"
+      location="${single_dummy_build_dir}/../ralph_src"/>
+  <property
+      name="test_harness_src_dir"
+      location="${single_dummy_build_dir}/../test_src"/>
+  <property
+      name="test_ralph_emitted_dir"
+      location="${single_dummy_build_dir}/../ralph_emitted"/>
+  <property
+      name="test_build_classes_dir"
+      location="${single_dummy_build_dir}/classes"/>
+
+
   
   <!-- set up build directories for test -->
   <target name="init" description="setup build directories">
     <echo message="Setting up build directories for tests"/>
-    <mkdir dir="${build_dir}"/>
-    <mkdir dir="${test_emitted_dir}"/>
+    <mkdir dir="${test_build_classes_dir}"/>
+    <mkdir dir="${test_ralph_emitted_dir}"/>
   </target>
 
 
@@ -71,7 +81,7 @@
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="${test_ralph_src_dir}/hardware_test.rph"/>
-      <arg line="${test_emitted_dir}/HardwareTest.java"/>
+      <arg line="${test_ralph_emitted_dir}/HardwareTest.java"/>
       <arg line="${test_package}"/>
       <arg line="HardwareTest"/>
     </exec>
@@ -84,8 +94,8 @@
           description="compile ralph files">
     <!-- Compile all ralph java to bytecode -->
     <javac
-        srcdir="${ralph_emitted_dir}"
-        destdir="${build_dir}"
+        srcdir="${test_ralph_emitted_dir}"
+        destdir="${test_build_classes_dir}"
         classpath="${lib_class_path}"
         debug="true"
         debuglevel="lines,vars,source"
@@ -100,11 +110,26 @@
       description="compile ralph files">
   </target>
 
+  <!-- compile java test harnesses for ralph code  -->
+  <target
+      name="compile_ralph_tests"
+      depends="init,compile_ralph"
+      description="compile test harnesses for ralph code">
+    <javac
+        srcdir="${test_harness_src_dir}"
+        destdir="${test_build_classes_dir}"
+        classpath="${test_build_classes_dir}:${lib_class_path}"
+        debug="true"
+        debuglevel="lines,vars,source"
+        includeantruntime="false" />
+  </target>
+
+  
   
   <!-- Delete the build directories -->
   <target name="clean" description="get rid of build dir">
-    <delete dir="${build_dir}"/>
-    <delete dir="${ralph_emitted_dir}"/>
+    <delete dir="${test_build_classes_dir}"/>
+    <delete dir="${test_ralph_emitted_dir}"/>
   </target>
 
   <target

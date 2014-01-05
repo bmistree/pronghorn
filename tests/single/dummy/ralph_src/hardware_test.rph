@@ -20,8 +20,9 @@ Endpoint PronghornInstance
 {
     TVar Map(from: Text, to: Struct Switch) instance_switches;
 
-    add_switch(Text switch_id, Struct Switch new_switch)
+    add_switch(Struct Switch new_switch)
     {
+        Text switch_id = new_switch.switch_id;
 	instance_switches.set(switch_id,new_switch);
     }
 

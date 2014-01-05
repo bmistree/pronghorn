@@ -1,0 +1,95 @@
+<project name="SingleDummyTest" default="compile" basedir=".">
+  
+  <description>
+    Test cases for pronghorn.
+  </description>
+
+  <dirname
+    property="single_dummy_build_dir"
+    file="${ant.file.RalphJavaLibTest}"
+  />
+
+  <!-- global properties for this build file -->
+  <property name="ralph_dep_dir" location="${single_dummy_build_dir}/../../../../externals/ralph/"/>
+  <property name="ralph_compiler_py" location="${ralph_dep_dir}/bin/emit_file.py"/>
+  <property name="ralph_lib" location="${ralph_dep_dir}/ralph/java_lib/build/"/>
+
+  <property name="test_package" value="test_package"/>
+  <property name="test_ralph_src_dir" location="${single_dummy_build_dir}/../ralph_src"/>
+  <property name="test_emitted_dir" location="${single_dummy_build_dir}/../ralph_emitted"/>
+  <property name="build_dir" location="${single_dummy_build_dir}/classes"/>
+
+  
+  <property
+      name="lib_build_path"
+      location="${single_dummy_build_dir}/../../../ralph/java_lib/build"/>
+  <property
+      name="lib_class_path" location="${lib_build_path}/classes/"/>
+  <property
+      name="proto_class_path" location="${lib_build_path}/../protobuf-java-2.4.1.jar"/>
+  <property name="ralph_compiler_py" location="${single_dummy_build_dir}/../../emit_file.py"/>
+
+  
+  <!-- set up build directories for test -->
+  <target name="init" description="setup build directories">
+    <echo message="Setting up build directories for tests"/>
+    <mkdir dir="${build_dir}"/>
+    <mkdir dir="${test_emitted_dir}"/>
+  </target>
+
+
+  <!-- COMPILING -->
+  <!-- compile java libraries -->
+  <target name="compile_libs" depends="init" description="compile library files">
+    <ant antfile="${lib_build_path}/build.xml" target="compile_all" />  
+  </target>
+
+  <!-- Compile to java -->
+  <target name="translate_ralph" depends="init" description="translate ralph files">
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="${test_ralph_src_dir}/hardware_test.rph"/>
+      <arg line="${test_emitted_dir}/HardwareTest.java"/>
+      <arg line="${test_package}"/>
+      <arg line="HardwareTest"/>
+    </exec>
+    
+  </target>
+
+  
+  <target name="ralph_to_byte_code" depends="init,compile_libs" description="compile ralph files">
+    <!-- Compile all ralph java to bytecode -->
+    <javac
+        srcdir="${ralph_emitted_dir}"
+        destdir="${build_dir}"
+        classpath="${lib_class_path}"
+        debug="true"
+        debuglevel="lines,vars,source"
+        includeantruntime="false" />
+  </target>
+
+    
+  <!-- compile ralph endpoints to java programs, including translating -->
+  <target
+      name="compile_ralph"
+      depends="init,compile_libs,translate_ralph,ralph_to_byte_code"
+      description="compile ralph files">
+  </target>
+
+  
+  <!-- Delete the build directories -->
+  <target name="clean" description="get rid of build dir">
+    <delete dir="${build_dir}"/>
+    <delete dir="${ralph_emitted_dir}"/>
+  </target>
+
+  <target
+      name="clean_all"
+      depends="clean"
+      description="get rid of build dir and all built libs">
+    <ant antfile="${lib_build_path}/build.xml" target="clean" />
+  </target>
+
+  
+</project>

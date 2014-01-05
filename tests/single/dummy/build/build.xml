@@ -10,24 +10,42 @@
   />
 
   <!-- global properties for this build file -->
-  <property name="ralph_dep_dir" location="${single_dummy_build_dir}/../../../../externals/ralph/"/>
-  <property name="ralph_compiler_py" location="${ralph_dep_dir}/bin/emit_file.py"/>
-  <property name="ralph_lib" location="${ralph_dep_dir}/ralph/java_lib/build/"/>
+  <property
+      name="ralph_dep_dir"
+      location="${single_dummy_build_dir}/../../../../externals/ralph/"/>
+  <property
+      name="ralph_compiler_py"
+      location="${ralph_dep_dir}/bin/emit_file.py"/>
+  <property
+      name="ralph_lib"
+      location="${ralph_dep_dir}/ralph/java_lib/build/"/>
 
-  <property name="test_package" value="test_package"/>
-  <property name="test_ralph_src_dir" location="${single_dummy_build_dir}/../ralph_src"/>
-  <property name="test_emitted_dir" location="${single_dummy_build_dir}/../ralph_emitted"/>
-  <property name="build_dir" location="${single_dummy_build_dir}/classes"/>
+  <property
+      name="test_package"
+      value="test_package"/>
+  <property
+      name="test_ralph_src_dir"
+      location="${single_dummy_build_dir}/../ralph_src"/>
+  <property
+      name="test_emitted_dir"
+      location="${single_dummy_build_dir}/../ralph_emitted"/>
+  <property
+      name="build_dir"
+      location="${single_dummy_build_dir}/classes"/>
 
   
   <property
       name="lib_build_path"
       location="${single_dummy_build_dir}/../../../ralph/java_lib/build"/>
   <property
-      name="lib_class_path" location="${lib_build_path}/classes/"/>
+      name="lib_class_path"
+      location="${lib_build_path}/classes/"/>
   <property
-      name="proto_class_path" location="${lib_build_path}/../protobuf-java-2.4.1.jar"/>
-  <property name="ralph_compiler_py" location="${single_dummy_build_dir}/../../emit_file.py"/>
+      name="proto_class_path"
+      location="${lib_build_path}/../protobuf-java-2.4.1.jar"/>
+  <property
+      name="ralph_compiler_py"
+      location="${single_dummy_build_dir}/../../emit_file.py"/>
 
   
   <!-- set up build directories for test -->
@@ -40,12 +58,15 @@
 
   <!-- COMPILING -->
   <!-- compile java libraries -->
-  <target name="compile_libs" depends="init" description="compile library files">
-    <ant antfile="${lib_build_path}/build.xml" target="compile_all" />  
+  <target name="compile_libs" depends="init"
+          description="compile library files">
+    
+    <ant antfile="${lib_build_path}/build.xml" target="compile_all" />
   </target>
 
   <!-- Compile to java -->
-  <target name="translate_ralph" depends="init" description="translate ralph files">
+  <target name="translate_ralph" depends="init"
+          description="translate ralph files">
 
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
@@ -58,7 +79,9 @@
   </target>
 
   
-  <target name="ralph_to_byte_code" depends="init,compile_libs" description="compile ralph files">
+  <target name="ralph_to_byte_code"
+          depends="init,compile_libs"
+          description="compile ralph files">
     <!-- Compile all ralph java to bytecode -->
     <javac
         srcdir="${ralph_emitted_dir}"

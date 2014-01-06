@@ -39,6 +39,14 @@
       location="${single_dummy_build_dir}/../../emit_file.py"/>
 
 
+  <!-- Pronghorn libraries -->
+  <property
+      name="pronghorn_libs_build_path"
+      location="${single_dummy_build_dir}/../../../../src/switch/build"/>
+  <property
+      name="pronghorn_libs_class_path"
+      location="${pronghorn_libs_build_path}/classes"/>
+  
   <!-- Build files in singledummytests -->
   <property
       name="test_package"
@@ -72,6 +80,7 @@
           description="compile library files">
     
     <ant antfile="${lib_build_path}/build.xml" target="compile_all" />
+    <ant antfile="${pronghorn_libs_build_path}/build.xml" target="compile_all"/>
   </target>
 
   <!-- Compile to java -->
@@ -96,7 +105,7 @@
     <javac
         srcdir="${test_ralph_emitted_dir}"
         destdir="${test_build_classes_dir}"
-        classpath="${lib_class_path}"
+        classpath="${lib_class_path}:${pronghorn_libs_class_path}"
         debug="true"
         debuglevel="lines,vars,source"
         includeantruntime="false" />
@@ -118,7 +127,9 @@
     <javac
         srcdir="${test_harness_src_dir}"
         destdir="${test_build_classes_dir}"
-        classpath="${test_build_classes_dir}:${lib_class_path}"
+        classpath="${test_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${pronghorn_libs_class_path}"
         debug="true"
         debuglevel="lines,vars,source"
         includeantruntime="false" />
@@ -141,7 +152,8 @@
         dir="${test_build_classes_dir}"
         classpath="${test_build_classes_dir}:
                    ${lib_class_path}:
-                   ${proto_class_path}"
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}"
         classname="${test_package}.SingleTest" fork="yes">
         <arg line="${args}"/>
     </java>

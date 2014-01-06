@@ -96,7 +96,7 @@
     
   <!-- compile ralph endpoints to java programs, including translating -->
   <target
-      name="compile_ralph"
+      name="compile_all"
       depends="init,compile_libs,translate_ralph,ralph_to_byte_code"
       description="compile ralph files">
   </target>

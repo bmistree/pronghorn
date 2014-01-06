@@ -8,7 +8,7 @@ Struct RoutingTableEntry alias 'pronghorn.RTable.RoutingTableEntry'
     TVar Number action;
 }
 
-Struct Switch
+Struct Switch alias 'pronghorn.SwitchJava.Switch'
 {
     // unique id for each switch
     TVar Text switch_id;    

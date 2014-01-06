@@ -1,0 +1,15 @@
+Struct RoutingTableEntry alias 'pronghorn.RTable.RoutingTableEntry'
+{
+    // do not need to fill in fields here
+    // because fields are never accessed.
+}
+
+
+Struct Switch
+{
+    // unique id for each switch
+    TVar Text switch_id;    
+    TVar Number available_capacity;
+    TVar List (element: Struct RoutingTableEntry) rtable;
+}
+

@@ -4,7 +4,7 @@ package test_package;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import test_package.HardwareTest.PronghornInstance;
-import test_package.HardwareTest._InternalSwitch;
+import pronghorn.SwitchJava._InternalSwitch;
 import java.util.concurrent.atomic.AtomicInteger;
 import ralph.Variables.AtomicTextVariable;
 

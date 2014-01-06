@@ -76,6 +76,15 @@
       <arg line="${pronghorn_package}"/>
       <arg line="RTable"/>
     </exec>
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="${pronghorn_ralph_src_dir}/switch.rph"/>
+      <arg line="${pronghorn_ralph_emitted_dir}/SwitchJava.java"/>
+      <arg line="${pronghorn_package}"/>
+      <arg line="SwitchJava"/>
+    </exec>
+
     
   </target>
 

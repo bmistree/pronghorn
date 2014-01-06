@@ -33,7 +33,7 @@
       location="${pronghorn_libs_build_dir}/../../emit_file.py"/>
 
 
-  <!-- Build files in singledummytests -->
+  <!-- Build files for pronghorn libs -->
   <property
       name="pronghorn_package"
       value="pronghorn"/>
@@ -43,6 +43,13 @@
   <property
       name="pronghorn_ralph_emitted_dir"
       location="${pronghorn_libs_build_dir}/../ralph_emitted"/>
+  <!--
+      wrappers contain java utilities for generating/accessing
+      ralph-ized pronghorn libs.
+  -->
+  <property
+      name="pronghorn_wrapper_dir"
+      location="${pronghorn_libs_build_dir}/../wrappers"/>
   <property
       name="pronghorn_build_classes_dir"
       location="${pronghorn_libs_build_dir}/classes"/>
@@ -84,7 +91,6 @@
       <arg line="${pronghorn_package}"/>
       <arg line="SwitchJava"/>
     </exec>
-
     
   </target>
 
@@ -102,11 +108,26 @@
         includeantruntime="false" />
   </target>
 
+  
+  <target name="compile_wrappers"
+          depends="init,compile_libs,ralph_to_byte_code"
+          description="compile ralph files">
+    <!-- Compile all ralph java to bytecode -->
+    <javac
+        srcdir="${pronghorn_wrapper_dir}"
+        destdir="${pronghorn_build_classes_dir}"
+        classpath="${lib_class_path}:${pronghorn_build_classes_dir}"
+        debug="true"
+        debuglevel="lines,vars,source"
+        includeantruntime="false" />
+  </target>
+
+  
     
   <!-- compile ralph endpoints to java programs, including translating -->
   <target
       name="compile_all"
-      depends="init,compile_libs,translate_ralph,ralph_to_byte_code"
+      depends="init,compile_libs,translate_ralph,ralph_to_byte_code,compile_wrappers"
       description="compile ralph files">
   </target>
 

@@ -34,14 +34,18 @@ Endpoint PronghornInstance
     add_rtable_entry(
         Text switch_id,TrueFalse active,Text src_ip, Text dst_ip,Number action)
     {
+
         Struct RoutingTableEntry entry;
         entry.active = active;
         entry.src_ip = src_ip;
         entry.dst_ip = dst_ip;
         entry.action = action;
 
-        Struct Switch switch_to_add_to = instance_switches.get(switch_id);
-        switch_to_add_to.rtable.append(entry);
+        atomically
+        {            
+            Struct Switch switch_to_add_to = instance_switches.get(switch_id);
+            switch_to_add_to.rtable.append(entry);
+        }
     }
 
     rtable_size(Text switch_id) returns Number

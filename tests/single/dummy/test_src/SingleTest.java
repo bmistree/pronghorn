@@ -5,7 +5,7 @@ import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import test_package.HardwareTest.PronghornInstance;
 import pronghorn.SwitchFactory;
-import pronghorn.SwitchJava._InternalSwitch;
+import pronghorn.SwitchFactory.PronghornInternalSwitch;
 import java.util.concurrent.atomic.AtomicInteger;
 import ralph.Variables.AtomicTextVariable;
 
@@ -22,24 +22,12 @@ public class SingleTest
             System.out.println("\nFAILURE in test SingleTest\n");
     }
 
-    public static _InternalSwitch produce_internal_switch()
-    {
-        Integer new_switch_id = atomic_switch_id.addAndGet(1);
-
-        // Overwrite internal values of internal switch
-        _InternalSwitch internal_switch = new _InternalSwitch();
-        internal_switch.switch_id =
-            new AtomicTextVariable (
-                "",false,new_switch_id.toString());
-
-        return internal_switch;
-    }
-
-    public static void add_switch(PronghornInstance prong,SwitchFactory sf)
+    public static String add_switch(PronghornInstance prong,SwitchFactory sf)
         throws Exception
     {
-        _InternalSwitch to_add = sf.construct(20);
+        PronghornInternalSwitch to_add = sf.construct(20);
         prong.add_switch(to_add);
+        return to_add.ralph_internal_switch_id;
     }
     
     public static boolean static_run()
@@ -55,7 +43,14 @@ public class SingleTest
                 dummy_host_uuid,
                 new SingleSideConnection());
 
-            add_switch(prong,switch_factory);
+            String switch_id = add_switch(prong,switch_factory);
+
+            
+            prong.add_rtable_entry(switch_id,true,"ipa","ipb",1.);
+
+            if (!prong.rtable_size(switch_id).equals(1.0))
+                return false;
+            
         }
         catch(Exception _ex)
         {

@@ -4,6 +4,7 @@ package test_package;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import test_package.HardwareTest.PronghornInstance;
+import pronghorn.SwitchFactory;
 import pronghorn.SwitchJava._InternalSwitch;
 import java.util.concurrent.atomic.AtomicInteger;
 import ralph.Variables.AtomicTextVariable;
@@ -34,9 +35,10 @@ public class SingleTest
         return internal_switch;
     }
 
-    public static void add_switch(PronghornInstance prong) throws Exception
+    public static void add_switch(PronghornInstance prong,SwitchFactory sf)
+        throws Exception
     {
-        _InternalSwitch to_add = produce_internal_switch();
+        _InternalSwitch to_add = sf.construct(20);
         prong.add_switch(to_add);
     }
     
@@ -44,6 +46,8 @@ public class SingleTest
     {
         try
         {
+            SwitchFactory switch_factory = new SwitchFactory();
+            switch_factory.init("unique_factory_id");
             String dummy_host_uuid = "dummy_host_uuid";
             
             PronghornInstance prong = new PronghornInstance(
@@ -51,7 +55,7 @@ public class SingleTest
                 dummy_host_uuid,
                 new SingleSideConnection());
 
-            add_switch(prong);
+            add_switch(prong,switch_factory);
         }
         catch(Exception _ex)
         {

@@ -143,6 +143,7 @@
         "run_AddRemoveSwitch">
   </target>
 
+  
   <!-- Single instance add/remove switch -->
   <target
       name="run_AddRemoveSwitch"
@@ -159,7 +160,41 @@
     </java>
   </target>
 
-  <!-- classpath="${lib_class_path}" -->
+
+  <!--
+      Run tests without recompiling the ralph source to java:
+      can make changes to emitted that persist.
+  -->
+  <target
+      name="run_all_no_recompile"
+      depends=
+        "run_no_recompile_AddRemoveSwitch">
+  </target>
+
+  <target
+      name="no_recompile"
+      depends="init,compile_libs,ralph_to_byte_code"
+      description="do not compile ralph to java, reuse files in ralph_emitted">
+  </target>
+
+  <!-- Single instance add/remove switch -->
+  <target
+      name="run_no_recompile_AddRemoveSwitch"
+      depends="no_recompile"
+      description="Add/remove switch from single pronghorn instance.">
+    <java
+        dir="${test_build_classes_dir}"
+        classpath="${test_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}"
+        classname="${test_package}.SingleTest" fork="yes">
+        <arg line="${args}"/>
+    </java>
+  </target>
+
+  
+
   
   <!-- Delete the build directories -->
   <target name="clean" description="get rid of build dir">

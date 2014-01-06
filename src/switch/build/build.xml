@@ -1,0 +1,119 @@
+<project name="PronghornLibs" default="compile" basedir=".">
+  
+  <description>
+    Pronghorn libs
+  </description>
+
+  <dirname
+    property="pronghorn_libs_build_dir"
+    file="${ant.file.PronghornLibs}"
+  />
+
+  <!-- global properties for this build file -->
+
+  <!-- Ralph dependency files -->
+  <property
+      name="ralph_dep_dir"
+      location="${pronghorn_libs_build_dir}/../../../externals/ralph/"/>
+  <property
+      name="ralph_compiler_py"
+      location="${ralph_dep_dir}/bin/emit_file.py"/>
+
+  <property
+      name="lib_build_path"
+      location="${ralph_dep_dir}/ralph/java_lib/build"/>
+  <property
+      name="lib_class_path"
+      location="${lib_build_path}/classes/"/>
+  <property
+      name="proto_class_path"
+      location="${lib_build_path}/../protobuf-java-2.4.1.jar"/>
+  <property
+      name="ralph_compiler_py"
+      location="${pronghorn_libs_build_dir}/../../emit_file.py"/>
+
+
+  <!-- Build files in singledummytests -->
+  <property
+      name="pronghorn_package"
+      value="pronghorn"/>
+  <property
+      name="pronghorn_ralph_src_dir"
+      location="${pronghorn_libs_build_dir}/../ralph_src"/>
+  <property
+      name="pronghorn_ralph_emitted_dir"
+      location="${pronghorn_libs_build_dir}/../ralph_emitted"/>
+  <property
+      name="pronghorn_build_classes_dir"
+      location="${pronghorn_libs_build_dir}/classes"/>
+
+
+  
+  <!-- set up build directories for pronghorn -->
+  <target name="init" description="setup build directories">
+    <echo message="Setting up build directories for pronghorn"/>
+    <mkdir dir="${pronghorn_build_classes_dir}"/>
+    <mkdir dir="${pronghorn_ralph_emitted_dir}"/>
+  </target>
+
+
+  <!-- COMPILING -->
+  <!-- compile java libraries -->
+  <target name="compile_libs" depends="init"
+          description="compile library files">
+    
+    <ant antfile="${lib_build_path}/build.xml" target="compile_all" />
+  </target>
+
+  <!-- Compile to java -->
+  <target name="translate_ralph" depends="init"
+          description="translate ralph files">
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="${pronghorn_ralph_src_dir}/routing_table_entry.rph"/>
+      <arg line="${pronghorn_ralph_emitted_dir}/RTable.java"/>
+      <arg line="${pronghorn_package}"/>
+      <arg line="RTable"/>
+    </exec>
+    
+  </target>
+
+  
+  <target name="ralph_to_byte_code"
+          depends="init,compile_libs"
+          description="compile ralph files">
+    <!-- Compile all ralph java to bytecode -->
+    <javac
+        srcdir="${pronghorn_ralph_emitted_dir}"
+        destdir="${pronghorn_build_classes_dir}"
+        classpath="${lib_class_path}"
+        debug="true"
+        debuglevel="lines,vars,source"
+        includeantruntime="false" />
+  </target>
+
+    
+  <!-- compile ralph endpoints to java programs, including translating -->
+  <target
+      name="compile_ralph"
+      depends="init,compile_libs,translate_ralph,ralph_to_byte_code"
+      description="compile ralph files">
+  </target>
+
+  
+  <!-- Delete the build directories -->
+  <target name="clean" description="get rid of build dir">
+    <delete dir="${pronghorn_build_classes_dir}"/>
+    <delete dir="${pronghorn_ralph_emitted_dir}"/>
+  </target>
+
+  <target
+      name="clean_all"
+      depends="clean"
+      description="get rid of build dir and all built libs">
+    <ant antfile="${lib_build_path}/build.xml" target="clean" />
+  </target>
+
+  
+</project>

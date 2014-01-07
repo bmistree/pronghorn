@@ -36,7 +36,7 @@
   <!-- Pronghorn libraries -->
   <property
       name="pronghorn_libs_build_path"
-      location="${single_host_build_dir}/../../switch/build"/>
+      location="${single_host_build_dir}/../../pronghorn/build"/>
   <property
       name="pronghorn_libs_class_path"
       location="${pronghorn_libs_build_path}/classes"/>

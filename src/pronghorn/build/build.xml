@@ -44,12 +44,11 @@
       name="pronghorn_ralph_emitted_dir"
       location="${pronghorn_libs_build_dir}/../ralph_emitted"/>
   <!--
-      wrappers contain java utilities for generating/accessing
-      ralph-ized pronghorn libs.
+      src contain java utilities for pronghorn package
   -->
   <property
-      name="pronghorn_wrapper_dir"
-      location="${pronghorn_libs_build_dir}/../wrappers"/>
+      name="pronghorn_src_dir"
+      location="${pronghorn_libs_build_dir}/../src"/>
   <property
       name="pronghorn_build_classes_dir"
       location="${pronghorn_libs_build_dir}/classes"/>
@@ -114,7 +113,7 @@
           description="compile ralph files">
     <!-- Compile all ralph java to bytecode -->
     <javac
-        srcdir="${pronghorn_wrapper_dir}"
+        srcdir="${pronghorn_src_dir}"
         destdir="${pronghorn_build_classes_dir}"
         classpath="${lib_class_path}:${pronghorn_build_classes_dir}"
         debug="true"

@@ -14,9 +14,11 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.ArrayList;
 
 import pronghorn.ShimInterface;
 import pronghorn.SwitchStatusHandler;
+import pronghorn.RTableUpdate;
 
 /**
    Serves as intermediate layer between Ralph and Floodlight
@@ -66,7 +68,8 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
         handler_lock.unlock();
     }
     @Override
-    public boolean switch_rtable_update(String switch_id)
+    public boolean switch_rtable_updates(
+        String switch_id,ArrayList<RTableUpdate> updates)
     {
         System.out.println(
             "\nError: singlehost shim still needs to push rtable updates.");

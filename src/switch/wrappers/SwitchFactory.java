@@ -130,7 +130,6 @@ public class SwitchFactory
             System.out.println(
                 "\nWarning, using default routingtabletohardware object\n");            
         }
-        
     }
 
 

@@ -3,7 +3,6 @@ package single_host;
 import single_host.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
-import pronghorn.Shim;
 import java.lang.Thread;
 
 public class SingleHost
@@ -36,7 +35,7 @@ public class SingleHost
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(prong);
 
-        Shim shim = new  Shim(floodlight_port);
+        SingleHostShim shim = new  SingleHostShim(floodlight_port);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
         while (true)

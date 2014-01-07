@@ -1,4 +1,4 @@
-package pronghorn;
+package single_host;
 
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,10 +15,13 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.concurrent.locks.ReentrantLock;
 
+import pronghorn.ShimInterface;
+import pronghorn.SwitchStatusHandler;
+
 /**
    Serves as intermediate layer between Ralph and Floodlight
  */
-public class Shim implements Runnable, ShimInterface
+public class SingleHostShim implements Runnable, ShimInterface
 {
     /**
        The port that local floodlight server is running on.
@@ -38,7 +41,7 @@ public class Shim implements Runnable, ShimInterface
 
     private static final long POLL_PERIOD_MS = 1000;
     
-    public Shim(int _floodlight_port)
+    public SingleHostShim(int _floodlight_port)
     {
         floodlight_port = _floodlight_port;
 
@@ -180,6 +183,5 @@ public class Shim implements Runnable, ShimInterface
                 ssh.removed_switch(to_remove_switch_id);
             handler_lock.unlock();
         }
-        
     }
 }

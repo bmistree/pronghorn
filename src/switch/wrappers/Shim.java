@@ -13,41 +13,75 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
    Serves as intermediate layer between Ralph and Floodlight
  */
-public class Shim implements Runnable
+public class Shim implements Runnable, ShimInterface
 {
     /**
        The port that local floodlight server is running on.
      */
     private int floodlight_port;
+    
     /**
        Whenever we see that there was a new switch or we see that a
-       switch went down, we notify this handler.
+       switch went down, we notify these handlers. 
      */
-    private SwitchStatusHandler switch_status_handler = null;
+    private ReentrantLock handler_lock = new ReentrantLock();
+    private Set<SwitchStatusHandler> switch_status_handlers =
+        new HashSet<SwitchStatusHandler>();
 
     private Set<String> switch_id_set = new HashSet<String>();
     private ScheduledExecutorService executor;
 
     private static final long POLL_PERIOD_MS = 1000;
     
-    public Shim(
-        int _floodlight_port,
-        SwitchStatusHandler _switch_status_handler) 
+    public Shim(int _floodlight_port)
     {
         floodlight_port = _floodlight_port;
-        switch_status_handler = _switch_status_handler;
 
+    }
+
+
+    /** ShimInterface methods */
+    @Override
+    public void subscribe_switch_status_handler(SwitchStatusHandler ssh)
+    {
+        handler_lock.lock();
+        switch_status_handlers.add(ssh);
+        handler_lock.unlock();
+    }
+    @Override
+    public void unsubscribe_switch_status_handler(SwitchStatusHandler ssh)
+    {
+        /// FIXME: should clarify that unsubscribe is asynchronous:
+        /// may still get one or two messages after.
+        handler_lock.lock();
+        switch_status_handlers.remove(ssh);
+        handler_lock.unlock();
+    }
+    @Override
+    public boolean switch_rtable_update(String switch_id)
+    {
+        System.out.println(
+            "\nError: singlehost shim still needs to push rtable updates.");
+        assert(false);
+        return true;
+    }
+
+    @Override
+    public void start()
+    {
         // schedule this class to poll the floodlight controller
         // periodically.
         executor = Executors.newSingleThreadScheduledExecutor();
         executor.scheduleAtFixedRate(
             this, POLL_PERIOD_MS, POLL_PERIOD_MS, TimeUnit.MILLISECONDS);
     }
-
+    
+    
     public void stop()
     {
         executor.shutdown();
@@ -100,7 +134,7 @@ public class Shim implements Runnable
 
         return switch_ids;
     }
-        
+
     /**
        Periodically poll to see if there's a new switch, or if an old
        switch is dead.  In either case, inform switch_status_handler.
@@ -115,7 +149,14 @@ public class Shim implements Runnable
             if (! switch_id_set.contains(current_switch_id))
             {
                 switch_id_set.add(current_switch_id);
-                switch_status_handler.new_switch(current_switch_id);
+
+                // FIXME: can lead to iterator invalidation if a
+                // switch unsubscribes in response to a new_switch
+                // message.
+                handler_lock.lock();
+                for (SwitchStatusHandler ssh : switch_status_handlers)
+                    ssh.new_switch(current_switch_id);
+                handler_lock.unlock();
             }
         }
 
@@ -131,7 +172,13 @@ public class Shim implements Runnable
         for (String to_remove_switch_id : ids_to_remove)
         {
             switch_id_set.remove(to_remove_switch_id);
-            switch_status_handler.removed_switch(to_remove_switch_id);
+            handler_lock.lock();
+            // FIXME: can lead to iterator invalidation if a
+            // switch unsubscribes in response to a new_switch
+            // message.
+            for (SwitchStatusHandler ssh : switch_status_handlers)
+                ssh.removed_switch(to_remove_switch_id);
+            handler_lock.unlock();
         }
         
     }

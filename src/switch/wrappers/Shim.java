@@ -130,7 +130,7 @@ public class Shim implements Runnable
 
         for (String to_remove_switch_id : ids_to_remove)
         {
-            current_switch_ids.remove(to_remove_switch_id);
+            switch_id_set.remove(to_remove_switch_id);
             switch_status_handler.removed_switch(to_remove_switch_id);
         }
         

@@ -62,9 +62,8 @@ public class Shim implements Runnable
             URL url = new URL(
                 "http","localhost",floodlight_port,what_to_get);
             connection = (HttpURLConnection) url.openConnection();
-            connection.connect();
-
             connection.setRequestMethod("GET");
+
             BufferedReader rd =
                 new BufferedReader(
                     new InputStreamReader(connection.getInputStream()));
@@ -84,7 +83,7 @@ public class Shim implements Runnable
     public Set<String> list_switches()
     {
         String all_switches_json = issue_get(
-            "wm/core/controller/switches/json");
+            "/wm/core/controller/switches/json");
 
         // all_switches_json has a complicated json format.  All
         // that's really important here though is the dpid of the

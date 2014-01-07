@@ -1,0 +1,206 @@
+<project name="SingleHost" default="compile" basedir=".">
+
+  <description>
+    Boot up a Pronghorn instance that talks to a running floodlight instance.
+  </description>
+
+  <dirname
+    property="single_host_build_dir"
+    file="${ant.file.SingleHostBuildDir}"
+  />
+
+  <!-- global properties for this build file -->
+  
+  <!-- Ralph dependency files -->
+  <property
+      name="ralph_dep_dir"
+      location="${single_host_build_dir}/../../../externals/ralph/"/>
+  <property
+      name="ralph_compiler_py"
+      location="${ralph_dep_dir}/bin/emit_file.py"/>
+
+  <property
+      name="lib_build_path"
+      location="${ralph_dep_dir}/ralph/java_lib/build"/>
+  <property
+      name="lib_class_path"
+      location="${lib_build_path}/classes/"/>
+  <property
+      name="proto_class_path"
+      location="${lib_build_path}/../protobuf-java-2.4.1.jar"/>
+  <property
+      name="ralph_compiler_py"
+      location="${single_host_build_dir}/../../emit_file.py"/>
+
+
+  <!-- Pronghorn libraries -->
+  <property
+      name="pronghorn_libs_build_path"
+      location="${single_host_build_dir}/../../switch/build"/>
+  <property
+      name="pronghorn_libs_class_path"
+      location="${pronghorn_libs_build_path}/classes"/>
+  
+  <!-- Build files in singledummytests -->
+  <property
+      name="single_host_package"
+      value="single_host"/>
+
+  <property
+      name="single_host_ralph_src_dir"
+      location="${single_host_build_dir}/../ralph_src"/>
+  <property
+      name="single_host_src_dir"
+      location="${single_host_build_dir}/../src"/>
+  <property
+      name="single_host_ralph_emitted_dir"
+      location="${single_host_build_dir}/../ralph_emitted"/>
+  <property
+      name="single_host_build_classes_dir"
+      location="${single_host_build_dir}/classes"/>
+
+
+  
+  <!-- set up build directories for test -->
+  <target name="init" description="setup build directories">
+    <echo message="Setting up build directories for tests"/>
+    <mkdir dir="${single_host_build_classes_dir}"/>
+    <mkdir dir="${single_host_ralph_emitted_dir}"/>
+  </target>
+
+
+  <!-- COMPILING -->
+  <!-- compile java libraries -->
+  <target name="compile_libs" depends="init"
+          description="compile library files">
+    
+    <ant antfile="${lib_build_path}/build.xml" target="compile_all" />
+    <ant antfile="${pronghorn_libs_build_path}/build.xml" target="compile_all"/>
+  </target>
+
+  <!-- Compile to java -->
+  <target name="translate_ralph" depends="init"
+          description="translate ralph files">
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="${single_host_ralph_src_dir}/pronghorn_instance.rph"/>
+      <arg line="${single_host_ralph_emitted_dir}/JavaPronghornInstance.java"/>
+      <arg line="${single_host_package}"/>
+      <arg line="JavaPronghornInstance"/>
+    </exec>
+    
+  </target>
+
+  
+  <target name="ralph_to_byte_code"
+          depends="init,compile_libs"
+          description="compile ralph files">
+    <!-- Compile all ralph java to bytecode -->
+    <javac
+        srcdir="${single_host_ralph_emitted_dir}"
+        destdir="${single_host_build_classes_dir}"
+        classpath="${lib_class_path}:${pronghorn_libs_class_path}"
+        debug="true"
+        debuglevel="lines,vars,source"
+        includeantruntime="false" />
+  </target>
+
+    
+  <!-- compile ralph endpoints to java programs, including translating -->
+  <target
+      name="compile_ralph"
+      depends="init,compile_libs,translate_ralph,ralph_to_byte_code"
+      description="compile ralph files">
+  </target>
+
+  <!-- compile java test harnesses for ralph code  -->
+  <target
+      name="compile_single_host"
+      depends="init,compile_ralph"
+      description="compile test harnesses for ralph code">
+    <javac
+        srcdir="${single_host_src_dir}"
+        destdir="${single_host_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${pronghorn_libs_class_path}"
+        debug="true"
+        debuglevel="lines,vars,source"
+        includeantruntime="false" />
+  </target>
+
+
+  <!-- RUNNING TESTS -->
+  <target
+      name="run_all"
+      depends=
+        "run_SingleHost">
+  </target>
+
+  
+  <!-- Run pronghorn connected to floodlight -->
+  <target
+      name="run_SingleHost"
+      depends="compile_single_host"
+      description="Run a single pronghorn instance connected to floodlight.">
+    <java
+        dir="${single_host_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}"
+        classname="${single_host_package}.SingleHost" fork="yes">
+        <arg line="8080"/>
+    </java>
+  </target>
+  
+
+  <!--
+      Run tests without recompiling the ralph source to java:
+      can make changes to emitted that persist.
+  -->
+  <target
+      name="run_all_no_recompile"
+      depends=
+        "run_no_recompile_SingleHost">
+  </target>
+
+  <target
+      name="no_recompile"
+      depends="init,compile_libs,ralph_to_byte_code"
+      description="do not compile ralph to java, reuse files in ralph_emitted">
+  </target>
+
+  <!-- Run pronghorn connected to floodlight -->
+  <target
+      name="run_no_recompile_SingleHost"
+      depends="no_recompile"
+      description="Run a single pronghorn instance connected to floodlight.">
+    <java
+        dir="${single_host_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}"
+        classname="${single_host_package}.SingleHost" fork="yes">
+        <arg line="8080"/>
+    </java>
+  </target>
+
+  
+  <!-- Delete the build directories -->
+  <target name="clean" description="get rid of build dir">
+    <delete dir="${single_host_build_classes_dir}"/>
+    <delete dir="${single_host_ralph_emitted_dir}"/>
+  </target>
+
+  <target
+      name="clean_all"
+      depends="clean"
+      description="get rid of build dir and all built libs">
+    <ant antfile="${lib_build_path}/build.xml" target="clean" />
+  </target>
+
+  
+</project>

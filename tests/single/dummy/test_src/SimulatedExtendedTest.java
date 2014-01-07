@@ -4,6 +4,7 @@ package test_package;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import test_package.HardwareTest.PronghornInstance;
+import pronghorn.RoutingTableToHardware;
 import pronghorn.SwitchFactory;
 import pronghorn.SwitchFactory.PronghornInternalSwitch;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -33,7 +34,7 @@ public class SimulatedExtendedTest
 
 
     public static class TestRoutingTableToHardware
-        extends SwitchFactory.RoutingTableToHardware
+        extends RoutingTableToHardware
     {
         @Override
         public boolean apply_changes_to_hardware(

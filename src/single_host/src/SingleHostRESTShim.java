@@ -21,7 +21,7 @@ import pronghorn.SwitchStatusHandler;
 /**
    Serves as intermediate layer between Ralph and Floodlight
  */
-public class SingleHostShim implements Runnable, ShimInterface
+public class SingleHostRESTShim implements Runnable, ShimInterface
 {
     /**
        The port that local floodlight server is running on.
@@ -41,7 +41,7 @@ public class SingleHostShim implements Runnable, ShimInterface
 
     private static final long POLL_PERIOD_MS = 1000;
     
-    public SingleHostShim(int _floodlight_port)
+    public SingleHostRESTShim(int _floodlight_port)
     {
         floodlight_port = _floodlight_port;
 

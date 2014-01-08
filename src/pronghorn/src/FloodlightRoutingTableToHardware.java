@@ -43,7 +43,7 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
     private String new_unique_entry_name ()
     {
         int prev = ++unique_entry_name_generator;
-        return Integer.toString(prev);
+        return floodlight_switch_id + ":_:" + Integer.toString(prev);
     }
 
     private ArrayList<RTableUpdate> produce_rtable_updates(

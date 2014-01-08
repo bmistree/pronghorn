@@ -49,6 +49,7 @@ public class SingleHostSwitchStatusHandler implements SwitchStatusHandler
             switch_factory.construct(
                 DEFAULT_INITIAL_SWITCH_CAPACITY,rtable_to_hardware);
         
+        
         String pronghorn_switch_id = new_switch.ralph_internal_switch_id;
         floodlight_to_pronghorn_ids.put(
             floodlight_switch_id,pronghorn_switch_id);

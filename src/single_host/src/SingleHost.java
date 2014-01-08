@@ -32,10 +32,9 @@ public class SingleHost
             return;
         }
 
-        SingleHostSwitchStatusHandler switch_status_handler =
-            new SingleHostSwitchStatusHandler(prong);
-
         SingleHostRESTShim shim = new  SingleHostRESTShim(floodlight_port);
+        SingleHostSwitchStatusHandler switch_status_handler =
+            new SingleHostSwitchStatusHandler(prong,shim);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
         while (true)

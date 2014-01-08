@@ -11,7 +11,7 @@ import RalphExceptions.BackoutException;
    it is asked to push changes to hardware or undo pushed changes
    to hardware.
  */
-public class FloodlightRoutingTableToHardware
+public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
 {
     /**
        Each routing table entry requires a unique name to associate it
@@ -36,6 +36,7 @@ public class FloodlightRoutingTableToHardware
         shim = _shim;
     }
 
+    @Override
     public boolean apply_changes_to_hardware(
         ListTypeDataWrapper<
             _InternalRoutingTableEntry,_InternalRoutingTableEntry> dirty)
@@ -106,6 +107,8 @@ public class FloodlightRoutingTableToHardware
         return shim.switch_rtable_updates(
             floodlight_switch_id,floodlight_updates);
     }
+    
+    @Override
     public void undo_dirty_changes_to_hardware(
         ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry>
         to_undo)

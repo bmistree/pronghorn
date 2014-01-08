@@ -5,6 +5,9 @@ import pronghorn.SwitchFactory;
 import pronghorn.RoutingTableToHardware;
 import pronghorn.SwitchFactory.PronghornInternalSwitch;
 import java.util.HashMap;
+import pronghorn.FloodlightRoutingTableToHardware;
+import pronghorn.ShimInterface;
+
 
 public class SingleHostSwitchStatusHandler implements SwitchStatusHandler
 {
@@ -22,10 +25,14 @@ public class SingleHostSwitchStatusHandler implements SwitchStatusHandler
         new HashMap<String,String>();
     private HashMap<String,String> pronghorn_to_floodlight_ids =
         new HashMap<String,String>();
+
+    private ShimInterface shim = null;
     
-    public SingleHostSwitchStatusHandler(PronghornInstance _prong)
+    public SingleHostSwitchStatusHandler(
+        PronghornInstance _prong,ShimInterface _shim)
     {
         prong = _prong;
+        shim = _shim;
         switch_factory = new SwitchFactory();
         switch_factory.init(UNIQUE_SWITCH_FACTORY_PREFIX);
     }
@@ -33,11 +40,15 @@ public class SingleHostSwitchStatusHandler implements SwitchStatusHandler
     @Override
     public void new_switch(String floodlight_switch_id)
     {
+        FloodlightRoutingTableToHardware rtable_to_hardware =
+            new FloodlightRoutingTableToHardware(shim,floodlight_switch_id);
+        
         /// FIXME: Should overload RoutingTableToHardware object to
         /// actually push changes to hardware.
         PronghornInternalSwitch new_switch =
-            switch_factory.construct(DEFAULT_INITIAL_SWITCH_CAPACITY);
-
+            switch_factory.construct(
+                DEFAULT_INITIAL_SWITCH_CAPACITY,rtable_to_hardware);
+        
         String pronghorn_switch_id = new_switch.ralph_internal_switch_id;
         floodlight_to_pronghorn_ids.put(
             floodlight_switch_id,pronghorn_switch_id);

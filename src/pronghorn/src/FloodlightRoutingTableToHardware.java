@@ -37,6 +37,7 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
         ShimInterface _shim, String _floodlight_switch_id)
     {
         shim = _shim;
+        floodlight_switch_id = _floodlight_switch_id;
     }
 
     private String new_unique_entry_name ()

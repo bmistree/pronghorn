@@ -143,7 +143,7 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
         Set<String> switch_ids = new HashSet<String>();
         Matcher m = Pattern.compile(regex).matcher(all_switches_json);
         while (m.find()) 
-            switch_ids.add(m.group());
+            switch_ids.add(m.group(1));
 
         return switch_ids;
     }

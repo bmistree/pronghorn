@@ -38,7 +38,7 @@ Endpoint PronghornInstance
         return instance_switches.size();
     }
 
-    add_entries_to_all()
+    block_traffic_all_switches(Text src_ip, Text dst_ip)
     {
         atomically
         {
@@ -48,11 +48,28 @@ Endpoint PronghornInstance
 
                 Struct RoutingTableEntry to_add;
                 to_add.active = True;
-                to_add.src_ip = '18.18.18.18';
-                to_add.dst_ip = '20.20.20.20';
-                to_add.action = '3';
-
+                to_add.src_ip = src_ip;
+                to_add.dst_ip = dst_ip;
+                // send packet out all ports
+                //to_add.action = 'output=flood';
+                // drop packet
+                to_add.action = '';
+                
                 switch_to_add_to.rtable.append(to_add);
+            }
+        }
+    }
+
+    remove_first_entry_all_switches()
+    {
+        atomically
+        {
+            for (Text switch_id in instance_switches)
+            {
+                Struct Switch switch_to_remove_from =
+                    instance_switches.get(switch_id);
+                if (switch_to_remove_from.rtable.size() > 0)
+                    switch_to_remove_from.rtable.remove(0);
             }
         }
     }

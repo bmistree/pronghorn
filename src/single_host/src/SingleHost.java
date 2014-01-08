@@ -37,10 +37,11 @@ public class SingleHost
             new SingleHostSwitchStatusHandler(prong,shim);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
+        boolean block_traffic = true;
         while (true)
         {
             try{
-                Thread.sleep(1000);
+                Thread.sleep(3000);
             } catch(InterruptedException ex)
             {
                 break;
@@ -48,8 +49,16 @@ public class SingleHost
             try {
                 Double num_switches = prong.num_switches();
                 System.out.println("Num switches: " + num_switches.toString());
-                // add garbage entries to all switches in system
-                prong.add_entries_to_all();
+
+                // cycle between allowing traffic between 10.0.0.1 and 10.0.0.2
+                // for all switches in system and blocking it
+                if (block_traffic)
+                    prong.block_traffic_all_switches("10.0.0.1","10.0.0.2");
+                else
+                    prong.remove_first_entry_all_switches();
+                
+                block_traffic = ! block_traffic;
+                
             } catch (Exception _ex)
             {
                 _ex.printStackTrace();

@@ -21,6 +21,7 @@ public class RTableUpdate
         String _action)
     {
         RTableUpdate to_return = new RTableUpdate();
+        to_return.op = Operation.INSERT;
         to_return.entry_name = _entry_name;
 
         to_return.src_ip = _src_ip;
@@ -28,14 +29,15 @@ public class RTableUpdate
         to_return.action = _action;
         return to_return;
     }
-    
+
     public static RTableUpdate create_remove_update(String _entry_name)
     {
         RTableUpdate to_return = new RTableUpdate();
+        to_return.op = Operation.REMOVE;
         to_return.entry_name = _entry_name;
         return to_return;
     }
-
+    
     /**
        Private constructor: use static methods to construct insertion
        and remove updates.

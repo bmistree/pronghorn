@@ -71,6 +71,14 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
     public boolean switch_rtable_updates(
         String switch_id,ArrayList<RTableUpdate> updates)
     {
+        for (RTableUpdate update : updates)
+        {
+            String rtable_update_json =
+                rtable_update_to_json(switch_id, update);
+            System.out.println(
+                "This is update would have sent out: " + rtable_update_json);
+        }
+        
         System.out.println(
             "\nError: singlehost shim still needs to push rtable updates.");
         assert(false);
@@ -132,7 +140,6 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
         // just write a regexp to grab all of them.
 
         String regex = "\"dpid\":\"(.*?)\"";
-
         Set<String> switch_ids = new HashSet<String>();
         Matcher m = Pattern.compile(regex).matcher(all_switches_json);
         while (m.find()) 
@@ -187,4 +194,38 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
             handler_lock.unlock();
         }
     }
+
+    /**
+       Take each update and convert it to json that can be sent as
+       part of REST command.
+     */
+    public String rtable_update_to_json(String switch_id, RTableUpdate to_translate)
+    {
+        String translation = null;
+        if (to_translate.op == RTableUpdate.Operation.REMOVE)
+        {
+            translation =
+                String.format("{\"name\":\"%s\"}",to_translate.entry_name);
+        }
+        else if (to_translate.op == RTableUpdate.Operation.INSERT)
+        {
+            String entry_name = to_translate.entry_name;
+            String active = "true";
+            String actions = to_translate.action;
+            translation =
+                String.format(
+                    "{\"switch\":\"%s\", \"name\":\"%s\",\"active\":\"%s\",\"actions\":\"%s\"}",
+                    switch_id,entry_name,active,actions);
+        }
+        // DEBUG
+        else
+        {
+            System.out.println("Unkown update operation.");
+            assert(false);
+        }
+        // END DEBUG
+
+        return translation;
+    }
+    
 }

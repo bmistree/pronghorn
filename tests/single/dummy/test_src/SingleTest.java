@@ -45,8 +45,7 @@ public class SingleTest
 
             String switch_id = add_switch(prong,switch_factory);
 
-            
-            prong.add_rtable_entry(switch_id,true,"ipa","ipb",1.);
+            prong.add_rtable_entry(switch_id,true,"ipa","ipb","some_action");
 
             if (!prong.rtable_size(switch_id).equals(1.0))
                 return false;

@@ -158,13 +158,10 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
 
                 String src_ip = added_entry.src_ip.dirty_val.val;
                 String dst_ip = added_entry.dst_ip.dirty_val.val;
-                Double action = added_entry.action.dirty_val.val;
-
-                System.out.println(
-                    "Warning: using a number for action instead of string.");
+                String action = added_entry.action.dirty_val.val;
 
                 RTableUpdate update_to_push =  RTableUpdate.create_insert_update(
-                    entry_name, src_ip, dst_ip,action.toString());
+                    entry_name, src_ip, dst_ip,action);
 
                 floodlight_updates.add(update_to_push);
             }

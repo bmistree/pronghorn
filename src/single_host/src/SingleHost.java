@@ -48,6 +48,8 @@ public class SingleHost
             try {
                 Double num_switches = prong.num_switches();
                 System.out.println("Num switches: " + num_switches.toString());
+                // add garbage entries to all switches in system
+                prong.add_entries_to_all();
             } catch (Exception _ex)
             {
                 _ex.printStackTrace();

@@ -4,8 +4,10 @@ Struct RoutingTableEntry alias 'pronghorn.RTable.RoutingTableEntry'
     // ipv4 addresses specified as a.b.c.d
     TVar Text src_ip;
     TVar Text dst_ip;
-    // -1 means that should drop the packet
-    TVar Number action;
+    // See
+    // http://www.openflowhub.org/display/floodlightcontroller/Static+Flow+Pusher+API+%28New%29
+    // for list of supported actions.    
+    TVar Text action;
 }
 
 Struct Switch alias 'pronghorn.SwitchJava.Switch'
@@ -32,7 +34,7 @@ Endpoint PronghornInstance
     }
 
     add_rtable_entry(
-        Text switch_id,TrueFalse active,Text src_ip, Text dst_ip,Number action)
+        Text switch_id,TrueFalse active,Text src_ip, Text dst_ip,Text action)
     {
 
         Struct RoutingTableEntry entry;

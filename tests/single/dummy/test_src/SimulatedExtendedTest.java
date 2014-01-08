@@ -78,7 +78,7 @@ public class SimulatedExtendedTest
             String switch_id = add_switch(prong,switch_factory);
             int num_times_to_add_entry = 5;
             for (int i =0; i < num_times_to_add_entry; ++i)
-                prong.add_rtable_entry(switch_id,true,"ipa","ipb",1.);
+                prong.add_rtable_entry(switch_id,true,"ipa","ipb","some_action");
 
             if (num_times_pushed_to_hardware != num_times_to_add_entry)
                 return false;

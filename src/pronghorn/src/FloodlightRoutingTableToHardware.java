@@ -36,6 +36,12 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
         shim = _shim;
     }
 
+    private String new_unique_entry_name ()
+    {
+        int prev = ++unique_entry_name_generator;
+        return Integer.toString(prev);
+    }
+    
     @Override
     public boolean apply_changes_to_hardware(
         ListTypeDataWrapper<
@@ -72,7 +78,7 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
                 _InternalRoutingTableEntry added_entry = null;
 
                 try {
-                    added_entry = (_InternalRoutingTableEntry)(ro.get_val(null));
+                    added_entry = (_InternalRoutingTableEntry)(ro.get_val(null));                    
                 } catch (BackoutException _ex) {
                     _ex.printStackTrace();
                     System.out.println(
@@ -81,9 +87,21 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
                     assert(false);
                 }
 
-                // HUGE FIXME
+                // warning assumption is that no other elements are touching
+                // this state and we can therefore read/write it.
+                String entry_name = new_unique_entry_name ();
+                entry_names.add(index_added,entry_name);
+                String src_ip = added_entry.src_ip.dirty_val.val;
+                String dst_ip = added_entry.dst_ip.dirty_val.val;
+                Double action = added_entry.action.dirty_val.val;
+
                 System.out.println(
-                    "\nFIXME: still need to translate additions to rtable updates");
+                    "Warning: using a number for action instead of string.");
+                
+                RTableUpdate update_to_push =  RTableUpdate.create_insert_update(
+                    entry_name, src_ip, dst_ip,action.toString());
+
+                floodlight_updates.add(update_to_push);
             }
             else if (dirty.is_write_key(op_tuple))
             {

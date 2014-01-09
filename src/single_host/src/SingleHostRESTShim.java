@@ -5,6 +5,7 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -71,17 +72,17 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
     public boolean switch_rtable_updates(
         String switch_id,ArrayList<RTableUpdate> updates)
     {
+        String update_resource = "/wm/staticflowentrypusher/json";
         for (RTableUpdate update : updates)
         {
             String rtable_update_json =
                 rtable_update_to_json(switch_id, update);
-            System.out.println(
-                "This is update would have sent out: " + rtable_update_json);
+
+            if (update.op == RTableUpdate.Operation.INSERT)
+                issue_post(update_resource,rtable_update_json);
+            else
+                issue_delete(update_resource,rtable_update_json);
         }
-        
-        System.out.println(
-            "\nError: singlehost shim still needs to push rtable updates.");
-        assert(false);
         return true;
     }
 
@@ -102,7 +103,7 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
     }
 
 
-    public String issue_get(String what_to_get)
+    private String issue_get(String what_to_get)
     {
         String result = "";
         try {
@@ -127,6 +128,56 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
 
         return result;
     }
+
+    private String issue_post(String resource,String post_data)
+    {
+        return issue_post_or_delete(true,resource,post_data);
+    }
+
+    private String issue_delete(String resource,String delete_data)
+    {
+        return issue_post_or_delete(false,resource,delete_data);
+    }
+    
+    private String issue_post_or_delete(
+        boolean is_post,String resource,String data)
+    {
+        String post_or_delete_string = "POST";
+        if (is_post)
+            post_or_delete_string = "DELETE";
+        
+        String result = "";
+        try {
+            HttpURLConnection connection = null;
+            URL url = new URL(
+                "http","localhost",floodlight_port,resource);
+            connection = (HttpURLConnection) url.openConnection();
+            connection.setRequestMethod(post_or_delete_string);
+            connection.setDoOutput(true);
+            
+            // data to post to connection;
+            DataOutputStream wr =
+                new DataOutputStream(connection.getOutputStream ());
+            wr.writeBytes(data);
+            wr.flush();
+            wr.close();
+            
+            BufferedReader rd =
+                new BufferedReader(
+                    new InputStreamReader(connection.getInputStream()));
+            String line;
+            while ((line = rd.readLine()) != null)
+                result += line;
+            rd.close();
+        } catch (MalformedURLException e1) {
+            e1.printStackTrace();
+        } catch (IOException e1) {
+            e1.printStackTrace();
+        }
+
+        return result;
+    }
+    
     
     public Set<String> list_switches()
     {

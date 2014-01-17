@@ -72,16 +72,21 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
     public boolean switch_rtable_updates(
         String switch_id,ArrayList<RTableUpdate> updates)
     {
-        String update_resource = "/wm/staticflowentrypusher/json";
         for (RTableUpdate update : updates)
         {
             String rtable_update_json =
                 rtable_update_to_json(switch_id, update);
 
             if (update.op == RTableUpdate.Operation.INSERT)
+            {
+                String update_resource = "/wm/staticflowentrypusher/json";
                 issue_post(update_resource,rtable_update_json);
+            }
             else
-                issue_delete(update_resource,rtable_update_json);
+            {
+                String update_resource = "/wm/staticflowentrypusher/json/delete";
+                issue_post(update_resource,rtable_update_json);
+            }
         }
         return true;
     }
@@ -96,12 +101,10 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
             this, POLL_PERIOD_MS, POLL_PERIOD_MS, TimeUnit.MILLISECONDS);
     }
     
-    
     public void stop()
     {
         executor.shutdown();
     }
-
 
     private String issue_get(String what_to_get)
     {
@@ -129,30 +132,15 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
         return result;
     }
 
-    private String issue_post(String resource,String post_data)
+    private String issue_post(String resource,String data)
     {
-        return issue_post_or_delete(true,resource,post_data);
-    }
-
-    private String issue_delete(String resource,String delete_data)
-    {
-        return issue_post_or_delete(false,resource,delete_data);
-    }
-    
-    private String issue_post_or_delete(
-        boolean is_post,String resource,String data)
-    {
-        String post_or_delete_string = "POST";
-        if (is_post)
-            post_or_delete_string = "DELETE";
-        
         String result = "";
         try {
             HttpURLConnection connection = null;
             URL url = new URL(
                 "http","localhost",floodlight_port,resource);
             connection = (HttpURLConnection) url.openConnection();
-            connection.setRequestMethod(post_or_delete_string);
+            connection.setRequestMethod("POST");
             connection.setDoOutput(true);
             
             // data to post to connection;

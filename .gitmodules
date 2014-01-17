@@ -1,6 +1,6 @@
 [submodule "externals/floodlight"]
 	path = externals/floodlight
-	url = git://github.com/bmistree/floodlight.git
+	url = https://github.com/jackowayed/floodlight.git
 [submodule "externals/ralph"]
 	path = externals/ralph
 	url = git://github.com/bmistree/ralph.git

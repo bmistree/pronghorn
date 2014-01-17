@@ -1,4 +1,7 @@
-Struct RoutingTableEntry alias 'pronghorn.RTable.RoutingTableEntry'
+alias Struct RoutingTableEntry as 'pronghorn.RTable.RoutingTableEntry';
+alias Struct Switch as 'pronghorn.SwitchJava.Switch';
+
+Struct RoutingTableEntry
 {
     TVar TrueFalse active;
     // ipv4 addresses specified as a.b.c.d
@@ -10,7 +13,7 @@ Struct RoutingTableEntry alias 'pronghorn.RTable.RoutingTableEntry'
     TVar Text action;    
 }
 
-Struct Switch alias 'pronghorn.SwitchJava.Switch'
+Struct Switch
 {
     // unique id for each switch
     TVar Text switch_id;    

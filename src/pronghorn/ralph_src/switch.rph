@@ -1,4 +1,6 @@
-Struct RoutingTableEntry alias 'pronghorn.RTable.RoutingTableEntry'
+alias Struct RoutingTableEntry as 'pronghorn.RTable.RoutingTableEntry';
+
+Struct RoutingTableEntry
 {
     // do not need to fill in fields here
     // because fields are never accessed.

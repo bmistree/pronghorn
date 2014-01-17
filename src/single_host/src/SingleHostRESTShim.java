@@ -88,7 +88,8 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
                 issue_post(update_resource,rtable_update_json);
             }
         }
-        return true;
+        String ret = issue_post("/wm/pronghorn/switch/" + switch_id + "/barrier/json", "");
+        return ret.equals("true");
     }
 
     @Override

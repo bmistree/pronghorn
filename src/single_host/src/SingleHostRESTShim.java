@@ -89,12 +89,8 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
             }
         }
 
-        // FIXME: use barriers.  Reverted code to previous version,
-        // because there's a bug with Daniel's current implementation
-        // of barriers.
-        // String ret = issue_post("/wm/pronghorn/switch/" + switch_id + "/barrier/json", "");
-        // return ret.equals("true");
-        return true;
+        String ret = issue_post("/wm/pronghorn/switch/" + switch_id + "/barrier/json", "");
+        return ret.equals("true");
     }
 
     @Override

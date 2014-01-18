@@ -41,6 +41,44 @@ Endpoint PronghornInstance
         return instance_switches.size();
     }
 
+    list_switch_ids() returns List(element:Text)
+    {
+        List(element: Text) switch_ids;
+        for (Text switch_id in instance_switches)
+            switch_ids.append(switch_id);
+        return switch_ids;
+    }
+    
+    /**
+       If have a switch corresponding to switch_id, then 
+     */
+    single_op(Text switch_id) returns TrueFalse
+    {
+        TrueFalse had_switch = False;
+        atomically {
+            if (instance_switches.contains(switch_id))
+            {
+                had_switch = True;
+                Struct Switch target_switch = instance_switches.get(switch_id);
+                if (target_switch.rtable.size() != 0)
+                    target_switch.rtable.clear();
+                else
+                {
+                    Struct RoutingTableEntry to_add;
+                    to_add.active = True;
+                    to_add.src_ip = '18.18.18.18';
+                    to_add.dst_ip = '18.18.18.19';
+                    // drop all packets
+                    to_add.action = '';
+                    target_switch.rtable.append(to_add);
+                }
+            }
+            else
+                had_switch = False;
+        }
+        return had_switch;
+    }
+    
     block_traffic_all_switches(Text src_ip, Text dst_ip)
     {
         atomically

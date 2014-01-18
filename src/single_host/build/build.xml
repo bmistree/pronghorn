@@ -154,6 +154,24 @@
         <arg line="8080"/>
     </java>
   </target>
+
+  <!-- Ant for running test for latency test with no contention -->
+  <target
+      name="run_NoContentionLatency"
+      depends="compile_single_host"
+      description="Run no contention latency benchmark on single instance.">
+    <java
+        dir="${single_host_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}"
+        classname="${single_host_package}.NoContentionLatency" fork="yes">
+        <arg line="8080"/>
+        <arg line="5000"/>
+    </java>
+  </target>
+
   
 
   <!--

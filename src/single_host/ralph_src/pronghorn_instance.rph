@@ -61,7 +61,9 @@ Endpoint PronghornInstance
                 had_switch = True;
                 Struct Switch target_switch = instance_switches.get(switch_id);
                 if (target_switch.rtable.size() != 0)
-                    target_switch.rtable.clear();
+                {
+//                    target_switch.rtable.clear();
+                }
                 else
                 {
                     Struct RoutingTableEntry to_add;
@@ -70,7 +72,7 @@ Endpoint PronghornInstance
                     to_add.dst_ip = '18.18.18.19';
                     // drop all packets
                     to_add.action = '';
-                    target_switch.rtable.append(to_add);
+//                    target_switch.rtable.append(to_add);
                 }
             }
             else

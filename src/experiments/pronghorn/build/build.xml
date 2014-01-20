@@ -1,0 +1,123 @@
+<project name="Experiments" default="compile" basedir=".">
+
+  <description>
+    Run a bunch of experiments
+  </description>
+
+  <dirname
+    property="experiments_build_dir"
+    file="${ant.file.Experiments}"
+  />
+
+  <!-- global properties for this build file -->
+  
+  <!-- Ralph dependency files -->
+  <property
+      name="ralph_dep_dir"
+      location="${experiments_build_dir}/../../../../externals/ralph/"/>
+
+  <property
+      name="lib_build_path"
+      location="${ralph_dep_dir}/ralph/java_lib/build"/>
+  <property
+      name="lib_class_path"
+      location="${lib_build_path}/classes/"/>
+  <property
+      name="proto_class_path"
+      location="${lib_build_path}/../protobuf-java-2.4.1.jar"/>
+
+  <!-- Pronghorn libraries -->
+  <property
+      name="pronghorn_libs_build_path"
+      location="${experiments_build_dir}/../../../pronghorn/build"/>
+  <property
+      name="pronghorn_libs_class_path"
+      location="${pronghorn_libs_build_path}/classes"/>
+
+  <!-- Single host libraries -->
+  <property
+      name="single_host_dir"
+      location="${experiments_build_dir}/../../../single_host"/>
+
+  <property
+      name="single_host_build_path_dir"
+      location="${single_host_dir}/build/"/>
+  
+  <property
+      name="single_host_build_classes_dir"
+      location="${single_host_build_path_dir}/classes"/>
+
+  
+  <!-- Build files for experiments -->
+  <property
+      name="experiments_package"
+      value="experiments"/>
+
+  <property
+      name="experiments_src_dir"
+      location="${experiments_build_dir}/../src"/>
+  
+  <property
+      name="experiments_build_classes_dir"
+      location="${experiments_build_dir}/classes"/>
+
+
+  
+  <!-- set up build directories for test -->
+  <target name="init" description="setup build directories">
+    <echo message="Setting up build directories for tests"/>
+    <mkdir dir="${experiments_build_classes_dir}"/>
+  </target>
+
+
+  <!-- COMPILING -->
+  <!-- compile java libraries -->
+  <target name="compile_libs" depends="init"
+          description="compile library files">
+    <ant antfile="${lib_build_path}/build.xml" target="compile_all" />
+    <ant antfile="${pronghorn_libs_build_path}/build.xml" target="compile_all"/>
+    <ant antfile="${single_host_build_path_dir}/build.xml" target="compile_single_host"/>
+  </target>
+
+  <!-- Compile experiments -->
+  <target
+      name="compile_experiments"
+      depends="init,compile_libs"
+      description="compile all experiments">
+    <javac
+        srcdir="${experiments_src_dir}"
+        destdir="${experiments_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${pronghorn_libs_class_path}"
+        debug="true"
+        debuglevel="lines,vars,source"
+        includeantruntime="false" />
+  </target>
+
+  
+  <!-- Ant for running test for latency test with no contention -->
+  <target
+      name="run_NoContentionLatency"
+      depends="compile_libs,compile_experiments"
+      description="Run no contention latency benchmark on single instance.">
+    <java
+        dir="${experiments_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}:
+                   ${experiments_build_classes_dir}"
+        classname="${experiments_package}.NoContentionLatency" fork="yes">
+        <arg line="8080"/>
+        <arg line="5000"/>
+    </java>
+  </target>
+
+  
+  <!-- Delete the build directories -->
+  <target name="clean" description="get rid of build dir">
+    <delete dir="${experiments_build_classes_dir}"/>
+  </target>
+  
+</project>

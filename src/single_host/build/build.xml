@@ -4,9 +4,12 @@
     Boot up a Pronghorn instance that talks to a running floodlight instance.
   </description>
 
+  <!--
+      Match the progject name exactly after ant.file to get directory
+   -->
   <dirname
     property="single_host_build_dir"
-    file="${ant.file.SingleHostBuildDir}"
+    file="${ant.file.SingleHost}"
   />
 
   <!-- global properties for this build file -->
@@ -28,10 +31,6 @@
   <property
       name="proto_class_path"
       location="${lib_build_path}/../protobuf-java-2.4.1.jar"/>
-  <property
-      name="ralph_compiler_py"
-      location="${single_host_build_dir}/../../emit_file.py"/>
-
 
   <!-- Pronghorn libraries -->
   <property
@@ -155,24 +154,6 @@
     </java>
   </target>
 
-  <!-- Ant for running test for latency test with no contention -->
-  <target
-      name="run_NoContentionLatency"
-      depends="compile_single_host"
-      description="Run no contention latency benchmark on single instance.">
-    <java
-        dir="${single_host_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}"
-        classname="${single_host_package}.NoContentionLatency" fork="yes">
-        <arg line="8080"/>
-        <arg line="5000"/>
-    </java>
-  </target>
-
-  
 
   <!--
       Run tests without recompiling the ralph source to java:

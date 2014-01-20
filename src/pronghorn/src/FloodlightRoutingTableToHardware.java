@@ -16,6 +16,23 @@ import java.util.HashMap;
  */
 public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
 {
+    private static class FloodlightRoutingTableToHardwareFactory
+        implements RoutingTableToHardwareFactory
+    {
+        @Override
+        public RoutingTableToHardware construct(
+            ShimInterface shim, String internal_switch_id)
+        {
+            return new FloodlightRoutingTableToHardware(
+                shim,internal_switch_id);
+        }
+    }
+
+    public final static
+      FloodlightRoutingTableToHardwareFactory FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY =
+        new FloodlightRoutingTableToHardwareFactory();
+    
+    
     /**
        Each routing table entry requires a unique name to associate it
        with routing table entries on actual switches.  This int can be
@@ -32,8 +49,8 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
 
     private ShimInterface shim;
     private String floodlight_switch_id;
-    
-    public FloodlightRoutingTableToHardware(
+
+    private FloodlightRoutingTableToHardware(
         ShimInterface _shim, String _floodlight_switch_id)
     {
         shim = _shim;

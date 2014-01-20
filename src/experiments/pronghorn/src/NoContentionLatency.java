@@ -6,8 +6,10 @@ import single_host.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
+import pronghorn.FloodlightRoutingTableToHardware;
 import java.lang.Thread;
 import java.util.ArrayList;
+
 
 public class NoContentionLatency
 {
@@ -46,10 +48,12 @@ public class NoContentionLatency
         }
         SingleHostRESTShim shim = new  SingleHostRESTShim(floodlight_port);
         SingleHostSwitchStatusHandler switch_status_handler =
-            new SingleHostSwitchStatusHandler(prong,shim);
+            new SingleHostSwitchStatusHandler(
+                prong,shim,
+                FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
-
+        
 
         /* wait a while to ensure that all switches are connected */
         try {

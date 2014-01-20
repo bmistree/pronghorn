@@ -2,6 +2,7 @@ package single_host;
 
 import single_host.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
+import pronghorn.FloodlightRoutingTableToHardware;
 import ralph.RalphGlobals;
 import java.lang.Thread;
 
@@ -34,7 +35,9 @@ public class SingleHost
 
         SingleHostRESTShim shim = new  SingleHostRESTShim(floodlight_port);
         SingleHostSwitchStatusHandler switch_status_handler =
-            new SingleHostSwitchStatusHandler(prong,shim);
+            new SingleHostSwitchStatusHandler(
+                prong,shim,
+                FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
         boolean block_traffic = true;

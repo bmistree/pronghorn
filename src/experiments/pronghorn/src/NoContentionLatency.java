@@ -101,6 +101,9 @@ public class NoContentionLatency
         for (Long time : all_times)
             System.out.print(time.toString() + ",");
         System.out.print("\n");
+
+        // actually tell shim to stop.
+        shim.stop();
     }
 
 

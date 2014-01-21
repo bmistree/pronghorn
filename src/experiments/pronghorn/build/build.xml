@@ -114,6 +114,26 @@
     </java>
   </target>
 
+
+  <!-- Ant for running test for throughput test with no contention -->
+  <target
+      name="run_NoContentionThroughput"
+      depends="compile_libs,compile_experiments"
+      description="Run no contention throughput benchmark on single instance.">
+    <java
+        dir="${experiments_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}:
+                   ${experiments_build_classes_dir}"
+        classname="${experiments_package}.NoContentionThroughput" fork="yes">
+        <arg line="8080"/>
+        <arg line="5000"/>
+    </java>
+  </target>
+
+
   
   <!-- Delete the build directories -->
   <target name="clean" description="get rid of build dir">

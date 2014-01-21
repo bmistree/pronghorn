@@ -106,6 +106,8 @@ public class NoContentionThroughput {
         long elapsedNano = end-start;
         double throughputPerS = ((double) (num_switches * num_ops_to_run)) / (elapsedNano/1000000000);
         System.out.println("Switches: " + num_switches + " Throughput(op/s): " + throughputPerS);
+
+        shim.stop();
     }
     
     public static void print_usage()

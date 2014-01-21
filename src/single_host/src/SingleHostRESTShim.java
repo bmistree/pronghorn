@@ -72,7 +72,6 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
     public boolean switch_rtable_updates(
         String switch_id,ArrayList<RTableUpdate> updates)
     {
-        long start = System.nanoTime();
         for (RTableUpdate update : updates)
         {
             String rtable_update_json =
@@ -90,7 +89,6 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
             }
         }
         String ret = issue_post("/wm/pronghorn/switch/" + switch_id + "/barrier/json", "");
-        System.out.println(System.nanoTime()-start);
         return ret.equals("true");
     }
 

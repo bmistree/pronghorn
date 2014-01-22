@@ -9,6 +9,9 @@ import ralph.NonAtomicInternalList;
 import pronghorn.FloodlightRoutingTableToHardware;
 import java.lang.Thread;
 import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+
 
 
 public class NoContentionThroughput {
@@ -79,7 +82,7 @@ public class NoContentionThroughput {
         }
         /* Spawn thread per switch to operate on it */
         ArrayList<Thread> threads = new ArrayList<Thread>();
-        //ConcurrentDeque<List<long>> results = new ConcurrentDeque<List<long>>();
+        ConcurrentHashMap<String,List<Long>> results = new ConcurrentHashMap<String,List<Long>>();
         long start = System.nanoTime();
         for (int i = 0; i < num_switches; i++) {
             String switch_id = null;
@@ -90,8 +93,8 @@ public class NoContentionThroughput {
                 assert(false);
             }
 
-        	ThroughputThread t = new ThroughputThread(switch_id, prong, num_ops_to_run);
-        	t.run();
+          ThroughputThread t = new ThroughputThread(switch_id, prong, num_ops_to_run, results);
+        	t.start();
         	threads.add(t);
         }
         for (Thread t : threads) {
@@ -104,7 +107,16 @@ public class NoContentionThroughput {
         }
         long end = System.nanoTime();
         long elapsedNano = end-start;
-        double throughputPerS = ((double) (num_switches * num_ops_to_run)) / (elapsedNano/1000000000);
+
+        for (String switch_id : results.keySet()) {
+            List<Long> times = results.get(switch_id);
+            System.out.println(switch_id);
+            for (Long time : times)
+                System.out.print(time.toString() + ",");
+            System.out.print("\n");
+        }
+        
+        double throughputPerS = ((double) (num_switches * num_ops_to_run)) / ((double)elapsedNano/1000000000);
         System.out.println("Switches: " + num_switches + " Throughput(op/s): " + throughputPerS);
 
         shim.stop();
@@ -121,16 +133,17 @@ public class NoContentionThroughput {
         String switch_id;
         int num_ops_to_run;
         PronghornInstance prong;
-//    	ConcurrentDeque<List<long>> results;
-        public ThroughputThread(String switch_id, PronghornInstance prong, int num_ops_to_run){//, ConcurrentDeque<List<long>> results) {
+        ConcurrentHashMap<String,List<Long>> results;
+        public ThroughputThread(String switch_id, PronghornInstance prong, int num_ops_to_run,
+                                ConcurrentHashMap<String,List<Long>> results) {
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
             this.prong = prong;
-//    		this.results = results;
+            this.results = results;
     	}
     	
     	public void run() {
-          //ArrayList<long> completion_times = new ArrayList<long>();
+          ArrayList<Long> completion_times = new ArrayList<Long>();
             for (int i = 0; i < num_ops_to_run; ++i)
             {
                 try {
@@ -139,9 +152,9 @@ public class NoContentionThroughput {
                     _ex.printStackTrace();
                     assert(false);
                 }
-                //completion_times.add(System.nanoTime());
+                completion_times.add(System.nanoTime());
             }
-            //          results.add(completion_times);
+            results.put(switch_id, completion_times);
     	}
     }
 }

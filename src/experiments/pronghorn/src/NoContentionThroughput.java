@@ -81,8 +81,30 @@ public class NoContentionThroughput {
             assert(false);
         }
         /* Spawn thread per switch to operate on it */
+
         ArrayList<Thread> threads = new ArrayList<Thread>();
         ConcurrentHashMap<String,List<Long>> results = new ConcurrentHashMap<String,List<Long>>();
+
+        if (true){
+            String switch_id = null;
+            try { 
+                switch_id = switch_list.get_val_on_key(null, new Double(0));
+            } catch (Exception _ex) {
+                _ex.printStackTrace();
+                assert(false);
+            }
+
+          ThroughputThread t = new ThroughputThread(switch_id, prong, num_ops_to_run, results);
+        	t.start();
+            try {
+          t.join();
+            } catch (Exception _ex) {
+                _ex.printStackTrace();
+                assert(false);
+            }
+        }
+
+
         long start = System.nanoTime();
         for (int i = 0; i < num_switches; i++) {
             String switch_id = null;

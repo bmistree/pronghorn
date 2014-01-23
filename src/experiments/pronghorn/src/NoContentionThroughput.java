@@ -8,6 +8,7 @@ import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 import pronghorn.FloodlightRoutingTableToHardware;
 import java.lang.Thread;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
@@ -85,7 +86,8 @@ public class NoContentionThroughput {
         ArrayList<Thread> threads = new ArrayList<Thread>();
         ConcurrentHashMap<String,List<Long>> results = new ConcurrentHashMap<String,List<Long>>();
 
-        if (true){
+        // Don't warmup now that we can factor it out.
+        /*if (true){
             String switch_id = null;
             try { 
                 switch_id = switch_list.get_val_on_key(null, new Double(0));
@@ -102,7 +104,7 @@ public class NoContentionThroughput {
                 _ex.printStackTrace();
                 assert(false);
             }
-        }
+            }*/
 
 
         long start = System.nanoTime();
@@ -130,17 +132,33 @@ public class NoContentionThroughput {
         long end = System.nanoTime();
         long elapsedNano = end-start;
 
-        for (String switch_id : results.keySet()) {
-            List<Long> times = results.get(switch_id);
-            System.out.println(switch_id);
-            for (Long time : times)
-                System.out.print(time.toString() + ",");
-            System.out.print("\n");
+
+        Writer w;
+        try {
+            w = new PrintWriter(new FileWriter("times.csv"));
+
+            // TODO maybe use a csv library...
+            for (String switch_id : results.keySet()) {
+                List<Long> times = results.get(switch_id);
+                String line = "";
+                for (Long time : times)
+                    line += time.toString() + ",";
+                if (line != "") {
+                    // trim off trailing comma
+                    line = line.substring(0, line.length() - 1);
+                }
+                w.write(line);
+                w.write("\n");
+            }
+            w.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            assert(false);
         }
-        
+
         double throughputPerS = ((double) (num_switches * num_ops_to_run)) / ((double)elapsedNano/1000000000);
         System.out.println("Switches: " + num_switches + " Throughput(op/s): " + throughputPerS);
-
+        
         shim.stop();
     }
     

@@ -15,7 +15,7 @@ import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.ArrayList;
+import java.util.List;
 
 import pronghorn.ShimInterface;
 import pronghorn.SwitchStatusHandler;
@@ -39,7 +39,7 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
     private Set<SwitchStatusHandler> switch_status_handlers =
         new HashSet<SwitchStatusHandler>();
 
-    private Set<String> switch_id_set = new HashSet<String>();
+    protected Set<String> switch_id_set = new HashSet<String>();
     private ScheduledExecutorService executor;
 
     private static final long POLL_PERIOD_MS = 1000;
@@ -70,7 +70,7 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
     }
     @Override
     public boolean switch_rtable_updates(
-        String switch_id,ArrayList<RTableUpdate> updates)
+        String switch_id,List<RTableUpdate> updates)
     {
         for (RTableUpdate update : updates)
         {
@@ -107,7 +107,7 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
         executor.shutdown();
     }
 
-    private String issue_get(String what_to_get)
+    protected String issue_get(String what_to_get)
     {
         String result = "";
         try {
@@ -133,7 +133,7 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
         return result;
     }
 
-    private String issue_post(String resource,String data)
+    protected String issue_post(String resource,String data)
     {
         String result = "";
         try {

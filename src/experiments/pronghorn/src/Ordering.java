@@ -13,6 +13,7 @@ import pronghorn.RTableUpdate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.io.*;
 
 /**
    Experiment.  Run one transaction that inserts a flow table entry on
@@ -39,7 +40,8 @@ public class Ordering
     public static final int RESULT_FILENAME_INDEX = 3;
     
     // wait this long for pronghorn to add all switches
-    public static final int SETTLING_TIME_WAIT = 5000;
+    public static final int STARTUP_SETTLING_TIME_WAIT = 5000;
+    public static final int SETTLING_TIME_WAIT = 1000;
     
     public static void main (String[] args)
     {
@@ -74,7 +76,9 @@ public class Ordering
             return;
         }
 
-        OrderingRESTShim shim = new OrderingRESTShim(floodlight_port,false,0);
+
+        OrderingRESTShim shim = new OrderingRESTShim(
+            floodlight_port,!ensure_ordering,0);
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 prong,shim,
@@ -85,7 +89,7 @@ public class Ordering
 
         /* wait a while to ensure that all switches are connected */
         try {
-            Thread.sleep(SETTLING_TIME_WAIT);
+            Thread.sleep(STARTUP_SETTLING_TIME_WAIT);
         } catch (InterruptedException _ex) {
             _ex.printStackTrace();
             assert(false);
@@ -114,20 +118,82 @@ public class Ordering
             assert(false);
         }
 
-        /* perform all operations and determine how long they take */
-        for (int i = 0; i < num_ops_to_run; ++i)
-        {
-            try {
-                prong.single_op(switch_id);
-            } catch (Exception _ex) {
-                _ex.printStackTrace();
-                assert(false);
-            }
-        }
+        // get results from re-ordering
+        List<Boolean> results = new ArrayList<Boolean>();
+        for (int i =0; i < num_ops_to_run; ++i)
+            results.add(run_once(ensure_ordering,prong,switch_id,shim));
+        
         // actually tell shim to stop.
         shim.stop();
+
+        // write results to file
+        write_results_to_file(result_filename,results);
     }
 
+
+    private static void write_results_to_file(String filename,List<Boolean> results)
+    {
+        // produce result string
+        String line_to_write = "";
+        for (Boolean result : results)
+        {
+            if (result.booleanValue())
+                line_to_write += "1";
+            else
+                line_to_write += "0";
+            line_to_write += ",";
+        }
+
+        // write result string to file
+        Writer w;
+        try {
+            w = new PrintWriter(new FileWriter(filename));
+            w.write(line_to_write);
+            w.write("\n");
+            w.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            assert(false);
+        }
+    }
+    
+
+
+    /**
+       Returns true if after running everything, switch does not have
+       any routing table rules (ie, final operations applied in
+       order).  False otherwise.
+     */
+    private static boolean run_once(
+        boolean ensure_ordering,PronghornInstance prong, String switch_id,
+        OrderingRESTShim shim)
+    {
+        // Run operation 100 times
+        try{
+            for (int i = 0; i < 100; ++i)
+                prong.single_op(switch_id);
+        }
+        catch (Exception _ex)
+        {
+            _ex.printStackTrace();
+            assert(false);
+        }
+
+        // sleep to ensure that all those changes have gone through
+        try {
+            Thread.sleep(SETTLING_TIME_WAIT);
+        } catch (Exception e)
+        {}
+
+
+        boolean rules_exist = shim.rules_exist();
+        // get rid of any rules that might be on switch
+        shim.force_clear();
+        
+        // if rule still exists, we failed
+        return ! rules_exist;
+    }
+    
 
     /**
        Creating a private subclass of shim that allows reordering 
@@ -159,8 +225,9 @@ public class Ordering
          */
         public void force_clear()
         {
-            // still a stub method
-            assert(false);
+            String force_clear_resource =
+                "/wm/staticflowentrypusher/clear/all/json";
+            String get_result = issue_get (force_clear_resource);
         }
 
         /**
@@ -187,9 +254,9 @@ public class Ordering
             String rules_exist_resource =
                 "/wm/staticflowentrypusher/list/" + switch_id + "/json";
 
-            String get_result = issue_get (rules_exist_resource);
-
-            System.out.println("\n" + get_result + "\n");
+            //String get_result = issue_get (rules_exist_resource);
+            // System.out.println("\n" + get_result + "\n");
+            System.out.println("Warn: rules_exist is a stub method");
             return true;
         }
         
@@ -201,7 +268,10 @@ public class Ordering
             // if we are not allowing reordering, just call parent
             // method.
             if (! allow_reordering)
+            {
+                System.out.println("About to send update to switch");
                 return super.switch_rtable_updates(switch_id,updates);
+            }
 
             // if we are allowing reordering, then try reordering.
             List<RTableUpdate> switch_outstanding_updates =

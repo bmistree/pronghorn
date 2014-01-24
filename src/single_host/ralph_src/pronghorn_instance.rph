@@ -62,7 +62,8 @@ Endpoint PronghornInstance
                 Struct Switch target_switch = instance_switches.get(switch_id);
                 if (target_switch.rtable.size() != 0)
                 {
-                    target_switch.rtable.clear();
+                    target_switch.rtable.remove(0);
+                    //target_switch.rtable.clear();
                 }
                 else
                 {

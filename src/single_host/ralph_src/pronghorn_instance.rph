@@ -81,6 +81,32 @@ Endpoint PronghornInstance
         }
         return had_switch;
     }
+
+    called_only_by_partner_single_op()
+    {
+        // for each switch connected to us, run single_op on it.  Should only be
+        // called from a partner message
+        atomically
+        {
+            for (Text switch_id in instance_switches)
+                single_op(switch_id);
+        }
+    }
+
+    single_op_and_partner()
+    {
+        // Ask partner to perform action and
+        
+        atomically
+        {
+            @partner.called_only_by_partner_single_op();
+            for (Text switch_id in instance_switches)
+                single_op(switch_id);            
+        }
+    }
+    
+    
+    
     
     block_traffic_all_switches(Text src_ip, Text dst_ip)
     {

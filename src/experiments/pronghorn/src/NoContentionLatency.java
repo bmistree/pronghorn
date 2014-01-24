@@ -9,7 +9,7 @@ import ralph.NonAtomicInternalList;
 import pronghorn.FloodlightRoutingTableToHardware;
 import java.lang.Thread;
 import java.util.ArrayList;
-
+import java.io.*;
 
 public class NoContentionLatency
 {
@@ -18,6 +18,7 @@ public class NoContentionLatency
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
+    private static final String OUTPUT_FILENAME = "no_contention_latency.csv";
     
     public static void main (String[] args)
     {
@@ -27,14 +28,13 @@ public class NoContentionLatency
             print_usage();
             return;
         }
-        
+
         int floodlight_port =
             Integer.parseInt(args[FLOODLIGHT_PORT_ARG_INDEX]);
-
-        int num_ops_to_run = 
+        
+        int num_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
-
-
+        
         /* Start up pronghorn */
         PronghornInstance prong = null;
 
@@ -102,10 +102,23 @@ public class NoContentionLatency
         }
 
         // print csv list of runtimes in ns to stdout
+        String times_string = "";
         for (Long time : all_times)
-            System.out.print(time.toString() + ",");
-        System.out.print("\n");
+            times_string += time.toString() + ",";
+        System.out.println(times_string);
 
+
+        // print csv list of runtimes to file
+        Writer w;
+        try {
+            w = new PrintWriter(new FileWriter(OUTPUT_FILENAME));
+            w.write(times_string);
+            w.write("\n");
+            w.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            assert(false);
+        }
         // actually tell shim to stop.
         shim.stop();
     }

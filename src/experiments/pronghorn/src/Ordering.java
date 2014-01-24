@@ -94,7 +94,6 @@ public class Ordering
             _ex.printStackTrace();
             assert(false);
         }
-            
 
         /* Discover the id of the first connected switch */
         String switch_id = null;
@@ -128,6 +127,7 @@ public class Ordering
 
         // write results to file
         write_results_to_file(result_filename,results);
+
     }
 
 
@@ -251,11 +251,12 @@ public class Ordering
             if (switch_id == null)
                 assert(false);
 
-            String rules_exist_resource =
-                "/wm/staticflowentrypusher/list/" + switch_id + "/json";
 
-            //String get_result = issue_get (rules_exist_resource);
-            // System.out.println("\n" + get_result + "\n");
+            String rules_exist_resource =
+                "/wm/staticflowentrypusher/list/all/json";
+
+            String get_result = issue_get (rules_exist_resource);
+            System.out.println("\n" + get_result + "\n");
             System.out.println("Warn: rules_exist is a stub method");
             return true;
         }
@@ -268,10 +269,7 @@ public class Ordering
             // if we are not allowing reordering, just call parent
             // method.
             if (! allow_reordering)
-            {
-                System.out.println("About to send update to switch");
                 return super.switch_rtable_updates(switch_id,updates);
-            }
 
             // if we are allowing reordering, then try reordering.
             List<RTableUpdate> switch_outstanding_updates =

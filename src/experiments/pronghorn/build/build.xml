@@ -120,6 +120,7 @@
         classname="${experiments_package}.NoContentionLatency" fork="yes">
         <arg line="8080"/>
         <arg line="${latency_num_ops}"/>
+        <arg line="${output_filename}"/>
     </java>
   </target>
 
@@ -139,6 +140,7 @@
         classname="${experiments_package}.NoContentionThroughput" fork="yes">
         <arg line="8080"/>
         <arg line="10000"/>
+        <arg line="${output_filename}"/>
     </java>
   </target>
 

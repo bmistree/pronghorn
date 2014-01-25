@@ -15,15 +15,15 @@ public class NoContentionLatency
 {
     public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 1;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
-    private static final String OUTPUT_FILENAME = "no_contention_latency.csv";
     
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 2)
+        if (args.length != 3)
         {
             print_usage();
             return;
@@ -111,7 +111,7 @@ public class NoContentionLatency
         // print csv list of runtimes to file
         Writer w;
         try {
-            w = new PrintWriter(new FileWriter(OUTPUT_FILENAME));
+            w = new PrintWriter(new FileWriter(args[OUTPUT_FILENAME_ARG_INDEX]));
             w.write(times_string);
             w.write("\n");
             w.close();
@@ -128,7 +128,7 @@ public class NoContentionLatency
     {
         System.out.println(
             "\nSingleHost <int: floodlight port number> " + 
-            "<int: num ops to run>\n");
+            "<int: num ops to run> <output_filename>\n");
     }
     
 }

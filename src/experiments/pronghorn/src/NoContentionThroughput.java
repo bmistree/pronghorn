@@ -19,6 +19,8 @@ public class NoContentionThroughput {
 	
     public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 1;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
+
     
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -26,7 +28,7 @@ public class NoContentionThroughput {
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 2)
+        if (args.length != 3)
         {
             print_usage();
             return;
@@ -135,7 +137,7 @@ public class NoContentionThroughput {
 
         Writer w;
         try {
-            w = new PrintWriter(new FileWriter("times.csv"));
+            w = new PrintWriter(new FileWriter(args[OUTPUT_FILENAME_ARG_INDEX]));
 
             // TODO maybe use a csv library...
             for (String switch_id : results.keySet()) {

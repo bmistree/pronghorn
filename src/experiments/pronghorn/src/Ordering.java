@@ -34,19 +34,21 @@ import java.io.*;
 
 public class Ordering
 {
-    public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
-    public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 1;
-    public static final int ENSURE_ORDERING_ARG_INDEX = 2;
-    public static final int RESULT_FILENAME_INDEX = 3;
+    private static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
+    private static final int NUMBER_TIMES_TO_RUN_ARG_INDEX = 1;
+    private static final int ENSURE_ORDERING_ARG_INDEX = 2;
+    private static final int ORDERING_MOD_PARAM_ARG_INDEX = 3;
+    private static final int RESULT_FILENAME_ARG_INDEX = 4;
+
     
     // wait this long for pronghorn to add all switches
-    public static final int STARTUP_SETTLING_TIME_WAIT = 5000;
-    public static final int SETTLING_TIME_WAIT = 1000;
+    private static final int STARTUP_SETTLING_TIME_WAIT = 5000;
+    private static final int SETTLING_TIME_WAIT = 1000;
     
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 5)
         {
             assert(false);
             return;
@@ -55,15 +57,21 @@ public class Ordering
         int floodlight_port =
             Integer.parseInt(args[FLOODLIGHT_PORT_ARG_INDEX]);
 
-        int num_ops_to_run = 
-            Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
+        int num_times_to_run = 
+            Integer.parseInt(args[NUMBER_TIMES_TO_RUN_ARG_INDEX]);
 
         boolean ensure_ordering =
             Boolean.parseBoolean(args[ENSURE_ORDERING_ARG_INDEX]);
 
-        String result_filename = args[RESULT_FILENAME_INDEX];
+        int ordering_mod_param =
+            Integer.parseInt(args[ORDERING_MOD_PARAM_ARG_INDEX]);
+        
+        String result_filename = args[RESULT_FILENAME_ARG_INDEX];
 
-
+        System.out.println(
+            "\nEnsure ordering " + Boolean.toString(ensure_ordering) +
+            " with mod_param: " + Integer.toString(ordering_mod_param));
+        
         /* Start up pronghorn */
         PronghornInstance prong = null;
 
@@ -78,7 +86,7 @@ public class Ordering
 
 
         OrderingRESTShim shim = new OrderingRESTShim(
-            floodlight_port,!ensure_ordering,0);
+            floodlight_port,!ensure_ordering,ordering_mod_param);
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 prong,shim,
@@ -119,8 +127,11 @@ public class Ordering
 
         // get results from re-ordering
         List<Boolean> results = new ArrayList<Boolean>();
-        for (int i =0; i < num_ops_to_run; ++i)
-            results.add(run_once(ensure_ordering,prong,switch_id,shim));
+        for (int i =0; i < num_times_to_run; ++i)
+        {
+            boolean result = run_once(ensure_ordering,prong,switch_id,shim);
+            results.add(result);
+        }
         
         // actually tell shim to stop.
         shim.stop();
@@ -254,11 +265,12 @@ public class Ordering
 
             String rules_exist_resource =
                 "/wm/staticflowentrypusher/list/all/json";
-
             String get_result = issue_get (rules_exist_resource);
-            System.out.println("\n" + get_result + "\n");
-            System.out.println("Warn: rules_exist is a stub method");
-            return true;
+
+            // all rule names have an underscore in them; if the
+            // returned result has an underscore, it means that rules
+            // exist.
+            return (get_result.indexOf("_") != -1);
         }
         
         

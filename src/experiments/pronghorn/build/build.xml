@@ -147,6 +147,15 @@
       Ant for running test for running test to show that we handle
       reordering
   -->
+  <property
+      name="ordering_ensure_ordering"
+      value="true"/>
+  <property
+      name="ordering_mod_param"
+      value="0"/>
+  <property
+      name="ordering_num_tests"
+      value="100"/>  
   <target
       name="run_Ordering"
       depends="compile_libs,compile_experiments"
@@ -160,9 +169,10 @@
                    ${experiments_build_classes_dir}"
         classname="${experiments_package}.Ordering" fork="yes">
         <arg line="8080"/>
-        <arg line="100"/>
-        <arg line="true"/>
-        <arg line="ordering.csv"/>
+        <arg line="${ordering_num_tests}"/>
+        <arg line="${ordering_ensure_ordering}"/>
+        <arg line="${ordering_mod_param}"/>
+        <arg line="${output_filename}"/>
     </java>
   </target>
 

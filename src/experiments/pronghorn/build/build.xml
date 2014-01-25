@@ -9,6 +9,12 @@
     file="${ant.file.Experiments}"
   />
 
+  <property
+      name="output_filename"
+      value="output.csv"
+   />
+
+  
   <!-- global properties for this build file -->
   
   <!-- Ralph dependency files -->
@@ -159,7 +165,32 @@
         <arg line="ordering.csv"/>
     </java>
   </target>
+
+
   
+  <property
+      name="wound_wait"
+      value="false"/>
+  <target
+      name="run_Fairness"
+      depends="compile_libs,compile_experiments"
+      description="Show that different deadlock
+                   avoidance guarantees provide different
+                   fairness guarantees.">
+    <java
+        dir="${experiments_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}:
+                   ${experiments_build_classes_dir}"
+        classname="${experiments_package}.Fairness" fork="yes">
+        <arg line="8080"/>
+        <arg line="8081"/>
+        <arg line="${wound_wait}"/>
+        <arg line="${output_filename}"/>
+    </java>
+  </target>
   
   <!-- Delete the build directories -->
   <target name="clean" description="get rid of build dir">

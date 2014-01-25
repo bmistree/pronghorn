@@ -126,6 +126,14 @@ public class Fairness
             assert(false);
         }
 
+        try{
+            side_a.single_op_and_partner();
+        } catch (Exception _ex) {
+            _ex.printStackTrace();
+            assert(false);
+        }
+
+        
         System.out.println("\nGot into the middle of fairness\n");
 
         

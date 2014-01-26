@@ -153,9 +153,6 @@
       name="ordering_ensure_ordering"
       value="true"/>
   <property
-      name="ordering_mod_param"
-      value="0"/>
-  <property
       name="ordering_num_tests"
       value="100"/>  
   <target
@@ -173,7 +170,6 @@
         <arg line="8080"/>
         <arg line="${ordering_num_tests}"/>
         <arg line="${ordering_ensure_ordering}"/>
-        <arg line="${ordering_mod_param}"/>
         <arg line="${output_filename}"/>
     </java>
   </target>

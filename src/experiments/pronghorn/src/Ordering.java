@@ -13,6 +13,7 @@ import pronghorn.RTableUpdate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Random;
 import java.io.*;
 
 /**
@@ -37,8 +38,7 @@ public class Ordering
     private static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
     private static final int NUMBER_TIMES_TO_RUN_ARG_INDEX = 1;
     private static final int ENSURE_ORDERING_ARG_INDEX = 2;
-    private static final int ORDERING_MOD_PARAM_ARG_INDEX = 3;
-    private static final int RESULT_FILENAME_ARG_INDEX = 4;
+    private static final int RESULT_FILENAME_ARG_INDEX = 3;
 
     
     // wait this long for pronghorn to add all switches
@@ -48,8 +48,10 @@ public class Ordering
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 4)
         {
+            System.out.println(
+                "\nIncorrect number of arguments passed in.\n");            
             assert(false);
             return;
         }
@@ -62,15 +64,11 @@ public class Ordering
 
         boolean ensure_ordering =
             Boolean.parseBoolean(args[ENSURE_ORDERING_ARG_INDEX]);
-
-        int ordering_mod_param =
-            Integer.parseInt(args[ORDERING_MOD_PARAM_ARG_INDEX]);
         
         String result_filename = args[RESULT_FILENAME_ARG_INDEX];
 
         System.out.println(
-            "\nEnsure ordering " + Boolean.toString(ensure_ordering) +
-            " with mod_param: " + Integer.toString(ordering_mod_param));
+            "\nEnsure ordering " + Boolean.toString(ensure_ordering));
         
         /* Start up pronghorn */
         PronghornInstance prong = null;
@@ -84,9 +82,9 @@ public class Ordering
             return;
         }
 
-
+        boolean allow_reordering = ! ensure_ordering;
         OrderingRESTShim shim = new OrderingRESTShim(
-            floodlight_port,!ensure_ordering,ordering_mod_param);
+            floodlight_port,allow_reordering);
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 prong,shim,
@@ -129,7 +127,7 @@ public class Ordering
         List<Boolean> results = new ArrayList<Boolean>();
         for (int i =0; i < num_times_to_run; ++i)
         {
-            boolean result = run_once(ensure_ordering,prong,switch_id,shim);
+            boolean result = run_once(prong,switch_id,shim,allow_reordering);
             results.add(result);
         }
         
@@ -138,7 +136,6 @@ public class Ordering
 
         // write results to file
         write_results_to_file(result_filename,results);
-
     }
 
 
@@ -176,12 +173,33 @@ public class Ordering
        order).  False otherwise.
      */
     private static boolean run_once(
-        boolean ensure_ordering,PronghornInstance prong, String switch_id,
-        OrderingRESTShim shim)
+        PronghornInstance prong, String switch_id,
+        OrderingRESTShim shim,boolean allow_reordering)
     {
-        // Run operation 100 times
+        // Run operation a random number of times: the below should
+        // produce a random number from 2-10.
+        int number_times_to_run = ((int)(Math.random()*9)) + 2;
+        shim.set_num_outstanding_before_push(number_times_to_run);
+
+        shim.force_clear();
+        try {
+            prong.logical_clear_switch_do_not_flush_clear_to_hardware();
+        } catch (Exception _ex) {
+            _ex.printStackTrace();
+            assert(false);
+        }
+            
+        // sleep to ensure that all those changes have gone through
+        try {
+            Thread.sleep(SETTLING_TIME_WAIT);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+
+        
         try{
-            for (int i = 0; i < 100; ++i)
+            for (int i = 0; i < number_times_to_run; ++i)
                 prong.single_op(switch_id);
         }
         catch (Exception _ex)
@@ -193,16 +211,31 @@ public class Ordering
         // sleep to ensure that all those changes have gone through
         try {
             Thread.sleep(SETTLING_TIME_WAIT);
-        } catch (Exception e)
-        {}
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
 
 
         boolean rules_exist = shim.rules_exist();
         // get rid of any rules that might be on switch
         shim.force_clear();
-        
-        // if rule still exists, we failed
-        return ! rules_exist;
+
+        boolean got_it_right = false;
+        if ((number_times_to_run %2) == 0)
+        {
+            // if we ran an even number of instructions, no rules
+            // should exist.
+            if (!rules_exist)
+                got_it_right = true;
+        }
+        else
+        {
+            // if we ran an odd number of instructions, a rule should
+            // exist.
+            if (rules_exist)
+                got_it_right = true;
+        }
+        return got_it_right;
     }
     
 
@@ -212,7 +245,7 @@ public class Ordering
     private static class OrderingRESTShim extends SingleHostRESTShim
     {
         private boolean allow_reordering;
-        private int num_outstanding_before_push;
+        private int num_outstanding_before_push = -1;
         private HashMap<String,List<RTableUpdate>> outstanding_updates =
             new HashMap<String,List<RTableUpdate>>();
 
@@ -222,13 +255,18 @@ public class Ordering
            pushing updates.
          */
         public OrderingRESTShim(
-            int _floodlight_port, boolean _allow_reordering,
-            int _num_outstanding_before_push)
+            int _floodlight_port, boolean _allow_reordering)
         {
             super(_floodlight_port);
             allow_reordering = _allow_reordering;
+        }
+
+        public void set_num_outstanding_before_push(
+            int _num_outstanding_before_push)
+        {
             num_outstanding_before_push = _num_outstanding_before_push;
         }
+        
 
         /**
            Actually push command to clear routing table to all
@@ -270,7 +308,8 @@ public class Ordering
             // all rule names have an underscore in them; if the
             // returned result has an underscore, it means that rules
             // exist.
-            return (get_result.indexOf("_") != -1);
+            boolean rules_exist = (get_result.indexOf("_") != -1);
+            return rules_exist;
         }
         
         
@@ -295,7 +334,7 @@ public class Ordering
 
             switch_outstanding_updates.addAll(updates);
 
-            if (switch_outstanding_updates.size() > num_outstanding_before_push)
+            if (switch_outstanding_updates.size() >= num_outstanding_before_push)
             {
                 // grab the first few commands to push to switch
                 List<RTableUpdate> to_push =
@@ -306,7 +345,7 @@ public class Ordering
                 switch_outstanding_updates =
                     switch_outstanding_updates.subList(
                         num_outstanding_before_push,
-                        switch_outstanding_updates.size() -1);
+                        switch_outstanding_updates.size());
 
                 Collections.shuffle(to_push);
                 super.switch_rtable_updates(switch_id,to_push);

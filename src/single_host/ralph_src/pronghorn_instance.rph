@@ -48,6 +48,17 @@ Endpoint PronghornInstance
             switch_ids.append(switch_id);
         return switch_ids;
     }
+
+    logical_clear_switch_do_not_flush_clear_to_hardware()
+    {
+        for (Text switch_id in instance_switches)
+        {
+            Struct Switch target_switch = instance_switches.get(switch_id);
+            // note: clearing an rtable does not actually push commands to
+            // switches.  This was a bug, but now we're taking advantage of it.
+            target_switch.rtable.clear();
+        }
+    }
     
     /**
        If have a switch corresponding to switch_id, then 

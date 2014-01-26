@@ -6,6 +6,9 @@ import ralph.ExtendedVariables.ExtendedInternalAtomicList;
 import pronghorn.RTable;
 import RalphExceptions.BackoutException;
 import ralph.ActiveEvent;
+import java.util.concurrent.Future;
+import pronghorn.RoutingTableToHardware.WrapApplyToHardware;
+import java.util.concurrent.ExecutorService;
 
 /**
    Each switch's routing table is represented as a list of routing
@@ -40,26 +43,42 @@ class InternalRoutingTableList
     private RoutingTableToHardware rtable_to_hardware_obj =
         DEFAULT_ROUTING_TABLE_TO_HARDWARE;
 
+    /**
+       We use a separate thread to actually push changes to hardware.
+       This service allows us to schedule those pushes on separate
+       threads.
+     */
+    private ExecutorService hardware_push_service = null;
+    
     // For now, any change to the internal routing table just gets
     // accepted.
-    public InternalRoutingTableList()
+    public InternalRoutingTableList(ExecutorService _hardware_push_service)
     {
         super (RTable.STRUCT_LOCKED_MAP_WRAPPER__RoutingTableEntry);
+        hardware_push_service = _hardware_push_service;
     }
 
     public InternalRoutingTableList(
-        RoutingTableToHardware _rtable_to_hardware_obj)
+        RoutingTableToHardware _rtable_to_hardware_obj,
+        ExecutorService _hardware_push_service)
     {
         super (RTable.STRUCT_LOCKED_MAP_WRAPPER__RoutingTableEntry);
         rtable_to_hardware_obj = _rtable_to_hardware_obj;
+        hardware_push_service = _hardware_push_service;
     }
 
-    protected boolean apply_changes_to_hardware(
+    @Override
+    protected Future<Boolean> apply_changes_to_hardware(
         ListTypeDataWrapper<
             _InternalRoutingTableEntry,_InternalRoutingTableEntry> dirty)
     {
-        return rtable_to_hardware_obj.apply_changes_to_hardware(dirty);
+        WrapApplyToHardware to_apply_to_hardware =
+            new WrapApplyToHardware(rtable_to_hardware_obj,dirty);
+        // request application to 
+        hardware_push_service.execute(to_apply_to_hardware);
+        return to_apply_to_hardware.to_notify_when_complete;
     }
+    @Override
     protected void undo_dirty_changes_to_hardware(
         ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry> to_undo)
     {

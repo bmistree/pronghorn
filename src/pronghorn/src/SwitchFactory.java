@@ -2,11 +2,14 @@ package pronghorn;
 
 import pronghorn.RTable;
 import pronghorn.RTable._InternalRoutingTableEntry;
-import java.util.concurrent.atomic.AtomicInteger;
 import pronghorn.SwitchJava._InternalSwitch;
 import ralph.Variables.AtomicTextVariable;
 import ralph.Variables.AtomicNumberVariable;
 import ralph.Variables.AtomicListVariable;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 
 public class SwitchFactory
@@ -26,6 +29,28 @@ public class SwitchFactory
     private String factory_switch_prefix;
     private AtomicInteger atomic_switch_id = new AtomicInteger(0);
     private final static String SWITCH_PREFIX_TO_ID_SEPARATOR = ".";
+
+
+    /**
+       Use a separate thread for each switch to send message to switch
+       requesting it to apply some change (and receive response).
+       These threads are pulled in the executor service
+       hardware_pushing_service.
+     */
+    private final static int PUSH_CHANGE_TO_HARDWARE_THREAD_POOL_SIZE = 150;
+    private final static ExecutorService hardware_pushing_service = 
+        Executors.newFixedThreadPool(
+            PUSH_CHANGE_TO_HARDWARE_THREAD_POOL_SIZE,
+            new ThreadFactory()
+            {
+                // each thread created is a daemon
+                public Thread newThread(Runnable r)
+                {
+                    Thread t=new Thread(r);
+                    t.setDaemon(true);
+                    return t;
+                }
+            });
     
     public SwitchFactory()
     {}
@@ -71,12 +96,15 @@ public class SwitchFactory
         InternalRoutingTableList internal_rtable_list = null;
         if (to_handle_pushing_changes == null)
         {
-            internal_rtable_list = new InternalRoutingTableList();
+            internal_rtable_list =
+                new InternalRoutingTableList(hardware_pushing_service);
         }
         else
         {
             internal_rtable_list =
-                new InternalRoutingTableList(to_handle_pushing_changes);
+                new InternalRoutingTableList(
+                    to_handle_pushing_changes,
+                    hardware_pushing_service);
         }
         
         to_return.rtable =

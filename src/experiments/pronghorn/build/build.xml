@@ -125,7 +125,10 @@
   </target>
 
 
-  <!-- Ant for running test for throughput test with no contention -->
+  <!--
+      Ant for running test for throughput test with fine grained
+      locking and no contention
+  -->
   <target
       name="run_NoContentionThroughput"
       depends="compile_libs,compile_experiments"
@@ -140,15 +143,19 @@
         classname="${experiments_package}.SingleControllerThroughput" fork="yes">
         <arg line="8080"/>
         <arg line="10000"/>
-        <arg line="false"/>        
+        <arg line="false"/>
+        <arg line="1"/>
         <arg line="${output_filename}"/>
     </java>
   </target>
 
 
-  <!-- Ant for running test for throughput with coarse locking -->
+  <!--
+      Ant for running test for throughput with coarse locking and no
+      contention.
+  -->
   <target
-      name="run_CoarseLockingThroughput"
+      name="run_NoContentionCoarseLockingThroughput"
       depends="compile_libs,compile_experiments"
       description="Run no contention throughput with coarse locking.">
     <java
@@ -162,10 +169,65 @@
         <arg line="8080"/>
         <arg line="10000"/>
         <arg line="true"/>
+        <arg line="1"/>
         <arg line="${output_filename}"/>
     </java>
   </target>
 
+
+  <!--
+      Ant for running test for throughput test with fine-grained
+      locking and contention
+  -->
+  <target
+      name="run_ContentionThroughput"
+      depends="compile_libs,compile_experiments"
+      description="Run no contention throughput benchmark on single instance.">
+    <java
+        dir="${experiments_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}:
+                   ${experiments_build_classes_dir}"
+        classname="${experiments_package}.SingleControllerThroughput" fork="yes">
+        <arg line="8080"/>
+        <arg line="10000"/>
+        <arg line="false"/>
+        <arg line="2"/>
+        <arg line="${output_filename}"/>
+    </java>
+  </target>
+
+
+  <!--
+      Ant for running test for throughput with coarse locking and
+      contention
+  -->
+  <target
+      name="run_ContentionCoarseLockingThroughput"
+      depends="compile_libs,compile_experiments"
+      description="Run no contention throughput with coarse locking.">
+    <java
+        dir="${experiments_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}:
+                   ${experiments_build_classes_dir}"
+        classname="${experiments_package}.SingleControllerThroughput" fork="yes">
+        <arg line="8080"/>
+        <arg line="10000"/>
+        <arg line="true"/>
+        <arg line="2"/>
+        <arg line="${output_filename}"/>
+    </java>
+  </target>
+
+
+
+  
+  
   
 
 

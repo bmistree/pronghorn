@@ -12,15 +12,19 @@ import java.io.*;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
-
-
+import java.util.Collections;
+import java.util.concurrent.locks.ReentrantLock;
 
 public class SingleControllerThroughput {
 	
     public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 1;
-    public static final int COARSE_LOCKING_ARG_INDEX = 2;    
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
+    public static final int COARSE_LOCKING_ARG_INDEX = 2;
+    public static final int THREADS_PER_SWITCH_ARG_INDEX = 3;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
+
+    // currently, we have 
+    public static final ReentrantLock results_lock = new ReentrantLock();
     
     
     // wait this long for pronghorn to add all switches
@@ -29,7 +33,7 @@ public class SingleControllerThroughput {
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 5)
         {
             print_usage();
             return;
@@ -42,6 +46,10 @@ public class SingleControllerThroughput {
 
         boolean coarse_locking =
             Boolean.parseBoolean(args[COARSE_LOCKING_ARG_INDEX]);
+
+        int threads_per_switch =
+            Integer.parseInt(args[THREADS_PER_SWITCH_ARG_INDEX]);
+
         
         /* Start up pronghorn */
         PronghornInstance prong = null;
@@ -103,12 +111,15 @@ public class SingleControllerThroughput {
                 assert(false);
             }
 
-            ThroughputThread t =
-                new ThroughputThread(
-                    switch_id, prong, num_ops_to_run, results,coarse_locking);
-            
-            t.start();
-            threads.add(t);
+            for (int j = 0; j < threads_per_switch; ++j)
+            {
+                ThroughputThread t =
+                    new ThroughputThread(
+                        switch_id, prong, num_ops_to_run, results,coarse_locking);
+                
+                t.start();
+                threads.add(t);
+            }
         }
         for (Thread t : threads) {
             try {
@@ -145,7 +156,9 @@ public class SingleControllerThroughput {
             assert(false);
         }
 
-        double throughputPerS = ((double) (num_switches * num_ops_to_run)) / ((double)elapsedNano/1000000000);
+        double throughputPerS =
+            ((double) (num_switches * threads_per_switch * num_ops_to_run)) /
+            ((double)elapsedNano/1000000000);
         System.out.println("Switches: " + num_switches + " Throughput(op/s): " + throughputPerS);
         
         shim.stop();
@@ -190,7 +203,20 @@ public class SingleControllerThroughput {
                 }
                 completion_times.add(System.nanoTime());
             }
-            results.put(switch_id, completion_times);
+
+            results_lock.lock();
+            List<Long> existing_completion_times = results.get(switch_id);
+            if (existing_completion_times == null)
+                existing_completion_times = completion_times;
+            else
+            {
+                existing_completion_times.addAll(completion_times);
+                // sort the times for good measure
+                Collections.sort(existing_completion_times);
+            }
+            
+            results.put(switch_id, existing_completion_times);
+            results_lock.unlock();
     	}
     }
 }

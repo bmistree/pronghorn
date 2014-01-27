@@ -14,6 +14,10 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import java.util.Collections;
 import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicInteger;
+
+
+
 
 public class SingleControllerThroughput {
 	
@@ -23,10 +27,6 @@ public class SingleControllerThroughput {
     public static final int THREADS_PER_SWITCH_ARG_INDEX = 3;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
 
-    // currently, we have 
-    public static final ReentrantLock results_lock = new ReentrantLock();
-    
-    
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
     
@@ -50,7 +50,8 @@ public class SingleControllerThroughput {
         int threads_per_switch =
             Integer.parseInt(args[THREADS_PER_SWITCH_ARG_INDEX]);
 
-        
+        String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
+
         /* Start up pronghorn */
         PronghornInstance prong = null;
 
@@ -96,10 +97,12 @@ public class SingleControllerThroughput {
             _ex.printStackTrace();
             assert(false);
         }
+        
         /* Spawn thread per switch to operate on it */
-
         ArrayList<Thread> threads = new ArrayList<Thread>();
-        ConcurrentHashMap<String,List<Long>> results = new ConcurrentHashMap<String,List<Long>>();
+        // each thread has a unique index into this results map
+        ConcurrentHashMap<String,List<Long>> results =
+            new ConcurrentHashMap<String,List<Long>>();
 
         long start = System.nanoTime();
         for (int i = 0; i < num_switches; i++) {
@@ -132,10 +135,9 @@ public class SingleControllerThroughput {
         long end = System.nanoTime();
         long elapsedNano = end-start;
 
-
         Writer w;
         try {
-            w = new PrintWriter(new FileWriter(args[OUTPUT_FILENAME_ARG_INDEX]));
+            w = new PrintWriter(new FileWriter(output_filename));
 
             // TODO maybe use a csv library...
             for (String switch_id : results.keySet()) {
@@ -172,11 +174,16 @@ public class SingleControllerThroughput {
     }
     
     public static class ThroughputThread extends Thread {
+
+        private static final AtomicInteger atom_int = new AtomicInteger(0);
+        
         String switch_id;
         int num_ops_to_run;
         PronghornInstance prong;
         ConcurrentHashMap<String,List<Long>> results;
         boolean coarse_locking;
+        String result_id = null;
+        
         public ThroughputThread(
             String switch_id, PronghornInstance prong, int num_ops_to_run,
             ConcurrentHashMap<String,List<Long>> results, boolean coarse_locking)
@@ -186,10 +193,11 @@ public class SingleControllerThroughput {
             this.prong = prong;
             this.results = results;
             this.coarse_locking = coarse_locking;
+            this.result_id = switch_id + atom_int.getAndIncrement();
     	}
 
     	public void run() {
-          ArrayList<Long> completion_times = new ArrayList<Long>();
+            ArrayList<Long> completion_times = new ArrayList<Long>();
             for (int i = 0; i < num_ops_to_run; ++i)
             {
                 try {
@@ -203,20 +211,7 @@ public class SingleControllerThroughput {
                 }
                 completion_times.add(System.nanoTime());
             }
-
-            results_lock.lock();
-            List<Long> existing_completion_times = results.get(switch_id);
-            if (existing_completion_times == null)
-                existing_completion_times = completion_times;
-            else
-            {
-                existing_completion_times.addAll(completion_times);
-                // sort the times for good measure
-                Collections.sort(existing_completion_times);
-            }
-            
-            results.put(switch_id, existing_completion_times);
-            results_lock.unlock();
+            results.put(result_id,completion_times);
     	}
     }
 }

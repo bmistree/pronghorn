@@ -70,7 +70,28 @@ Endpoint PronghornInstance
         TrueFalse had_switch = False;
         atomically {
             coarse_lock_simulator = coarse_lock_simulator + 1;
-            had_switch = single_op(switch_id);
+            if (instance_switches.contains(switch_id))
+            {
+                had_switch = True;
+                Struct Switch target_switch = instance_switches.get(switch_id);
+                if (target_switch.rtable.size() != 0)
+                {
+                    target_switch.rtable.remove(0);
+                    //target_switch.rtable.clear();
+                }
+                else
+                {
+                    Struct RoutingTableEntry to_add;
+                    to_add.active = True;
+                    to_add.src_ip = '18.18.18.18';
+                    to_add.dst_ip = '18.18.18.19';
+                    // drop all packets
+                    to_add.action = '';
+                    target_switch.rtable.append(to_add);
+                }
+            }
+            else
+                had_switch = False;
         }
         return had_switch;
     }

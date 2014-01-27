@@ -39,6 +39,9 @@ public class SingleControllerLatency
 
         int num_threads =
             Integer.parseInt(args[NUMBER_THREADS_ARG_INDEX]);
+
+        String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
+
         
         /* Start up pronghorn */
         PronghornInstance prong = null;
@@ -100,7 +103,6 @@ public class SingleControllerLatency
             lt.start();
 
         // wait for all threads to finish and collect their results
-        ArrayList<Long>all_times = new ArrayList<Long>();
         for (LatencyThread lt : all_threads)
         {
             try {
@@ -110,23 +112,17 @@ public class SingleControllerLatency
                 assert(false);
                 return;
             }
-                
-            all_times.addAll(lt.all_times);
         }
-
-        // print csv list of runtimes in ns to stdout
-        String times_string = "";
-        for (Long time : all_times)
-            times_string += time.toString() + ",";
-        System.out.println(times_string);
-
 
         // print csv list of runtimes to file
         Writer w;
         try {
-            w = new PrintWriter(new FileWriter(args[OUTPUT_FILENAME_ARG_INDEX]));
-            w.write(times_string);
-            w.write("\n");
+            w = new PrintWriter(new FileWriter(output_filename));
+            for (LatencyThread lt : all_threads)
+            {
+                lt.write_times(w);
+                w.write("\n");
+            }
             w.close();
         } catch (IOException e) {
             e.printStackTrace();
@@ -177,6 +173,15 @@ public class SingleControllerLatency
                 long total_time = System.nanoTime() - start_time;
                 all_times.add(total_time);
             }
+        }
+
+        /**
+           Write the latencies that each operation took as a csv
+         */
+        public void write_times(Writer writer) throws IOException
+        {
+            for (Long latency : all_times)
+                writer.write(latency.toString() + ",");
         }
     }
 }

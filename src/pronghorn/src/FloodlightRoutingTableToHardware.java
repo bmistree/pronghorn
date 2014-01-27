@@ -8,6 +8,8 @@ import RalphExceptions.BackoutException;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.HashMap;
+import java.util.Collections;
+import java.util.List;
 
 /**
    Subclass this object to override behavior of internal list when
@@ -62,10 +64,16 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
         return floodlight_switch_id + ":_:" + Integer.toString(prev);
     }
 
-
+    /**
+       @param {boolean} reverse --- true if should actually try to
+       undo the changes in dirty, rather than apply them.  Note: if
+       reverse is true, this means that we must go backwards through
+       the list.
+     */
     private ArrayList<RTableUpdate> produce_rtable_updates(
         ListTypeDataWrapper<
-            _InternalRoutingTableEntry,_InternalRoutingTableEntry> dirty)
+            _InternalRoutingTableEntry,_InternalRoutingTableEntry> dirty,
+        boolean reverse)
     {
         /*
           We have a list of operations that were performed on a list and the
@@ -85,7 +93,7 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
           makes to the routing table.
 
           Instead, we use a different algorithm:
-
+          
             1) Run through all changes to routing table and
 
                 a) update entry_names: a list that stores the routing table
@@ -120,17 +128,34 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
             new HashMap<ListTypeDataWrapper.OpTuple,String>();
 
 
+        // Step 0 from above
+        ArrayList<ListTypeDataWrapper.OpTuple> changes_to_iter_over =
+            (ArrayList<ListTypeDataWrapper.OpTuple>)dirty.partner_change_log.clone();
+        if (reverse)
+            Collections.reverse(changes_to_iter_over);
+
         // Step 1 from above
-        for (ListTypeDataWrapper.OpTuple op_tuple : dirty.partner_change_log)
+        for (ListTypeDataWrapper.OpTuple op_tuple : changes_to_iter_over)
         {
-            if (dirty.is_delete_key_tuple(op_tuple))
+            if (
+                // we're going in the forward direction and it's a
+                // delete key.
+                (dirty.is_delete_key_tuple(op_tuple) && (! reverse)) ||
+                // we're going in the reverse direction and it's not an
+                // add key, which we must delete to undo
+                (dirty.is_add_key_tuple(op_tuple) && (reverse)))
             {
                 int deleted_key = op_tuple.key;
                 // 1a from above
                 String removed_entry_name = entry_names.remove(deleted_key);
                 entries_to_remove.add(removed_entry_name);
             }
-            else if (dirty.is_add_key_tuple(op_tuple))
+            else if (
+                // we're going in the forward direction and it's an
+                // add key
+                (dirty.is_add_key_tuple(op_tuple) && (! reverse)) ||
+                // we're undoing an add
+                (dirty.is_delete_key_tuple(op_tuple) && (reverse)))
             {
                 int index_added = op_tuple.key;
                 // 1a from above
@@ -143,11 +168,11 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
 
         // Step 2 from above
         ArrayList<RTableUpdate> floodlight_updates = new ArrayList<RTableUpdate>();
-        ArrayList<RalphObject<_InternalRoutingTableEntry,_InternalRoutingTableEntry>>
-            dirty_list = dirty.val;
-        for (ListTypeDataWrapper.OpTuple op_tuple : dirty.partner_change_log)
+        for (ListTypeDataWrapper.OpTuple op_tuple : changes_to_iter_over)
         {
-            if (dirty.is_add_key_tuple(op_tuple))
+            if (
+                (dirty.is_add_key_tuple(op_tuple) && (!reverse)) ||
+                (dirty.is_delete_key_tuple(op_tuple) && (reverse)))
             {
                 String entry_name = added_tuples_to_hidden_names.get(op_tuple);
 
@@ -197,7 +222,7 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
             _InternalRoutingTableEntry,_InternalRoutingTableEntry> dirty)
     {
         ArrayList<RTableUpdate> floodlight_updates =
-            produce_rtable_updates(dirty);
+            produce_rtable_updates(dirty,false);
         // request shim to push the changes to swithces.
         return shim.switch_rtable_updates(
             floodlight_switch_id,floodlight_updates);
@@ -208,11 +233,10 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
         ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry>
         to_undo)
     {
-        // ArrayList<RTableUpdate> floodlight_updates =
-        //     produce_rtable_updates(to_undo,true);
-        // // fixme: should actually return boolean;
-        // shim.switch_rtable_updates(
-        //     floodlight_switch_id,floodlight_updates);
-        System.out.println("FIXME: must actually undo dirty changes");
+        ArrayList<RTableUpdate> floodlight_updates =
+            produce_rtable_updates(to_undo,true);
+        // FIXME: should actually return boolean;
+        shim.switch_rtable_updates(
+            floodlight_switch_id,floodlight_updates);
     }
 }

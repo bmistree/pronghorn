@@ -15,12 +15,13 @@ import java.util.List;
 
 
 
-public class NoContentionThroughput {
+public class SingleControllerThroughput {
 	
     public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 1;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
-
+    public static final int COARSE_LOCKING_ARG_INDEX = 2;    
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
+    
     
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -28,7 +29,7 @@ public class NoContentionThroughput {
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 3)
+        if (args.length != 4)
         {
             print_usage();
             return;
@@ -39,6 +40,9 @@ public class NoContentionThroughput {
         int num_ops_to_run = 
                 Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
 
+        boolean coarse_locking =
+            Boolean.parseBoolean(args[COARSE_LOCKING_ARG_INDEX]);
+        
         /* Start up pronghorn */
         PronghornInstance prong = null;
 
@@ -67,6 +71,7 @@ public class NoContentionThroughput {
             assert(false);
         }
 
+
         NonAtomicInternalList<String,String> switch_list = null;
         int num_switches = -1;
         try {
@@ -88,27 +93,6 @@ public class NoContentionThroughput {
         ArrayList<Thread> threads = new ArrayList<Thread>();
         ConcurrentHashMap<String,List<Long>> results = new ConcurrentHashMap<String,List<Long>>();
 
-        // Don't warmup now that we can factor it out.
-        /*if (true){
-            String switch_id = null;
-            try { 
-                switch_id = switch_list.get_val_on_key(null, new Double(0));
-            } catch (Exception _ex) {
-                _ex.printStackTrace();
-                assert(false);
-            }
-
-          ThroughputThread t = new ThroughputThread(switch_id, prong, num_ops_to_run, results);
-        	t.start();
-            try {
-          t.join();
-            } catch (Exception _ex) {
-                _ex.printStackTrace();
-                assert(false);
-            }
-            }*/
-
-
         long start = System.nanoTime();
         for (int i = 0; i < num_switches; i++) {
             String switch_id = null;
@@ -119,9 +103,12 @@ public class NoContentionThroughput {
                 assert(false);
             }
 
-          ThroughputThread t = new ThroughputThread(switch_id, prong, num_ops_to_run, results);
-        	t.start();
-        	threads.add(t);
+            ThroughputThread t =
+                new ThroughputThread(
+                    switch_id, prong, num_ops_to_run, results,coarse_locking);
+            
+            t.start();
+            threads.add(t);
         }
         for (Thread t : threads) {
             try {
@@ -176,20 +163,27 @@ public class NoContentionThroughput {
         int num_ops_to_run;
         PronghornInstance prong;
         ConcurrentHashMap<String,List<Long>> results;
-        public ThroughputThread(String switch_id, PronghornInstance prong, int num_ops_to_run,
-                                ConcurrentHashMap<String,List<Long>> results) {
+        boolean coarse_locking;
+        public ThroughputThread(
+            String switch_id, PronghornInstance prong, int num_ops_to_run,
+            ConcurrentHashMap<String,List<Long>> results, boolean coarse_locking)
+        {
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
             this.prong = prong;
             this.results = results;
+            this.coarse_locking = coarse_locking;
     	}
-    	
+
     	public void run() {
           ArrayList<Long> completion_times = new ArrayList<Long>();
             for (int i = 0; i < num_ops_to_run; ++i)
             {
                 try {
-                    prong.single_op(switch_id);
+                    if (coarse_locking)
+                        prong.single_op_coarse(switch_id);
+                    else
+                        prong.single_op(switch_id);
                 } catch (Exception _ex) {
                     _ex.printStackTrace();
                     assert(false);

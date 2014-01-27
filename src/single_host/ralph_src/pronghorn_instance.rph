@@ -25,6 +25,8 @@ Endpoint PronghornInstance
 {
     TVar Map(from: Text, to: Struct Switch) instance_switches;
 
+    TVar Number coarse_lock_simulator = 0;
+    
     add_switch(Struct Switch new_switch)
     {
         Text switch_id = new_switch.switch_id;
@@ -58,6 +60,19 @@ Endpoint PronghornInstance
             // switches.  This was a bug, but now we're taking advantage of it.
             target_switch.rtable.clear();
         }
+    }
+
+    /**
+       Because write to coarse_lock_simulator, cannot parallelize method.
+     */
+    single_op_coarse(Text switch_id) returns TrueFalse
+    {
+        TrueFalse had_switch = False;
+        atomically {
+            coarse_lock_simulator = coarse_lock_simulator + 1;
+            had_switch = single_op(switch_id);
+        }
+        return had_switch;
     }
     
     /**

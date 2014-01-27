@@ -45,7 +45,6 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
        entry in each element of the list.
      */
     private ArrayList<String> entry_names = new ArrayList<String>();
-    private ArrayList<String> prev_entry_names = null;
 
     private ShimInterface shim;
     private String floodlight_switch_id;
@@ -62,6 +61,7 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
         int prev = ++unique_entry_name_generator;
         return floodlight_switch_id + ":_:" + Integer.toString(prev);
     }
+
 
     private ArrayList<RTableUpdate> produce_rtable_updates(
         ListTypeDataWrapper<
@@ -162,18 +162,16 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
                 // and create an update for it
                 int added_entry_index = entry_names.indexOf(entry_name);
 
-                RalphObject ro = dirty_list.get(added_entry_index);
+                RalphObject ro = op_tuple.what_added_or_removed;
                 _InternalRoutingTableEntry added_entry = null;
-                try {
-                    added_entry = (_InternalRoutingTableEntry)(ro.get_val(null));                    
-                } catch (BackoutException _ex) {
+                try { 
+                    added_entry = (_InternalRoutingTableEntry) (ro.get_val(null));
+                } catch (Exception _ex) {
                     _ex.printStackTrace();
-                    System.out.println(
-                        "\nERROR: should never throw backout " +
-                        "exception when pushing to hardware.");
+                    System.out.println("\nShould never get to this point.");
                     assert(false);
                 }
-
+                    
                 String src_ip = added_entry.src_ip.dirty_val.val;
                 String dst_ip = added_entry.dst_ip.dirty_val.val;
                 String action = added_entry.action.dirty_val.val;
@@ -198,10 +196,8 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
         ListTypeDataWrapper<
             _InternalRoutingTableEntry,_InternalRoutingTableEntry> dirty)
     {
-        // backup previous version of entry names in case we need to
-        // back out changes to hardware.
-        prev_entry_names = new ArrayList(entry_names);
-        ArrayList<RTableUpdate> floodlight_updates = produce_rtable_updates(dirty);
+        ArrayList<RTableUpdate> floodlight_updates =
+            produce_rtable_updates(dirty);
         // request shim to push the changes to swithces.
         return shim.switch_rtable_updates(
             floodlight_switch_id,floodlight_updates);
@@ -212,8 +208,11 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
         ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry>
         to_undo)
     {
-        entry_names = prev_entry_names;
-        System.out.println(
-            "FIXME: Still need undo changes made to routing table.");
+        // ArrayList<RTableUpdate> floodlight_updates =
+        //     produce_rtable_updates(to_undo,true);
+        // // fixme: should actually return boolean;
+        // shim.switch_rtable_updates(
+        //     floodlight_switch_id,floodlight_updates);
+        System.out.println("FIXME: must actually undo dirty changes");
     }
 }

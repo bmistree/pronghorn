@@ -105,9 +105,13 @@
   <property
       name="latency_num_ops"
       value="5000"/>
+  <!-- The number of threads to run -->
+  <property
+      name="latency_num_threads"
+      value="1"/>
   <!-- Ant for running test for latency test with no contention -->
   <target
-      name="run_NoContentionLatency"
+      name="run_SingleControllerLatency"
       depends="compile_libs,compile_experiments"
       description="Run no contention latency benchmark on single instance.">
     <java
@@ -117,13 +121,15 @@
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
                    ${experiments_build_classes_dir}"
-        classname="${experiments_package}.NoContentionLatency" fork="yes">
+        classname="${experiments_package}.SingleControllerLatency" fork="yes">
         <arg line="8080"/>
         <arg line="${latency_num_ops}"/>
+        <arg line="${latency_num_threads}"/>
         <arg line="${output_filename}"/>
     </java>
   </target>
 
+  
 
   <!--
       Ant for running test for throughput test with fine grained

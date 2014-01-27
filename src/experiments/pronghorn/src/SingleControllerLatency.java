@@ -9,13 +9,15 @@ import ralph.NonAtomicInternalList;
 import pronghorn.FloodlightRoutingTableToHardware;
 import java.lang.Thread;
 import java.util.ArrayList;
+import java.util.List;
 import java.io.*;
 
-public class NoContentionLatency
+public class SingleControllerLatency
 {
     public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 1;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
+    public static final int NUMBER_THREADS_ARG_INDEX = 2;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -23,7 +25,7 @@ public class NoContentionLatency
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 3)
+        if (args.length != 4)
         {
             print_usage();
             return;
@@ -34,6 +36,9 @@ public class NoContentionLatency
         
         int num_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
+
+        int num_threads =
+            Integer.parseInt(args[NUMBER_THREADS_ARG_INDEX]);
         
         /* Start up pronghorn */
         PronghornInstance prong = null;
@@ -86,19 +91,27 @@ public class NoContentionLatency
             assert(false);
         }
 
-        /* perform all operations and determine how long they take */
+
+        List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
+        for (int i = 0; i < num_threads; ++i)
+            all_threads.add(new LatencyThread(prong,switch_id,num_ops_to_run));
+
+        for (LatencyThread lt : all_threads)
+            lt.start();
+
+        // wait for all threads to finish and collect their results
         ArrayList<Long>all_times = new ArrayList<Long>();
-        for (int i = 0; i < num_ops_to_run; ++i)
+        for (LatencyThread lt : all_threads)
         {
-            long start_time = System.nanoTime();
             try {
-                prong.single_op(switch_id);
+                lt.join();
             } catch (Exception _ex) {
                 _ex.printStackTrace();
                 assert(false);
+                return;
             }
-            long total_time = System.nanoTime() - start_time;
-            all_times.add(total_time);
+                
+            all_times.addAll(lt.all_times);
         }
 
         // print csv list of runtimes in ns to stdout
@@ -130,5 +143,40 @@ public class NoContentionLatency
             "\nSingleHost <int: floodlight port number> " + 
             "<int: num ops to run> <output_filename>\n");
     }
-    
+
+
+    private static class LatencyThread extends Thread
+    {
+        public List <Long> all_times = new ArrayList<Long>();
+
+        
+        private PronghornInstance prong = null;
+        private String switch_id = null;
+        private int num_ops_to_run = -1;
+        
+        public LatencyThread(
+            PronghornInstance prong, String switch_id, int num_ops_to_run)
+        {
+            this.prong = prong;
+            this.switch_id = switch_id;
+            this.num_ops_to_run = num_ops_to_run;
+        }
+
+        public void run()
+        {
+            /* perform all operations and determine how long they take */
+            for (int i = 0; i < num_ops_to_run; ++i)
+            {
+                long start_time = System.nanoTime();
+                try {
+                    prong.single_op(switch_id);
+                } catch (Exception _ex) {
+                    _ex.printStackTrace();
+                    assert(false);
+                }
+                long total_time = System.nanoTime() - start_time;
+                all_times.add(total_time);
+            }
+        }
+    }
 }

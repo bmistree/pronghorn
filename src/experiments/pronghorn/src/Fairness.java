@@ -160,9 +160,29 @@ public class Fairness
         shim_a.stop();
         shim_b.stop();
 
+        write_results(result_filename);
     }
 
 
+    private static void write_results(String result_filename)
+    {
+        String to_write = "";
+        for (String endpoint_id : tsafe_queue)
+            to_write += endpoint_id + ",";
+        
+        // write result string to file
+        Writer w;
+        try {
+            w = new PrintWriter(new FileWriter(result_filename));
+            w.write(to_write);
+            w.write("\n");
+            w.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            assert(false);
+        }
+    }
+    
     /**
        Dump NUM_EXTERNAL_CALLS operations into system on side_a.  Pause to
        ensure that side_a registers all of them.  Then dump NUM_EXTERNAL_CALLS

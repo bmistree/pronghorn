@@ -171,11 +171,30 @@ public class SingleControllerError {
             if (num_rules_in_system != num_ops_to_run_per_experiment)
                 result = false;
 
-            System.out.println(result);
             run_results.add(result);
-
         }
+
+        // disconnect the shim connection
         shim.stop();
+
+        // actually output results
+        Writer w;
+        try {
+            w = new PrintWriter(new FileWriter(output_filename));
+            for (Boolean result : run_results)
+            {
+                if (result.booleanValue())
+                    w.write("1");
+                else
+                    w.write("0");
+                w.write(",");
+            }
+            w.flush();
+            w.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            assert(false);
+        }
     }
 
 

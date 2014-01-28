@@ -19,6 +19,11 @@ import java.io.*;
 import ralph.Ralph;
 import ralph.BoostedManager.DeadlockAvoidanceAlgorithm;
 
+import java.util.HashSet;
+import java.util.Set;
+import experiments.Util.HostPortPair;
+import experiments.Util;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -95,15 +100,25 @@ public class Fairness
             return;
         }
 
-        String[] floodlight_port_strs = args[FLOODLIGHT_PORTS_ARG_INDEX].split(",");
-        if (floodlight_port_strs.length < 2) {
+        Set<Integer> port_set =
+            Util.parse_csv_ports(args[FLOODLIGHT_PORTS_ARG_INDEX]);
+        if (port_set.size() < 2)
+        {
+            System.out.println("\nNot enough arguments\n");
             assert(false);
             return;
         }
-        
-        int floodlight_port_a = Integer.parseInt(floodlight_port_strs[0]);
+        int floodlight_port_a = -1;
+        int floodlight_port_b = -1;
 
-        int floodlight_port_b = Integer.parseInt(floodlight_port_strs[1]);
+        for (Integer port: port_set)
+        {
+            if (floodlight_port_a == -1)
+                floodlight_port_b = port.intValue();
+            else
+                floodlight_port_a = port.intValue();
+        }
+        
 
         boolean use_wound_wait =
             Boolean.parseBoolean(args[USE_WOUND_WAIT_ARG_INDEX]);

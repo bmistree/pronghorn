@@ -16,6 +16,12 @@ import java.util.List;
 import java.util.Random;
 import java.io.*;
 
+import java.util.HashSet;
+import java.util.Set;
+import experiments.Util.HostPortPair;
+import experiments.Util;
+
+
 /**
    Experiment.  Run one transaction that inserts a flow table entry on
    a switch, then run another transaction that removes it.  If third
@@ -56,8 +62,12 @@ public class Ordering
             return;
         }
         
-        int floodlight_port =
-            Integer.parseInt(args[FLOODLIGHT_PORT_ARG_INDEX]);
+        Set<Integer> port_set =
+            Util.parse_csv_ports(args[FLOODLIGHT_PORT_ARG_INDEX]);
+
+        int floodlight_port = -1;
+        for (Integer port : port_set)
+            floodlight_port = port.intValue();
 
         int num_times_to_run = 
             Integer.parseInt(args[NUMBER_TIMES_TO_RUN_ARG_INDEX]);

@@ -11,10 +11,15 @@ import java.lang.Thread;
 import java.util.ArrayList;
 import java.util.List;
 import java.io.*;
+import java.util.HashSet;
+import java.util.Set;
+import experiments.Util.HostPortPair;
+import experiments.Util;
+
 
 public class SingleControllerLatency
 {
-    public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
+    public static final int FLOODLIGHT_PORT_CSV_ARG_INDEX = 0;
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 1;
     public static final int NUMBER_THREADS_ARG_INDEX = 2;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
@@ -31,8 +36,8 @@ public class SingleControllerLatency
             return;
         }
 
-        int floodlight_port =
-            Integer.parseInt(args[FLOODLIGHT_PORT_ARG_INDEX]);
+        Set<Integer> floodlight_port_set = Util.parse_csv_ports(
+            args[FLOODLIGHT_PORT_CSV_ARG_INDEX]);
         
         int num_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
@@ -54,13 +59,21 @@ public class SingleControllerLatency
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
         }
-        SingleHostRESTShim shim = new  SingleHostRESTShim(floodlight_port);
+
+        Set<SingleHostRESTShim> shim_set = new HashSet<SingleHostRESTShim>();
+        for (Integer port : floodlight_port_set)
+            shim_set.add ( new SingleHostRESTShim(port.intValue()));
+        
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 prong,
                 FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
-        shim.subscribe_switch_status_handler(switch_status_handler);
-        shim.start();
+
+        for (SingleHostRESTShim shim : shim_set)
+        {
+            shim.subscribe_switch_status_handler(switch_status_handler);
+            shim.start();
+        }
         
 
         /* wait a while to ensure that all switches are connected */
@@ -128,8 +141,9 @@ public class SingleControllerLatency
             e.printStackTrace();
             assert(false);
         }
-        // actually tell shim to stop.
-        shim.stop();
+        // actually tell shims to stop.
+        for (SingleHostRESTShim shim : shim_set)
+            shim.stop();
     }
 
 

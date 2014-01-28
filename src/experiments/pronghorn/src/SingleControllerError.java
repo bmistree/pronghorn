@@ -20,6 +20,12 @@ import pronghorn.RoutingTableToHardware;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
+import java.util.HashSet;
+import java.util.Set;
+import experiments.Util.HostPortPair;
+import experiments.Util;
+
+
 public class SingleControllerError {
 	
     public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
@@ -41,9 +47,15 @@ public class SingleControllerError {
             System.out.println("\nExpected 5 arguments: exiting\n");
             return;
         }
-        
-        int floodlight_port =
-            Integer.parseInt(args[FLOODLIGHT_PORT_ARG_INDEX]);
+
+        Set<Integer> port_set =
+            Util.parse_csv_ports(args[FLOODLIGHT_PORT_ARG_INDEX]);
+
+        int floodlight_port = -1;
+        for (Integer port : port_set)
+            floodlight_port = port.intValue();
+
+
         int num_ops_to_run_per_experiment = 
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_PER_EXPERIMENT_ARG_INDEX]);
 

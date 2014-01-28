@@ -222,9 +222,10 @@ public class SingleControllerError {
                 "/wm/staticflowentrypusher/list/" + switch_id + "/json";
             String get_result = issue_get (rules_exist_resource);
 
-            // all rule names have an underscore in them; if the
-            // returned result has an underscore, it means that rules
-            // exist.
+            // Each rule has two underscores associated with it.  One,
+            // an underscore from the type: "FLOW_MOD".  The other
+            // associated with the rule's name.  Divide by 2 at end
+            // when return.
             int last_index = 0;
             int rule_count = 0;
             String needle = "_";
@@ -238,12 +239,7 @@ public class SingleControllerError {
                     last_index += needle.length();
                 }
             }
-            
-            System.out.println(
-                "Rule count: " + Integer.toString(rule_count));
-            System.out.println(get_result);
-            
-            return rule_count;
+            return rule_count/2;
         }
     }
     

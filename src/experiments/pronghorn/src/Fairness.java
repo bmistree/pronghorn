@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.io.*;
 import ralph.Ralph;
+import ralph.BoostedManager.DeadlockAvoidanceAlgorithm;
 
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -54,11 +55,6 @@ public class Fairness
     // wait this long for pronghorn to add all switches
     public static final int STARTUP_SETTLING_TIME_WAIT = 5000;
 
-    // TCP connections require constructor objects.
-    private static final EndpointConstructor SIDE_B_CONSTRUCTOR =
-        new EndpointConstructor(false);
-    private static final EndpointConstructor SIDE_A_CONSTRUCTOR =
-        new EndpointConstructor(true);
 
     // Ports to listen on and connect to for each side of the connection.
     private static final int TCP_LISTENING_PORT = 30955;
@@ -107,21 +103,30 @@ public class Fairness
         
         int floodlight_port_a = Integer.parseInt(floodlight_port_strs[0]);
 
-        int floodlight_port_b = Integer.parseInt(floodlight_port_strs[0]);
+        int floodlight_port_b = Integer.parseInt(floodlight_port_strs[1]);
 
         boolean use_wound_wait =
             Boolean.parseBoolean(args[USE_WOUND_WAIT_ARG_INDEX]);
 
+        System.out.println(
+            "\nUsing wound wait: " + Boolean.toString(use_wound_wait) + "\n");
+        
         String result_filename = args[OUTPUT_FILENAME_INDEX];
 
+        // TCP connections require constructor objects.
+        EndpointConstructor side_b_constructor =
+            new EndpointConstructor(false,use_wound_wait);
+        EndpointConstructor side_a_constructor =
+            new EndpointConstructor(true,use_wound_wait);
 
+        
         /* Start up pronghorn */
         PronghornInstance prong_a = null;
         PronghornInstance prong_b = null;
 
         // listen for connections to side b on port TCP_LISTENING_PORT
         Ralph.tcp_accept(
-            SIDE_B_CONSTRUCTOR, HOST_NAME, TCP_LISTENING_PORT);
+            side_b_constructor, HOST_NAME, TCP_LISTENING_PORT);
 
         // wait for things to settle down
         try {        
@@ -134,7 +139,7 @@ public class Fairness
         // try to connect to other side
         try {
             side_a = (PronghornInstance)Ralph.tcp_connect(
-                SIDE_A_CONSTRUCTOR, HOST_NAME, TCP_LISTENING_PORT);
+                side_a_constructor, HOST_NAME, TCP_LISTENING_PORT);
         } catch (IOException e) {
             e.printStackTrace();
             assert(false);
@@ -287,9 +292,11 @@ public class Fairness
     private static class EndpointConstructor implements EndpointConstructorObj
     {
         private boolean for_side_a;
-        public EndpointConstructor(boolean _for_side_a)
+        private boolean use_wound_wait;
+        public EndpointConstructor(boolean for_side_a,boolean use_wound_wait)
         {
-            for_side_a = _for_side_a;
+            this.for_side_a = for_side_a;
+            this.use_wound_wait = use_wound_wait;
         }
         
         @Override
@@ -298,8 +305,17 @@ public class Fairness
             RalphConnObj.ConnectionObj conn_obj)
         {
             PronghornInstance to_return = null;
+
+            RalphGlobals globals_to_use = globals;
+            if (use_wound_wait)
+            {
+                globals_to_use =
+                    new RalphGlobals(DeadlockAvoidanceAlgorithm.WOUND_WAIT);
+            }
+            
             try {
-                to_return = new PronghornInstance(globals,host_uuid,conn_obj);
+                to_return =
+                    new PronghornInstance(globals_to_use,host_uuid,conn_obj);
                 if (for_side_a)
                     side_a = to_return;
                 else

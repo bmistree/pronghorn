@@ -182,7 +182,24 @@ Endpoint PronghornInstance
         {
             @partner.called_only_by_partner_single_op();
             for (Text switch_id in instance_switches)
-                single_op(switch_id);            
+            {
+                Struct Switch target_switch = instance_switches.get(switch_id);
+                if (target_switch.rtable.size() != 0)
+                {
+                    target_switch.rtable.remove(0);
+                    //target_switch.rtable.clear();
+                }
+                else
+                {
+                    Struct RoutingTableEntry to_add;
+                    to_add.active = True;
+                    to_add.src_ip = '18.18.18.18';
+                    to_add.dst_ip = '18.18.18.19';
+                    // drop all packets
+                    to_add.action = '';
+                    target_switch.rtable.append(to_add);
+                }
+            }
         }
     }
     

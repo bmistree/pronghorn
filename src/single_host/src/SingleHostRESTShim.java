@@ -116,7 +116,8 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
                 "http","localhost",floodlight_port,what_to_get);
             connection = (HttpURLConnection) url.openConnection();
             connection.setRequestMethod("GET");
-
+            connection.setRequestProperty("Accept","*/*");
+            
             BufferedReader rd =
                 new BufferedReader(
                     new InputStreamReader(connection.getInputStream()));

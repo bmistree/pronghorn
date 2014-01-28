@@ -71,7 +71,7 @@ public class Fairness
     final static int NUM_EXTERNAL_CALLS = 100;
     // how many ms to wait before requesting b to dump its tasks after a has
     // started its tasks
-    final static int A_HEADSTART_TIME_MS = 2;
+    final static int A_HEADSTART_TIME_MS = 8;
 
     // These identifiers are associated with each endpoint and appear (in order)
     // in the threadsafe queue.

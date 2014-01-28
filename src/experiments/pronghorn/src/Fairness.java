@@ -47,10 +47,9 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class Fairness
 {
-    public static final int FLOODLIGHT_A_PORT_ARG_INDEX = 0;
-    public static final int FLOODLIGHT_B_PORT_ARG_INDEX = 1;
-    public static final int USE_WOUND_WAIT_ARG_INDEX = 2;
-    public static final int OUTPUT_FILENAME_INDEX = 3;
+    public static final int FLOODLIGHT_PORTS_ARG_INDEX = 0;
+    public static final int USE_WOUND_WAIT_ARG_INDEX = 1;
+    public static final int OUTPUT_FILENAME_INDEX = 2;
     
     // wait this long for pronghorn to add all switches
     public static final int STARTUP_SETTLING_TIME_WAIT = 5000;
@@ -94,17 +93,21 @@ public class Fairness
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 3)
         {
             assert(false);
             return;
         }
-        
-        int floodlight_port_a =
-            Integer.parseInt(args[FLOODLIGHT_A_PORT_ARG_INDEX]);
 
-        int floodlight_port_b =
-            Integer.parseInt(args[FLOODLIGHT_B_PORT_ARG_INDEX]);
+        String[] floodlight_port_strs = args[FLOODLIGHT_PORTS_ARG_INDEX].split(",");
+        if (floodlight_port_strs.length < 2) {
+            assert(false);
+            return;
+        }
+        
+        int floodlight_port_a = Integer.parseInt(floodlight_port_strs[0]);
+
+        int floodlight_port_b = Integer.parseInt(floodlight_port_strs[0]);
 
         boolean use_wound_wait =
             Boolean.parseBoolean(args[USE_WOUND_WAIT_ARG_INDEX]);

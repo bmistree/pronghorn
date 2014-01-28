@@ -43,6 +43,26 @@ Endpoint PronghornInstance
         return instance_switches.size();
     }
 
+
+    insert_entry_on_all_switches(Text ip_src)
+    {
+        atomically
+        {
+            for (Text switch_id in instance_switches)
+            {
+                Struct Switch target_switch =
+                    instance_switches.get(switch_id);
+                Struct RoutingTableEntry to_add;
+                to_add.active = True;
+                to_add.src_ip = ip_src;
+                to_add.dst_ip = '18.18.18.19';
+                // drop all packets
+                to_add.action = '';
+                target_switch.rtable.append(to_add);
+            }
+        }
+    }
+    
     list_switch_ids() returns List(element:Text)
     {
         List(element: Text) switch_ids;
@@ -50,7 +70,7 @@ Endpoint PronghornInstance
             switch_ids.append(switch_id);
         return switch_ids;
     }
-
+    
     logical_clear_switch_do_not_flush_clear_to_hardware()
     {
         for (Text switch_id in instance_switches)

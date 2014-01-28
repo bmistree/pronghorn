@@ -107,17 +107,22 @@ public class SingleControllerError {
             assert(false);
         }
 
-        String switch_id = switch_id_list.get(0);
-        for (int i = 0; i < num_ops_to_run; ++i)
-        {
-            try {
-                prong.single_op(switch_id);
-            } catch (Exception _ex) {
-                _ex.printStackTrace();
-                assert(false);
+        String a_b_ip = "18.18.";
+        try {
+            for (int i = 0; i < num_ops_to_run; ++i)
+            {
+                int c = (int) (i/256);
+                int d = i % 256;
+                String ip_addr =
+                    a_b_ip + Integer.toString(c) + "." + Integer.toString(d);
+                prong.insert_entry_on_all_switches(ip_addr);
             }
+        } catch (Exception _ex) {
+            _ex.printStackTrace();
+            System.out.println(
+                "There was an unknown error.  Should deal with it.");
+            assert(false);
         }
-        
         shim.stop();
     }
     
@@ -169,10 +174,8 @@ public class SingleControllerError {
                 _InternalRoutingTableEntry,_InternalRoutingTableEntry> dirty)
         {
             boolean real_result = super.apply_changes_to_hardware(dirty);
-
             if (Math.random() < independent_switch_failure_prob)
                 return false;
-
             return real_result;
         }
 

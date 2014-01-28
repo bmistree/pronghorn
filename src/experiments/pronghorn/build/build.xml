@@ -307,7 +307,9 @@
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
                    ${experiments_build_classes_dir}"
-        classname="${experiments_package}.SingleControllerError" fork="yes">
+        classname="${experiments_package}.SingleControllerError"
+        fork="yes">
+
         <arg line="8080"/>
         <arg line="${error_num_ops}"/>
         <arg line="${error_failure_prob}"/>

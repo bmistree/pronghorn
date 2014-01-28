@@ -36,7 +36,7 @@ public class SingleHost
         SingleHostRESTShim shim = new  SingleHostRESTShim(floodlight_port);
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
-                prong,shim,
+                prong,
                 FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

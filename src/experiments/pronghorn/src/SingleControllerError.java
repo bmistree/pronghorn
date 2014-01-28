@@ -78,7 +78,7 @@ public class SingleControllerError {
         
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
-                prong,shim,
+                prong,
                 routing_table_to_hardware_factory);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

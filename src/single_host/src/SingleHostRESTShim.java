@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
 import java.util.regex.Matcher;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.List;
-
+import java.util.concurrent.atomic.AtomicInteger;
 import pronghorn.ShimInterface;
 import pronghorn.SwitchStatusHandler;
 import pronghorn.RTableUpdate;
@@ -43,11 +43,16 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
     private ScheduledExecutorService executor;
 
     private static final long POLL_PERIOD_MS = 1000;
+
+    private static final AtomicInteger UNIQUE_SHIM_ID_GENERATOR =
+        new AtomicInteger(0);
+
+    public final String unique_shim_id =
+        Integer.toString(UNIQUE_SHIM_ID_GENERATOR.getAndIncrement());
     
     public SingleHostRESTShim(int _floodlight_port)
     {
         floodlight_port = _floodlight_port;
-
     }
 
 
@@ -209,7 +214,7 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
                 // message.
                 handler_lock.lock();
                 for (SwitchStatusHandler ssh : switch_status_handlers)
-                    ssh.new_switch(current_switch_id);
+                    ssh.new_switch(this,current_switch_id);
                 handler_lock.unlock();
             }
         }
@@ -231,7 +236,7 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
             // switch unsubscribes in response to a new_switch
             // message.
             for (SwitchStatusHandler ssh : switch_status_handlers)
-                ssh.removed_switch(to_remove_switch_id);
+                ssh.removed_switch(this,to_remove_switch_id);
             handler_lock.unlock();
         }
     }

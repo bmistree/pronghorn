@@ -27,24 +27,21 @@ public class SingleHostSwitchStatusHandler implements SwitchStatusHandler
         new HashMap<String,String>();
     private HashMap<String,String> pronghorn_to_floodlight_ids =
         new HashMap<String,String>();
-
-    private ShimInterface shim = null;
     private RoutingTableToHardwareFactory rtable_to_hardware_factory = null;
     
     
     public SingleHostSwitchStatusHandler(
-        PronghornInstance _prong,ShimInterface _shim,
+        PronghornInstance _prong,
         RoutingTableToHardwareFactory _rtable_to_hardware_factory)
     {
         prong = _prong;
-        shim = _shim;
         switch_factory = new SwitchFactory();
         switch_factory.init(UNIQUE_SWITCH_FACTORY_PREFIX);
         rtable_to_hardware_factory = _rtable_to_hardware_factory;
     }
     
     @Override
-    public void new_switch(String floodlight_switch_id)
+    public void new_switch(ShimInterface shim,String floodlight_switch_id)
     {
         RoutingTableToHardware rtable_to_hardware =
             rtable_to_hardware_factory.construct(shim,floodlight_switch_id);
@@ -55,13 +52,12 @@ public class SingleHostSwitchStatusHandler implements SwitchStatusHandler
             switch_factory.construct(
                 DEFAULT_INITIAL_SWITCH_CAPACITY,rtable_to_hardware);
         
-        
         String pronghorn_switch_id = new_switch.ralph_internal_switch_id;
         floodlight_to_pronghorn_ids.put(
             floodlight_switch_id,pronghorn_switch_id);
         pronghorn_to_floodlight_ids.put(
             pronghorn_switch_id,floodlight_switch_id);
-
+        
         try {
             prong.add_switch(new_switch);
         } catch (Exception _ex)
@@ -72,7 +68,7 @@ public class SingleHostSwitchStatusHandler implements SwitchStatusHandler
         }
     }
     @Override
-    public void removed_switch(String floodlight_switch_id)
+    public void removed_switch(ShimInterface shim, String floodlight_switch_id)
     {
         String pronghorn_switch_id =
             floodlight_to_pronghorn_ids.remove(floodlight_switch_id);

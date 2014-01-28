@@ -289,11 +289,15 @@
 
   <!-- Testing error on a single controller -->
   <property
-      name="error_num_ops"
+      name="error_num_ops_to_run_per_experiment"
       value="100"/>
   <property
       name="error_failure_prob"
-      value="0.0"/>  
+      value="0.0"/>
+  <property
+      name="error_num_experiments_to_run"
+      value="10"
+      />
   <target
       name="run_Error"
       depends="compile_libs,compile_experiments"
@@ -311,7 +315,8 @@
         fork="yes">
 
         <arg line="8080"/>
-        <arg line="${error_num_ops}"/>
+        <arg line="${error_num_ops_to_run_per_experiment}"/>
+        <arg line="${error_num_experiments_to_run}"/>
         <arg line="${error_failure_prob}"/>
         <arg line="${output_filename}"/>
     </java>

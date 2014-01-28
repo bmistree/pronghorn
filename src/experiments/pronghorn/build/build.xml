@@ -14,6 +14,12 @@
       value="output.csv"
    />
 
+  <property
+      name="rest_ports"
+      value="8080"
+   />
+
+
   
   <!-- global properties for this build file -->
   
@@ -122,7 +128,7 @@
                    ${pronghorn_libs_class_path}:
                    ${experiments_build_classes_dir}"
         classname="${experiments_package}.SingleControllerLatency" fork="yes">
-        <arg line="8080"/>
+        <arg line="${rest_ports}"/>
         <arg line="${latency_num_ops}"/>
         <arg line="${latency_num_threads}"/>
         <arg line="${output_filename}"/>
@@ -147,7 +153,7 @@
                    ${pronghorn_libs_class_path}:
                    ${experiments_build_classes_dir}"
         classname="${experiments_package}.SingleControllerThroughput" fork="yes">
-        <arg line="8080"/>
+        <arg line="${rest_ports}"/>
         <arg line="10000"/>
         <arg line="false"/>
         <arg line="1"/>
@@ -172,7 +178,7 @@
                    ${pronghorn_libs_class_path}:
                    ${experiments_build_classes_dir}"
         classname="${experiments_package}.SingleControllerThroughput" fork="yes">
-        <arg line="8080"/>
+        <arg line="${rest_ports}"/>
         <arg line="10000"/>
         <arg line="true"/>
         <arg line="1"/>
@@ -197,7 +203,7 @@
                    ${pronghorn_libs_class_path}:
                    ${experiments_build_classes_dir}"
         classname="${experiments_package}.SingleControllerThroughput" fork="yes">
-        <arg line="8080"/>
+        <arg line="${rest_ports}"/>
         <arg line="10000"/>
         <arg line="false"/>
         <arg line="2"/>
@@ -222,7 +228,7 @@
                    ${pronghorn_libs_class_path}:
                    ${experiments_build_classes_dir}"
         classname="${experiments_package}.SingleControllerThroughput" fork="yes">
-        <arg line="8080"/>
+        <arg line="${rest_ports}"/>
         <arg line="10000"/>
         <arg line="true"/>
         <arg line="2"/>
@@ -253,7 +259,7 @@
                    ${pronghorn_libs_class_path}:
                    ${experiments_build_classes_dir}"
         classname="${experiments_package}.Ordering" fork="yes">
-        <arg line="8080"/>
+        <arg line="${rest_ports}"/>
         <arg line="${ordering_num_tests}"/>
         <arg line="${ordering_ensure_ordering}"/>
         <arg line="${output_filename}"/>
@@ -279,8 +285,7 @@
                    ${pronghorn_libs_class_path}:
                    ${experiments_build_classes_dir}"
         classname="${experiments_package}.Fairness" fork="yes">
-        <arg line="8080"/>
-        <arg line="8081"/>
+        <arg line="${rest_ports}"/>
         <arg line="${wound_wait}"/>
         <arg line="${output_filename}"/>
     </java>
@@ -314,7 +319,7 @@
         classname="${experiments_package}.SingleControllerError"
         fork="yes">
 
-        <arg line="8080"/>
+        <arg line="${rest_ports}"/>
         <arg line="${error_num_ops_to_run_per_experiment}"/>
         <arg line="${error_num_experiments_to_run}"/>
         <arg line="${error_failure_prob}"/>

@@ -1,0 +1,28 @@
+alias Endpoint PronghornInstance as 'JavaPronghornInstance.PronghornInstance';
+
+
+Struct EndpointWrapper
+{
+    Endpoint PronghornInstance p_inst;
+}
+
+Endpoint PronghornService
+{
+    TVar List (element : Struct EndpointWrapper) children_instances;
+    TVar List (element : Struct EndpointWrapper) parent_instances;
+
+    add_child(Endpoint PronghornInstance new_child)
+    {
+        Struct EndpointWrapper wrapper;
+        wrapper.p_inst = new_child;
+        children_instances.append(wrapper);
+    }
+
+    request_ops_across_children()
+    {
+        // atomically {
+        //     for (Endpoint PronghornInstance child in children_instances)
+        //         child.distributed_request_op();
+        // }
+    }
+}

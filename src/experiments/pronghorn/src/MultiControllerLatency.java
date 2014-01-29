@@ -237,7 +237,6 @@ public class MultiControllerLatency
             {
                 long start_time = System.nanoTime();
                 try {
-                    System.out.println("Running");
                     prong.single_op_and_ask_children_for_single_op();
                 } catch (Exception _ex) {
                     _ex.printStackTrace();

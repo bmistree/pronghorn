@@ -235,6 +235,34 @@
   </target>
 
 
+  <!-- Ant for running test for latency test with no contention -->
+  <property
+      name="latency_children_to_contact_host_ports"
+      value="-1"/>
+  <property
+      name="latency_port_to_listen_for_connections_on"
+      value="9393"/>
+  <target
+      name="run_MultiControllerLatency"
+      depends="compile_libs,compile_experiments"
+      description="Run no contention latency benchmark across instances">
+    <java
+        dir="${experiments_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}:
+                   ${experiments_build_classes_dir}"
+        classname="${experiments_package}.MultiControllerLatency" fork="yes">
+        <arg line="${rest_ports}"/>
+        <arg line="${latency_children_to_contact_host_ports}"/>
+        <arg line="${latency_port_to_listen_for_connections_on}"/>        
+        <arg line="${latency_num_ops}"/>
+        <arg line="${output_filename}"/>
+    </java>
+  </target>
+
+  
   <!--
       Ant for running test for running test to show that we handle
       reordering

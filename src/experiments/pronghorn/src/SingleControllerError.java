@@ -210,7 +210,7 @@ public class SingleControllerError {
     }
 
 
-    private static class ErrorShim extends SingleHostRESTShim
+    public static class ErrorShim extends SingleHostRESTShim
     {
         public ErrorShim(int _floodlight_port)
         {
@@ -280,7 +280,7 @@ public class SingleControllerError {
        FloodlightRoutingTableToHardware, except every so often
        responds that could not push change to hardware
      */
-    private static class ErrorProneFloodlightRoutingTableToHardware
+    public static class ErrorProneFloodlightRoutingTableToHardware
         extends FloodlightRoutingTableToHardware
     {
         public static class ErrorProneFactory

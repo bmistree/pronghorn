@@ -90,6 +90,20 @@ Endpoint PronghornInstance
     }
 
     
+    insert_entry_on_all_switches_and_partners(Text ip_src)
+    {
+        atomically
+        {
+            insert_entry_on_all_switches(ip_src);
+
+            for (Struct ConnectionWrapper wrapper in children)
+            {
+                Endpoint PronghornConnection endpt = wrapper.child;
+                endpt.insert_entry_on_all_switches_and_partners(ip_src);
+            }
+        }
+    }
+    
 
     
     

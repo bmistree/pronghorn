@@ -262,6 +262,39 @@
     </java>
   </target>
 
+
+  <!-- Ant for running multi controller error-->
+  <property
+      name="error_children_to_contact_host_ports"
+      value="-1"/>
+  <property
+      name="error_port_to_listen_for_connections_on"
+      value="5393"/>
+  <property
+      name="error_num_ops"
+      value="20"/>
+  <target
+      name="run_MultiControllerError"
+      depends="compile_libs,compile_experiments"
+      description="Run multi controller error">
+    <java
+        dir="${experiments_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}:
+                   ${experiments_build_classes_dir}"
+        classname="${experiments_package}.MultiControllerError" fork="yes">
+        <arg line="${rest_ports}"/>
+        <arg line="${error_children_to_contact_host_ports}"/>
+        <arg line="${error_port_to_listen_for_connections_on}"/>
+        <arg line="${error_num_ops}"/>
+        <arg line="${error_failure_prob}"/>
+        <arg line="${output_filename}"/>
+    </java>
+  </target>
+
+  
   <!--
       Ant for running test for throughput test with fine grained
       locking and no contention on multiple controllers

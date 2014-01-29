@@ -75,8 +75,24 @@ Endpoint PronghornInstance
             }
         }
     }
+
+    single_op_and_ask_children_for_single_op_switch_id(Text switch_id)
+    {
+        atomically {
+            single_op(switch_id);
+
+            for (Struct ConnectionWrapper wrapper in children)
+            {
+                Endpoint PronghornConnection endpt = wrapper.child;
+                endpt.single_op_and_ask_children_for_single_op_switch_id(switch_id);
+            }
+        }
+    }
+
     
 
+    
+    
     insert_entry_on_all_switches(Text ip_src)
     {
         atomically

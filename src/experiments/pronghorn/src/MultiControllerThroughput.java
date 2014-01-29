@@ -9,9 +9,13 @@ import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 import pronghorn.FloodlightRoutingTableToHardware;
 import java.lang.Thread;
-import java.util.ArrayList;
-import java.util.List;
 import java.io.*;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.List;
+import java.util.Collections;
+import java.util.concurrent.locks.ReentrantLock;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.HashSet;
 import java.util.Set;
 import experiments.Util.HostPortPair;
@@ -23,20 +27,23 @@ import ralph.Endpoint;
 import ralph.Ralph;
 
 
-public class MultiControllerLatency
-{
+
+public class MultiControllerThroughput {
+	
     public static final int FLOODLIGHT_PORT_CSV_ARG_INDEX = 0;
     public static final int CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX = 1;
     public static final int PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX = 2;
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 3;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
 
-    public static PronghornInstance prong = null;
-    
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
 
-    public final static RalphGlobals ralph_globals = new RalphGlobals();
+    private static PronghornInstance prong = null;
+    
+
+    private static final RalphGlobals ralph_globals = new RalphGlobals();
+    
     
     public static void main (String[] args)
     {
@@ -46,7 +53,7 @@ public class MultiControllerLatency
             print_usage();
             return;
         }
-        
+
         Set<Integer> floodlight_port_set = Util.parse_csv_ports(
             args[FLOODLIGHT_PORT_CSV_ARG_INDEX]);
 
@@ -59,21 +66,19 @@ public class MultiControllerLatency
 
         int port_to_listen_on =
             Integer.parseInt(args[PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX]);
+
+        int num_ops_to_run = 
+                Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
         
-        int num_ops_to_run =
-            Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
-
-        int num_threads = 1;
-
-
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
+
+        int threads_per_switch = 1;
 
         
         /* Start up pronghorn */
         try {
             prong = new PronghornInstance(
-                ralph_globals,
-                "", new SingleSideConnection());
+                ralph_globals,"", new SingleSideConnection());
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
@@ -82,7 +87,7 @@ public class MultiControllerLatency
         Set<SingleHostRESTShim> shim_set = new HashSet<SingleHostRESTShim>();
         for (Integer port : floodlight_port_set)
             shim_set.add ( new SingleHostRESTShim(port.intValue()));
-        
+
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 prong,
@@ -94,10 +99,10 @@ public class MultiControllerLatency
             shim.start();
         }
 
+
         // start listening for connections from parents
         Ralph.tcp_accept(
             new DummyConnectionConstructor(), "0.0.0.0", port_to_listen_on,ralph_globals);
-        
 
         // now actually try to conect to parent
         for (HostPortPair hpp : children_to_contact_hpp)
@@ -124,91 +129,143 @@ public class MultiControllerLatency
             assert(false);
         }
 
-        
-        
 
-
-        /* Discover the id of the first connected switch */
-        String switch_id = null;
+        NonAtomicInternalList<String,String> switch_list = null;
+        int num_switches = -1;
         try {
-            NonAtomicInternalList<String,String> switch_list =
-                prong.list_switch_ids();
+            switch_list = prong.list_switch_ids();
+            num_switches = switch_list.get_len(null);
 
-            if (switch_list.get_len(null) == 0)
+            if (num_switches == 0)
             {
                 System.out.println(
                     "No switches attached to pronghorn: error");
                 assert(false);
             }
-
-            // get first switch id from key.  (If used Double(1), would get
-            // second element from list)
-            Double index_to_get_from = new Double(0);
-            switch_id = switch_list.get_val_on_key(null,index_to_get_from);
         } catch (Exception _ex) {
             _ex.printStackTrace();
             assert(false);
         }
+        
+        /* Spawn thread per switch to operate on it */
+        ArrayList<Thread> threads = new ArrayList<Thread>();
+        // each thread has a unique index into this results map
+        ConcurrentHashMap<String,List<Long>> results =
+            new ConcurrentHashMap<String,List<Long>>();
 
-
-        if (num_ops_to_run != 0)
-        {
-            List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
-            for (int i = 0; i < num_threads; ++i)
-                all_threads.add(new LatencyThread(prong,switch_id,num_ops_to_run));
-
-            for (LatencyThread lt : all_threads)
-                lt.start();
-
-            // wait for all threads to finish and collect their results
-            for (LatencyThread lt : all_threads)
-            {
-                try {
-                    lt.join();
-                } catch (Exception _ex) {
-                    _ex.printStackTrace();
-                    assert(false);
-                    return;
-                }
+        long start = System.nanoTime();
+        for (int i = 0; i < num_switches; i++) {
+            String switch_id = null;
+            try { 
+                switch_id = switch_list.get_val_on_key(null, new Double((double)i));
+            } catch (Exception _ex) {
+                _ex.printStackTrace();
+                assert(false);
             }
 
-            // print csv list of runtimes to file
-            Writer w;
+            ThroughputThread t =
+                new ThroughputThread(
+                    switch_id, prong, num_ops_to_run, results);
+            
+            t.start();
+            threads.add(t);
+        }
+        for (Thread t : threads) {
             try {
-                w = new PrintWriter(new FileWriter(output_filename));
-                for (LatencyThread lt : all_threads)
-                {
-                    lt.write_times(w);
-                    w.write("\n");
-                }
-                w.close();
-            } catch (IOException e) {
-                e.printStackTrace();
+                t.join();
+            } catch (Exception _ex) {
+                _ex.printStackTrace();
                 assert(false);
             }
         }
+        long end = System.nanoTime();
+        long elapsedNano = end-start;
+
+        Writer w;
+        try {
+            w = new PrintWriter(new FileWriter(output_filename));
+
+            // TODO maybe use a csv library...
+            for (String switch_id : results.keySet()) {
+                List<Long> times = results.get(switch_id);
+                String line = "";
+                for (Long time : times)
+                    line += time.toString() + ",";
+                if (line != "") {
+                    // trim off trailing comma
+                    line = line.substring(0, line.length() - 1);
+                }
+                w.write(line);
+                w.write("\n");
+            }
+            w.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+            assert(false);
+        }
+
+        double throughputPerS =
+            ((double) (num_switches * threads_per_switch * num_ops_to_run)) /
+            ((double)elapsedNano/1000000000);
+        System.out.println("Switches: " + num_switches + " Throughput(op/s): " + throughputPerS);
 
         while (true)
         {
-            try{
+            try {
                 Thread.sleep(1000);
-            } catch (InterruptedException _ex) {
+            } catch(InterruptedException _ex) {
                 _ex.printStackTrace();
                 break;
             }
         }
-
+        
         // actually tell shims to stop.
         for (SingleHostRESTShim shim : shim_set)
             shim.stop();
     }
-
-
+    
     public static void print_usage()
     {
         System.out.println(
             "\nSingleHost <int: floodlight port number> " + 
-            "<int: num ops to run> <output_filename>\n");
+            "<int: num ops to run>\n");
+    }
+    
+    public static class ThroughputThread extends Thread {
+
+        private static final AtomicInteger atom_int = new AtomicInteger(0);
+        
+        String switch_id;
+        int num_ops_to_run;
+        PronghornInstance prong;
+        ConcurrentHashMap<String,List<Long>> results;
+        String result_id = null;
+        
+        public ThroughputThread(
+            String switch_id, PronghornInstance prong, int num_ops_to_run,
+            ConcurrentHashMap<String,List<Long>> results)
+        {
+            this.switch_id = switch_id;
+            this.num_ops_to_run = num_ops_to_run;
+            this.prong = prong;
+            this.results = results;
+            this.result_id = switch_id + atom_int.getAndIncrement();
+    	}
+
+    	public void run() {
+            ArrayList<Long> completion_times = new ArrayList<Long>();
+            for (int i = 0; i < num_ops_to_run; ++i)
+            {
+                try {
+                    prong.single_op_and_ask_children_for_single_op_switch_id(switch_id);
+                } catch (Exception _ex) {
+                    _ex.printStackTrace();
+                    assert(false);
+                }
+                completion_times.add(System.nanoTime());
+            }
+            results.put(result_id,completion_times);
+    	}
     }
 
 
@@ -232,50 +289,5 @@ public class MultiControllerLatency
             return to_return;
         }
     }
-
-
-    private static class LatencyThread extends Thread
-    {
-        public List <Long> all_times = new ArrayList<Long>();
-
-        
-        private PronghornInstance prong = null;
-        private String switch_id = null;
-        private int num_ops_to_run = -1;
-        
-        public LatencyThread(
-            PronghornInstance prong, String switch_id, int num_ops_to_run)
-        {
-            this.prong = prong;
-            this.switch_id = switch_id;
-            this.num_ops_to_run = num_ops_to_run;
-        }
-
-        public void run()
-        {
-            /* perform all operations and determine how long they take */
-            for (int i = 0; i < num_ops_to_run; ++i)
-            {
-                long start_time = System.nanoTime();
-                try {
-                    System.out.println("\nRunning\n");
-                    prong.single_op_and_ask_children_for_single_op();
-                } catch (Exception _ex) {
-                    _ex.printStackTrace();
-                    assert(false);
-                }
-                long total_time = System.nanoTime() - start_time;
-                all_times.add(total_time);
-            }
-        }
-        
-        /**
-           Write the latencies that each operation took as a csv
-         */
-        public void write_times(Writer writer) throws IOException
-        {
-            for (Long latency : all_times)
-                writer.write(latency.toString() + ",");
-        }
-    }
+    
 }

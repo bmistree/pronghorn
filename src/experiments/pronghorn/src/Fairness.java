@@ -115,9 +115,9 @@ public class Fairness
         for (Integer port: port_set)
         {
             if (floodlight_port_a == -1)
-                floodlight_port_b = port.intValue();
-            else
                 floodlight_port_a = port.intValue();
+            else
+                floodlight_port_b = port.intValue();
         }
         
         NUM_EXTERNAL_CALLS =

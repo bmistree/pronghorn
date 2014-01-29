@@ -1,6 +1,8 @@
 alias Struct RoutingTableEntry as 'pronghorn.RTable.RoutingTableEntry';
 alias Struct Switch as 'pronghorn.SwitchJava.Switch';
 
+alias Endpoint PronghornConnection as 'single_host.JavaPronghornConnection.PronghornConnection';
+
 Struct RoutingTableEntry
 {
     TVar TrueFalse active;
@@ -21,11 +23,27 @@ Struct Switch
     TVar List (element: Struct RoutingTableEntry) rtable;
 }
 
+Struct ConnectionWrapper
+{
+    Endpoint PronghornConnection child;
+}
+
+
 Endpoint PronghornInstance
 {
     TVar Map(from: Text, to: Struct Switch) instance_switches;
 
     TVar Number coarse_lock_simulator = 0;
+
+    TVar List(element : Struct ConnectionWrapper) children;
+    
+
+    add_child_connection(Endpoint PronghornConnection new_child)
+    {
+        Struct ConnectionWrapper wrapper;
+        wrapper.child = new_child;
+        children.append(wrapper);
+    }
     
     add_switch(Struct Switch new_switch)
     {
@@ -43,6 +61,21 @@ Endpoint PronghornInstance
         return instance_switches.size();
     }
 
+
+    single_op_and_ask_children_for_single_op()
+    {
+        atomically {
+            for (Text switch_id in instance_switches)
+                single_op(switch_id);
+
+            for (Struct ConnectionWrapper wrapper in children)
+            {
+                Endpoint PronghornConnection endpt = wrapper.child;
+                endpt.single_op_and_ask_children_for_single_op();
+            }
+        }
+    }
+    
 
     insert_entry_on_all_switches(Text ip_src)
     {

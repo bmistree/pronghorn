@@ -88,6 +88,15 @@
       <arg line="${single_host_package}"/>
       <arg line="JavaPronghornInstance"/>
     </exec>
+    
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="${single_host_ralph_src_dir}/pronghorn_connection.rph"/>
+      <arg line="${single_host_ralph_emitted_dir}/JavaPronghornConnection.java"/>
+      <arg line="${single_host_package}"/>
+      <arg line="JavaPronghornConnection"/>
+    </exec>
+    
   </target>
 
   

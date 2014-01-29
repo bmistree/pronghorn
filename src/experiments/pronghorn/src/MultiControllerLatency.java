@@ -72,7 +72,7 @@ public class MultiControllerLatency
         /* Start up pronghorn */
         try {
             prong = new PronghornInstance(
-                new RalphGlobals(),
+                ralph_globals,
                 "", new SingleSideConnection());
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
@@ -222,7 +222,7 @@ public class MultiControllerLatency
             PronghornConnection to_return = null;
             System.out.println("\nBuilt a connection\n\n");
             try {
-                to_return = new PronghornConnection(globals,host_uuid,conn_obj);
+                to_return = new PronghornConnection(ralph_globals,host_uuid,conn_obj);
                 to_return.set_service(prong);
                 // prong.add_child_connection(to_return);
             } catch (Exception _ex) {

@@ -55,7 +55,8 @@ public class Fairness
 {
     public static final int FLOODLIGHT_PORTS_ARG_INDEX = 0;
     public static final int USE_WOUND_WAIT_ARG_INDEX = 1;
-    public static final int OUTPUT_FILENAME_INDEX = 2;
+    public static final int NUM_EXTERNAL_CALLS_ARG_INDEX = 2;    
+    public static final int OUTPUT_FILENAME_INDEX = 3;
     
     // wait this long for pronghorn to add all switches
     public static final int STARTUP_SETTLING_TIME_WAIT = 5000;
@@ -72,8 +73,8 @@ public class Fairness
     // Each controller tries to dump this much work into system when
     // it starts.  (Note: one controller is given preference and
     // begins dumping first)
-    final static int NUM_THREADS_EACH_SIDE = 100;
-    final static int NUM_EXTERNAL_CALLS = 100;
+    static int NUM_EXTERNAL_CALLS = 1000;
+    
     // how many ms to wait before requesting b to dump its tasks after a has
     // started its tasks
     final static int A_HEADSTART_TIME_MS = 8;
@@ -94,7 +95,7 @@ public class Fairness
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 3)
+        if (args.length != 4)
         {
             assert(false);
             return;
@@ -119,7 +120,9 @@ public class Fairness
                 floodlight_port_a = port.intValue();
         }
         
-
+        NUM_EXTERNAL_CALLS =
+            Integer.parseInt(args[NUM_EXTERNAL_CALLS_ARG_INDEX]);
+        
         boolean use_wound_wait =
             Boolean.parseBoolean(args[USE_WOUND_WAIT_ARG_INDEX]);
 
@@ -272,7 +275,7 @@ public class Fairness
         {
             try {
                 endpt.single_op_and_partner();
-                tsafe_queue.add(endpoint_id);
+                tsafe_queue.add(endpoint_id + "|" + System.nanoTime());
             } catch(Exception ex) {
                 ex.printStackTrace();
                 had_exception.set(true);
@@ -283,8 +286,7 @@ public class Fairness
 
     public static ExecutorService create_executor()
     {
-        ExecutorService executor = Executors.newFixedThreadPool(
-            NUM_THREADS_EACH_SIDE,
+        ExecutorService executor = Executors.newCachedThreadPool(
             new ThreadFactory()
             {
                 // each thread created is a daemon

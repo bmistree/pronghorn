@@ -297,6 +297,9 @@
   <property
       name="wound_wait"
       value="false"/>
+  <property
+      name="fairness_num_ops"
+      value="1000"/>
   <target
       name="run_Fairness"
       depends="compile_libs,compile_experiments"
@@ -313,6 +316,7 @@
         classname="${experiments_package}.Fairness" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="${wound_wait}"/>
+        <arg line="${fairness_num_ops}"/>
         <arg line="${output_filename}"/>
     </java>
   </target>

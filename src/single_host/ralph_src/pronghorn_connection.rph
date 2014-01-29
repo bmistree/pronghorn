@@ -1,0 +1,25 @@
+alias Endpoint PronghornInstance as 'single_host.JavaPronghornInstance.PronghornInstance';
+
+Endpoint PronghornConnection
+{
+    Endpoint PronghornInstance service;
+
+    set_service(Endpoint PronghornInstance to_set_to)
+    {
+        service = to_set_to;
+    }
+
+    // called from service
+    single_op_and_ask_children_for_single_op()
+    {
+        @partner.receive_single_op_and_ask_children_for_single_op();
+    }
+
+    // called exclusively from partner
+    receive_single_op_and_ask_children_for_single_op()
+    {
+        service.single_op_and_ask_children_for_single_op();
+    }
+    
+}
+

@@ -77,24 +77,32 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
     public boolean switch_rtable_updates(
         String switch_id,List<RTableUpdate> updates)
     {
-        for (RTableUpdate update : updates)
-        {
-            String rtable_update_json =
-                rtable_update_to_json(switch_id, update);
+        // for (RTableUpdate update : updates)
+        // {
+        //     String rtable_update_json =
+        //         rtable_update_to_json(switch_id, update);
 
-            if (update.op == RTableUpdate.Operation.INSERT)
-            {
-                String update_resource = "/wm/staticflowentrypusher/json";
-                issue_post(update_resource,rtable_update_json);
-            }
-            else
-            {
-                String update_resource = "/wm/staticflowentrypusher/json/delete";
-                issue_post(update_resource,rtable_update_json);
-            }
+        //     if (update.op == RTableUpdate.Operation.INSERT)
+        //     {
+        //         String update_resource = "/wm/staticflowentrypusher/json";
+        //         issue_post(update_resource,rtable_update_json);
+        //     }
+        //     else
+        //     {
+        //         String update_resource = "/wm/staticflowentrypusher/json/delete";
+        //         issue_post(update_resource,rtable_update_json);
+        //     }
+        // }
+        // String ret = issue_post("/wm/pronghorn/switch/" + switch_id + "/barrier/json", "");
+        // return ret.equals("true");
+
+        try {
+            Thread.sleep(4);
+        } catch (InterruptedException _ex) {
+            _ex.printStackTrace();
         }
-        String ret = issue_post("/wm/pronghorn/switch/" + switch_id + "/barrier/json", "");
-        return ret.equals("true");
+        return true;
+        
     }
 
     @Override

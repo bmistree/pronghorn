@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.io.*;
 import ralph.Ralph;
+import ralph.RalphGlobals;
 import ralph.BoostedManager.DeadlockAvoidanceAlgorithm;
 
 import java.util.HashSet;
@@ -144,7 +145,8 @@ public class Fairness
 
         // listen for connections to side b on port TCP_LISTENING_PORT
         Ralph.tcp_accept(
-            side_b_constructor, HOST_NAME, TCP_LISTENING_PORT);
+            side_b_constructor, HOST_NAME, TCP_LISTENING_PORT,
+            new RalphGlobals());
 
         // wait for things to settle down
         try {        
@@ -157,7 +159,8 @@ public class Fairness
         // try to connect to other side
         try {
             side_a = (PronghornInstance)Ralph.tcp_connect(
-                side_a_constructor, HOST_NAME, TCP_LISTENING_PORT);
+                side_a_constructor, HOST_NAME, TCP_LISTENING_PORT,
+                new RalphGlobals());
         } catch (IOException e) {
             e.printStackTrace();
             assert(false);

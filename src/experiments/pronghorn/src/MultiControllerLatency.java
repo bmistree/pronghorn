@@ -21,7 +21,7 @@ import ralph.RalphGlobals;
 import ralph.EndpointConstructorObj;
 import ralph.Endpoint;
 import ralph.Ralph;
-
+import ralph.RalphGlobals;
 
 public class MultiControllerLatency
 {
@@ -36,6 +36,8 @@ public class MultiControllerLatency
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
 
+    public final static RalphGlobals ralph_globals = new RalphGlobals();
+    
     public static void main (String[] args)
     {
         /* Grab arguments */
@@ -94,7 +96,7 @@ public class MultiControllerLatency
 
         // start listening for connections from parents
         Ralph.tcp_accept(
-            new DummyConnectionConstructor(), "0.0.0.0", port_to_listen_on);
+            new DummyConnectionConstructor(), "0.0.0.0", port_to_listen_on,ralph_globals);
         
 
         // now actually try to conect to parent
@@ -104,7 +106,7 @@ public class MultiControllerLatency
             try {
                 System.out.println("\nConnecting to " + hpp.host + "  " + hpp.port);
                 connection = (PronghornConnection)Ralph.tcp_connect(
-                    new DummyConnectionConstructor(), hpp.host, hpp.port);
+                    new DummyConnectionConstructor(), hpp.host, hpp.port,ralph_globals);
                 connection.set_service(prong);
                 prong.add_child_connection(connection);
             } catch(Exception e) {

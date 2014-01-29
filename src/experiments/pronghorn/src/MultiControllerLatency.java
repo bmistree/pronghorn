@@ -102,6 +102,7 @@ public class MultiControllerLatency
         {
             PronghornConnection connection = null;
             try {
+                System.out.println("\nConnecting to " + hpp.host + "  " + hpp.port);
                 connection = (PronghornConnection)Ralph.tcp_connect(
                     new DummyConnectionConstructor(), hpp.host, hpp.port);
                 connection.set_service(prong);
@@ -220,7 +221,7 @@ public class MultiControllerLatency
             System.out.println("\nBuilt a connection\n\n");
             try {
                 to_return = new PronghornConnection(globals,host_uuid,conn_obj);
-                // to_return.set_service(prong);
+                to_return.set_service(prong);
                 // prong.add_child_connection(to_return);
             } catch (Exception _ex) {
                 _ex.printStackTrace();

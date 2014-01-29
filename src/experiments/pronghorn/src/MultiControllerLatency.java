@@ -50,7 +50,7 @@ public class MultiControllerLatency
 
         Set<HostPortPair> children_to_contact_hpp = null;
         if (! args[CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX].equals("-1"))
-            Util.parse_csv_host_port_pairs(
+            children_to_contact_hpp = Util.parse_csv_host_port_pairs(
                 args[CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX]);
         else
             children_to_contact_hpp = new HashSet<HostPortPair>();
@@ -94,9 +94,25 @@ public class MultiControllerLatency
 
         // start listening for connections from parents
         Ralph.tcp_accept(
-            new ConnectionConstructor(), "0.0.0.0", port_to_listen_on);
+            new DummyConnectionConstructor(), "0.0.0.0", port_to_listen_on);
         
 
+        // now actually try to conect to parent
+        for (HostPortPair hpp : children_to_contact_hpp)
+        {
+            PronghornConnection connection = null;
+            try {
+                connection = (PronghornConnection)Ralph.tcp_connect(
+                    new DummyConnectionConstructor(), hpp.host, hpp.port);
+                connection.set_service(prong);
+                prong.add_child_connection(connection);
+            } catch(Exception e) {
+                e.printStackTrace();
+                assert(false);
+            }
+        }
+
+        
         /* wait a while to ensure that all switches are connected */
         try {
             Thread.sleep(SETTLING_TIME_WAIT);
@@ -105,6 +121,8 @@ public class MultiControllerLatency
             assert(false);
         }
 
+        
+        
 
 
         /* Discover the id of the first connected switch */
@@ -190,7 +208,8 @@ public class MultiControllerLatency
             "<int: num ops to run> <output_filename>\n");
     }
 
-    private static class ConnectionConstructor implements EndpointConstructorObj
+
+    private static class DummyConnectionConstructor implements EndpointConstructorObj
     {
         @Override
         public Endpoint construct(
@@ -198,12 +217,11 @@ public class MultiControllerLatency
             RalphConnObj.ConnectionObj conn_obj)
         {
             PronghornConnection to_return = null;
-
+            System.out.println("\nBuilt a connection\n\n");
             try {
                 to_return = new PronghornConnection(globals,host_uuid,conn_obj);
-                to_return.set_service(prong);
-                prong.add_child_connection(to_return);
-
+                // to_return.set_service(prong);
+                // prong.add_child_connection(to_return);
             } catch (Exception _ex) {
                 _ex.printStackTrace();
                 assert(false);
@@ -237,6 +255,7 @@ public class MultiControllerLatency
             {
                 long start_time = System.nanoTime();
                 try {
+                    System.out.println("\nRunning\n");
                     prong.single_op_and_ask_children_for_single_op();
                 } catch (Exception _ex) {
                     _ex.printStackTrace();

@@ -160,6 +160,34 @@
   </target>
 
 
+  <property
+      name="variable_contention_num_threads"
+      value="1"/>
+  <property
+      name="variable_contention_num_ops"
+      value="1000"/>  
+  <target
+      name="run_VariableContentionThroughput"
+      depends="compile_libs,compile_experiments"
+      description="Run no contention throughput benchmark on single instance.">
+    <java
+        dir="${experiments_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}:
+                   ${experiments_build_classes_dir}"
+        classname="${experiments_package}.SingleControllerThroughput" fork="yes">
+        <arg line="${rest_ports}"/>
+        <arg line="${variable_contention_num_ops}"/>
+        <arg line="false"/>
+        <arg line="${variable_contention_num_threads}"/>
+        <arg line="${output_filename}"/>
+    </java>
+  </target>
+
+  
+
   <!--
       Ant for running test for throughput with coarse locking and no
       contention.

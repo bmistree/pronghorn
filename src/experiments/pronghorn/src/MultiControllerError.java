@@ -218,22 +218,16 @@ public class MultiControllerError {
         HashMap<String,Integer> rules_in_system = shim.num_rules_in_system();
         // first check for agreement betweeen number of flow table
         // entries for each switch.
+
+        //only one switch in system
+        
         int num_rules_in_system = -1;
         int result = -1;
         for (Entry<String,Integer> pairs : rules_in_system.entrySet())
         {
-            int rules_on_switch = pairs.getValue().intValue();
-            if (num_rules_in_system == -1)
-                num_rules_in_system = rules_on_switch;
-            
-            if (num_rules_in_system != rules_on_switch)
-                result = -1;
+            result = pairs.getValue().intValue();
         }
-
-        if (result != -1)
-            result = num_rules_in_system;
         System.out.println("\nFinished experiment\n");
-
         
         // actually output results
         Writer w;

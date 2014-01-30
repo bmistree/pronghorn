@@ -207,7 +207,7 @@ public class MultiControllerError {
 
         // sleep, until every controller's operations are done.
         try {
-            Thread.sleep(SLEEP_TIME);
+            Thread.sleep(2*SLEEP_TIME);
         } catch (InterruptedException _ex) {
             _ex.printStackTrace();
         }

@@ -52,6 +52,10 @@ public class MultiControllerError {
 
     private static final RalphGlobals ralph_globals = new RalphGlobals();
     private static PronghornInstance prong = null;
+
+    // wait 50s for other controllers to join.  Wait 50s before
+    // reporting numbers back.
+    private static final int SLEEP_TIME = 50*1000;
     
     public static void main (String[] args)
     {
@@ -173,7 +177,16 @@ public class MultiControllerError {
         }
 
         List<Boolean> run_results = new ArrayList<Boolean>();
-            
+
+        // sleep for about 5 minutes so that every controller has
+        // joined
+        try {
+            Thread.sleep(SLEEP_TIME);
+        } catch (InterruptedException _ex) {
+            _ex.printStackTrace();
+        }
+        
+        
         String a_b_ip = "18.18.";
         try {
             for (int i = 0; i < num_ops_to_run_per_experiment; ++i)
@@ -192,50 +205,41 @@ public class MultiControllerError {
             assert(false);
         }
 
-
-        if (num_ops_to_run_per_experiment != 0)
-        {
-            // ensure that each switch attached to local controller
-            // has correct number of flow table entries.
-            HashMap<String,Integer> rules_in_system = shim.num_rules_in_system();
-            // first check for agreement betweeen number of flow table
-            // entries for each switch.
-            int num_rules_in_system = -1;
-            boolean result = true;
-            for (Entry<String,Integer> pairs : rules_in_system.entrySet())
-            {
-                int rules_on_switch = pairs.getValue().intValue();
-                if (num_rules_in_system == -1)
-                    num_rules_in_system = rules_on_switch;
-
-                if (num_rules_in_system != rules_on_switch)
-                    result = false;
-            }
-
-            // second, check that number of flow table entries on each
-            // switch agrees with number we'd expect from having run
-            // num_ops_to_run_per_experiment for each test.
-            if (num_rules_in_system != num_ops_to_run_per_experiment)
-                result = false;
-
-            run_results.add(result);
-
-            System.out.println("\nFinished experiment\n");
+        // sleep, until every controller's operations are done.
+        try {
+            Thread.sleep(SLEEP_TIME);
+        } catch (InterruptedException _ex) {
+            _ex.printStackTrace();
         }
 
 
+        // ensure that each switch attached to local controller
+        // has correct number of flow table entries.
+        HashMap<String,Integer> rules_in_system = shim.num_rules_in_system();
+        // first check for agreement betweeen number of flow table
+        // entries for each switch.
+        int num_rules_in_system = -1;
+        int result = -1;
+        for (Entry<String,Integer> pairs : rules_in_system.entrySet())
+        {
+            int rules_on_switch = pairs.getValue().intValue();
+            if (num_rules_in_system == -1)
+                num_rules_in_system = rules_on_switch;
+            
+            if (num_rules_in_system != rules_on_switch)
+                result = -1;
+        }
+
+        if (result != -1)
+            result = num_rules_in_system;
+        System.out.println("\nFinished experiment\n");
+
+        
         // actually output results
         Writer w;
         try {
             w = new PrintWriter(new FileWriter(output_filename));
-            for (Boolean result : run_results)
-            {
-                if (result.booleanValue())
-                    w.write("1");
-                else
-                    w.write("0");
-                w.write(",");
-            }
+            w.write(Integer.toString(result));
             w.flush();
             w.close();
         } catch (IOException e) {
@@ -258,10 +262,6 @@ public class MultiControllerError {
         // disconnect the shim connection
         shim.stop();
     }
-
-
-
-
 
 
     private static class DummyConnectionConstructor implements EndpointConstructorObj

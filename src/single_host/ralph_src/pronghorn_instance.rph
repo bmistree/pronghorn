@@ -79,6 +79,7 @@ Endpoint PronghornInstance
     single_op_and_ask_children_for_single_op_switch_id(Text switch_id)
     {
         atomically {
+            print ('\nGot in top\n');
             single_op(switch_id);
 
             for (Struct ConnectionWrapper wrapper in children)
@@ -86,6 +87,7 @@ Endpoint PronghornInstance
                 Endpoint PronghornConnection endpt = wrapper.child;
                 endpt.single_op_and_ask_children_for_single_op_switch_id(switch_id);
             }
+            print ('\nGot in bottom\n');
         }
     }
 

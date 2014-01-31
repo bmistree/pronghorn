@@ -237,6 +237,29 @@
     </java>
   </target>
 
+  <!--
+      Ant for running test for throughput test with fine-grained
+      locking and contention
+  -->
+  <target
+      name="run_ReadOnly"
+      depends="compile_libs,compile_experiments"
+      description="Run read only">
+    <java
+        dir="${experiments_build_classes_dir}"
+        classpath="${single_host_build_classes_dir}:
+                   ${lib_class_path}:
+                   ${proto_class_path}:
+                   ${pronghorn_libs_class_path}:
+                   ${experiments_build_classes_dir}"
+        classname="${experiments_package}.ReadOnlyLatency" fork="yes">
+        <arg line="${rest_ports}"/>
+        <arg line="10000"/>
+        <arg line="${output_filename}"/>
+    </java>
+  </target>
+
+  
 
   <!--
       Ant for running test for throughput with coarse locking and

@@ -91,6 +91,15 @@ Endpoint PronghornInstance
         }
     }
 
+    read_first_instance_routing_table()
+    {
+        atomically {
+            Struct Switch target_switch =
+                instance_switches.get(last_added_switch_id);
+            target_switch.rtable.size();
+        }        
+    }
+    
     remove_entry_on_last_switch()
     {
         atomically {

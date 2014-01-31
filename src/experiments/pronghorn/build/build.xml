@@ -152,7 +152,7 @@
                    ${experiments_build_classes_dir}"
         classname="${experiments_package}.SingleControllerThroughput" fork="yes">
         <arg line="${rest_ports}"/>
-        <arg line="10000"/>
+        <arg line="30000"/>
         <arg line="false"/>
         <arg line="1"/>
         <arg line="${output_filename}"/>

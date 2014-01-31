@@ -179,7 +179,7 @@ public class SingleControllerVariableContentionAllSwitches {
             for (int i = 0; i < num_ops_to_run; ++i)
             {
                 try {
-                    prong.insert_entry_on_all_switches("81.3.5.2");
+                    prong.insert_entry_on_last_switch();
                 } catch (Exception _ex) {
                     _ex.printStackTrace();
                     assert(false);

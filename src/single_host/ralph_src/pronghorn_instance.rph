@@ -36,7 +36,8 @@ Endpoint PronghornInstance
     TVar Number coarse_lock_simulator = 0;
 
     TVar List(element : Struct ConnectionWrapper) children;
-    
+
+    Text last_added_switch_id;
 
     add_child_connection(Endpoint PronghornConnection new_child)
     {
@@ -49,6 +50,7 @@ Endpoint PronghornInstance
     {
         Text switch_id = new_switch.switch_id;
 	instance_switches.set(switch_id,new_switch);
+        last_added_switch_id = switch_id;
     }
 
     switch_failure(Text switch_id)
@@ -89,6 +91,21 @@ Endpoint PronghornInstance
         }
     }
 
+    insert_entry_on_last_switch()
+    {
+        Struct RoutingTableEntry to_add;
+        to_add.active = True;
+        to_add.src_ip = '20.30.13.1';
+        to_add.dst_ip = '18.18.18.19';
+        // drop all packets
+        to_add.action = '';
+
+        atomically {
+            Struct Switch target_switch =
+                instance_switches.get(last_added_switch_id);
+            target_switch.rtable.append(to_add);            
+        }
+    }
     
     insert_entry_on_all_switches_and_partners(Text ip_src)
     {

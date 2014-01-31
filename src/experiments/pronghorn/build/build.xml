@@ -109,7 +109,7 @@
   <!-- The default number of latency operations to run -->
   <property
       name="latency_num_ops"
-      value="5000"/>
+      value="30000"/>
   <!-- The number of threads to run -->
   <property
       name="latency_num_threads"

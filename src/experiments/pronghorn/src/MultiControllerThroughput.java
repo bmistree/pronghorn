@@ -179,9 +179,15 @@ public class MultiControllerThroughput {
                     assert(false);
                 }
             }
+            System.out.println("warmed up, sleep");
+            try {
+                Thread.sleep(5000);
+            } catch (Exception _ex) {
+                _ex.printStackTrace();
+                assert(false);
+            }
         }
-        System.out.println("warmed up, sleep");
-        Thread.sleep(5000);
+
         
         /* Spawn thread per switch to operate on it */
         ArrayList<Thread> threads = new ArrayList<Thread>();

@@ -179,7 +179,10 @@ public class SingleControllerVariableContentionAllSwitches {
             for (int i = 0; i < num_ops_to_run; ++i)
             {
                 try {
-                    prong.insert_entry_on_last_switch();
+                    if ((i %2) == 0)
+                        prong.insert_entry_on_last_switch();
+                    else
+                        prong.remove_entry_on_last_switch();
                 } catch (Exception _ex) {
                     _ex.printStackTrace();
                     assert(false);

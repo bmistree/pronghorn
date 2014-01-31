@@ -91,6 +91,15 @@ Endpoint PronghornInstance
         }
     }
 
+    remove_entry_on_last_switch()
+    {
+        atomically {
+            Struct Switch target_switch =
+                instance_switches.get(last_added_switch_id);
+            target_switch.rtable.remove(0);
+        }
+    }
+
     insert_entry_on_last_switch()
     {
         Struct RoutingTableEntry to_add;

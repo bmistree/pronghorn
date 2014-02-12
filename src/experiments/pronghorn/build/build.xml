@@ -48,7 +48,7 @@
   <!-- Single host libraries -->
   <property
       name="single_host_dir"
-      location="${experiments_build_dir}/../../../single_host"/>
+      location="${experiments_build_dir}/../../single_host"/>
 
   <property
       name="single_host_build_path_dir"

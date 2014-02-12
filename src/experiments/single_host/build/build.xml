@@ -17,7 +17,7 @@
   <!-- Ralph dependency files -->
   <property
       name="ralph_dep_dir"
-      location="${single_host_build_dir}/../../../externals/ralph/"/>
+      location="${single_host_build_dir}/../../../../externals/ralph/"/>
   <property
       name="ralph_compiler_py"
       location="${ralph_dep_dir}/bin/emit_file.py"/>
@@ -35,7 +35,7 @@
   <!-- Pronghorn libraries -->
   <property
       name="pronghorn_libs_build_path"
-      location="${single_host_build_dir}/../../pronghorn/build"/>
+      location="${single_host_build_dir}/../../../pronghorn/build"/>
   <property
       name="pronghorn_libs_class_path"
       location="${pronghorn_libs_build_path}/classes"/>

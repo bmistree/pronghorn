@@ -32,6 +32,15 @@
       name="proto_class_path"
       location="${lib_build_path}/../protobuf-java-2.4.1.jar"/>
 
+  <!-- Floodlight dependency -->
+  <property
+      name="floodlight_dep_dir"
+      location="${single_host_build_dir}/../../../../externals/floodlight/"/>
+  
+  <property
+      name="floodlight_class_path"
+      location="${floodlight_dep_dir}/target/floodlight.jar"/>
+  
   <!-- Pronghorn libraries -->
   <property
       name="pronghorn_libs_build_path"
@@ -59,6 +68,10 @@
       location="${single_host_build_dir}/classes"/>
 
 
+  <property
+      name="floodlight_conf_file"
+      value="${floodlight_dep_dir}/config/floodlight.properties"/>
+  
   
   <!-- set up build directories for test -->
   <target name="init" description="setup build directories">
@@ -131,7 +144,8 @@
         destdir="${single_host_build_classes_dir}"
         classpath="${single_host_build_classes_dir}:
                    ${lib_class_path}:
-                   ${pronghorn_libs_class_path}"
+                   ${pronghorn_libs_class_path}:
+                   ${floodlight_class_path}"
         debug="true"
         debuglevel="lines,vars,source"
         includeantruntime="false" />
@@ -156,12 +170,12 @@
         classpath="${single_host_build_classes_dir}:
                    ${lib_class_path}:
                    ${proto_class_path}:
-                   ${pronghorn_libs_class_path}"
+                   ${pronghorn_libs_class_path}:
+                   ${floodlight_class_path}"
         classname="${single_host_package}.SingleHost" fork="yes">
-        <arg line="8080"/>
+      <arg line="${floodlight_conf_file}"/>
     </java>
   </target>
-
 
   <!--
       Run tests without recompiling the ralph source to java:
@@ -189,9 +203,10 @@
         classpath="${single_host_build_classes_dir}:
                    ${lib_class_path}:
                    ${proto_class_path}:
-                   ${pronghorn_libs_class_path}"
+                   ${pronghorn_libs_class_path}:
+                   ${floodlight_class_path}"
         classname="${single_host_package}.SingleHost" fork="yes">
-        <arg line="8080"/>
+      <arg line="${floodlight_conf_file}"/>
     </java>
   </target>
 

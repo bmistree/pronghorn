@@ -8,21 +8,19 @@ import java.lang.Thread;
 
 public class SingleHost
 {
-    public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
+    private static final int FLOODLIGHT_CONF_FILE_INDEX = 0;
     
     public static void main (String[] args)
     {
         if (args.length != 1)
         {
-            print_usage();
+            System.out.println("\nIncorrect arguments.  Exiting.\n");
             return;
         }
-
-        int floodlight_port =
-            Integer.parseInt(args[FLOODLIGHT_PORT_ARG_INDEX]);
-
+        
+        String floodlight_conf_file = args[FLOODLIGHT_CONF_FILE_INDEX];
+        
         PronghornInstance prong = null;
-
         try
         {
             prong = new PronghornInstance(
@@ -33,7 +31,8 @@ public class SingleHost
             return;
         }
 
-        SingleHostRESTShim shim = new  SingleHostRESTShim(floodlight_port);
+        SingleHostFloodlightShim shim =
+            new SingleHostFloodlightShim(floodlight_conf_file);
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 prong,
@@ -59,7 +58,8 @@ public class SingleHost
                     prong.block_traffic_all_switches("10.0.0.1","10.0.0.2");
                 else
                     prong.remove_first_entry_all_switches();
-                
+
+                System.out.println("Blocking traffic: " + block_traffic + "\n");
                 block_traffic = ! block_traffic;
                 
             } catch (Exception _ex)
@@ -69,11 +69,4 @@ public class SingleHost
             }
         }
     }
-
-
-    public static void print_usage()
-    {
-        System.out.println("\nSingleHost <int: floodlight port number>\n");
-    }
-    
 }

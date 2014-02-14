@@ -125,6 +125,18 @@
         includeantruntime="false" />
   </target>
 
+  <!-- jarify all -->
+  <target
+      name="jarify_all"
+      depends="init,compile_libs,single_controller_latency,
+               single_controller_throughput,
+               single_controller_variable_contention_throughput,
+               read_only,multi_controller_latency,multi_controller_error,
+               multi_controller_throughput,ordering,fairness,error"
+      description="create jars for each type of experiment">
+  </target>
+
+  
   <!-- Single controller latency jar -->
   <property
       name="single_controller_latency_jar"
@@ -135,22 +147,22 @@
       description="Run no contention latency benchmark on single instance.">
 
     <jar destfile="${single_controller_latency_jar}" filesetmanifest="mergewithoutmain">
-        <manifest>
-            <attribute name="Main-Class" value="${experiments_package}.SingleControllerLatency"/>
-            <attribute name="Class-Path"
-                       value="${single_host_build_classes_dir}:
-                              ${lib_class_path}:
-                              ${proto_class_path}:
-                              ${pronghorn_libs_class_path}:
-                              ${experiments_build_classes_dir}:
-                              ${floodlight_class_path}"/>
-        </manifest>
-        <fileset dir="${single_host_build_classes_dir}"/>
-        <fileset dir="${lib_class_path}"/>
-        <fileset dir="${pronghorn_libs_class_path}"/>
-        <fileset dir="${experiments_build_classes_dir}"/>
-        <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
-        <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+      <manifest>
+        <attribute name="Main-Class" value="${experiments_package}.SingleControllerLatency"/>
+        <attribute name="Class-Path"
+                   value="${single_host_build_classes_dir}:
+                          ${lib_class_path}:
+                          ${proto_class_path}:
+                          ${pronghorn_libs_class_path}:
+                          ${experiments_build_classes_dir}:
+                          ${floodlight_class_path}"/>
+      </manifest>
+      <fileset dir="${single_host_build_classes_dir}"/>
+      <fileset dir="${lib_class_path}"/>
+      <fileset dir="${pronghorn_libs_class_path}"/>
+      <fileset dir="${experiments_build_classes_dir}"/>
+      <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+      <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
     </jar>
   </target>
 
@@ -159,80 +171,60 @@
       Ant for running test for throughput test with fine grained
       locking and no contention
   -->
-  <target
-      name="run_NoContentionThroughput"
+    <property
+      name="single_controller_throughput_jar"
+      value="single_controller_throughput.jar"/>
+    <target
+      name="single_controller_throughput"
       depends="compile_libs,compile_experiments"
-      description="Run no contention throughput benchmark on single instance.">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.SingleControllerThroughput" fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="30000"/>
-        <arg line="false"/>
-        <arg line="1"/>
-        <arg line="${output_filename}"/>
-    </java>
-  </target>
+      description="Single controller throughput">
 
+      <jar destfile="${single_controller_throughput_jar}" filesetmanifest="mergewithoutmain">
+        <manifest>
+          <attribute name="Main-Class" value="${experiments_package}.SingleControllerThroughput"/>
+          <attribute name="Class-Path"
+                     value="${single_host_build_classes_dir}:
+                            ${lib_class_path}:
+                            ${proto_class_path}:
+                            ${pronghorn_libs_class_path}:
+                            ${experiments_build_classes_dir}:
+                            ${floodlight_class_path}"/>
+        </manifest>
+        <fileset dir="${single_host_build_classes_dir}"/>
+        <fileset dir="${lib_class_path}"/>
+        <fileset dir="${pronghorn_libs_class_path}"/>
+        <fileset dir="${experiments_build_classes_dir}"/>
+        <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+        <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+      </jar>
+    </target>
 
   <property
-      name="variable_contention_num_ops"
-      value="1000"/>
-  <property
-      name="variable_contention_num_threads"
-      value="1"/>
+      name="single_controller_variable_contention_throughput_jar"
+      value="single_controller_variable_contention_throughput.jar"/>
   <target
-      name="run_SingleControllerVariableContentionThroughput"
+      name="single_controller_variable_contention_throughput"
       depends="compile_libs,compile_experiments"
       description="Run no contention throughput benchmark on single instance.">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.SingleControllerVariableContentionAllSwitches"
-        fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="${variable_contention_num_ops}"/>
-        <arg line="${variable_contention_num_threads}"/>
-        <arg line="${output_filename}"/>
-    </java>
-  </target>
 
-  
-
-  <!--
-      Ant for running test for throughput with coarse locking and no
-      contention.
-  -->
-  <target
-      name="run_NoContentionCoarseLockingThroughput"
-      depends="compile_libs,compile_experiments"
-      description="Run no contention throughput with coarse locking.">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.SingleControllerThroughput" fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="10000"/>
-        <arg line="true"/>
-        <arg line="1"/>
-        <arg line="${output_filename}"/>
-    </java>
+      <jar destfile="${single_controller_variable_contention_throughput_jar}" filesetmanifest="mergewithoutmain">
+        <manifest>
+          <attribute name="Main-Class" value="${experiments_package}.SingleControllerVariableContentionAllSwitches"/>
+          <attribute name="Class-Path"
+                     value="${single_host_build_classes_dir}:
+                            ${lib_class_path}:
+                            ${proto_class_path}:
+                            ${pronghorn_libs_class_path}:
+                            ${experiments_build_classes_dir}:
+                            ${floodlight_class_path}"/>
+        </manifest>
+        <fileset dir="${single_host_build_classes_dir}"/>
+        <fileset dir="${lib_class_path}"/>
+        <fileset dir="${pronghorn_libs_class_path}"/>
+        <fileset dir="${experiments_build_classes_dir}"/>
+        <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+        <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+      </jar>
   </target>
 
 
@@ -240,272 +232,217 @@
       Ant for running test for throughput test with fine-grained
       locking and contention
   -->
-  <target
-      name="run_ContentionThroughput"
-      depends="compile_libs,compile_experiments"
-      description="Run no contention throughput benchmark on single instance.">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.SingleControllerThroughput" fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="10000"/>
-        <arg line="false"/>
-        <arg line="2"/>
-        <arg line="${output_filename}"/>
-    </java>
-  </target>
-
-  <!--
-      Ant for running test for throughput test with fine-grained
-      locking and contention
-  -->
-  <target
-      name="run_ReadOnly"
-      depends="compile_libs,compile_experiments"
-      description="Run read only">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.ReadOnlyLatency" fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="10000"/>
-        <arg line="${output_filename}"/>
-    </java>
-  </target>
-
-  
-
-  <!--
-      Ant for running test for throughput with coarse locking and
-      contention
-  -->
-  <target
-      name="run_ContentionCoarseLockingThroughput"
-      depends="compile_libs,compile_experiments"
-      description="Run no contention throughput with coarse locking.">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.SingleControllerThroughput" fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="10000"/>
-        <arg line="true"/>
-        <arg line="2"/>
-        <arg line="${output_filename}"/>
-    </java>
-  </target>
-
-
-  <!-- Ant for running test for latency test with no contention -->
   <property
-      name="latency_children_to_contact_host_ports"
-      value="-1"/>
-  <property
-      name="latency_port_to_listen_for_connections_on"
-      value="9393"/>
+      name="read_only_latency_jar"
+      value="read_only_latency.jar"/>
   <target
-      name="run_MultiControllerLatency"
+      name="read_only"
+      depends="compile_libs,compile_experiments"
+      description="Jar for read only">
+
+    <jar destfile="${read_only_latency_jar}" filesetmanifest="mergewithoutmain">
+      <manifest>
+        <attribute name="Main-Class" value="${experiments_package}.ReadOnlyLatency"/>
+        <attribute name="Class-Path"
+                   value="${single_host_build_classes_dir}:
+                          ${lib_class_path}:
+                          ${proto_class_path}:
+                          ${pronghorn_libs_class_path}:
+                          ${experiments_build_classes_dir}:
+                          ${floodlight_class_path}"/>
+      </manifest>
+      <fileset dir="${single_host_build_classes_dir}"/>
+      <fileset dir="${lib_class_path}"/>
+      <fileset dir="${pronghorn_libs_class_path}"/>
+      <fileset dir="${experiments_build_classes_dir}"/>
+      <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+      <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+    </jar>
+  </target>
+
+
+  <!-- Ant for running test for latency test with no contention -->  
+  <property
+      name="multi_controller_latency_jar"
+      value="multi_controller_latency.jar"/>
+  <target
+      name="multi_controller_latency"
       depends="compile_libs,compile_experiments"
       description="Run no contention latency benchmark across instances">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.MultiControllerLatency" fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="${latency_children_to_contact_host_ports}"/>
-        <arg line="${latency_port_to_listen_for_connections_on}"/>        
-        <arg line="${latency_num_ops}"/>
-        <arg line="${output_filename}"/>
-    </java>
+
+    <jar destfile="${multi_controller_latency_jar}" filesetmanifest="mergewithoutmain">
+      <manifest>
+        <attribute name="Main-Class" value="${experiments_package}.MultiControllerLatency"/>
+        <attribute name="Class-Path"
+                   value="${single_host_build_classes_dir}:
+                          ${lib_class_path}:
+                          ${proto_class_path}:
+                          ${pronghorn_libs_class_path}:
+                          ${experiments_build_classes_dir}:
+                          ${floodlight_class_path}"/>
+      </manifest>
+      <fileset dir="${single_host_build_classes_dir}"/>
+      <fileset dir="${lib_class_path}"/>
+      <fileset dir="${pronghorn_libs_class_path}"/>
+      <fileset dir="${experiments_build_classes_dir}"/>
+      <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+      <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+    </jar>
   </target>
 
 
   <!-- Ant for running multi controller error-->
   <property
-      name="error_children_to_contact_host_ports"
-      value="-1"/>
-  <property
-      name="error_port_to_listen_for_connections_on"
-      value="5393"/>
-  <property
-      name="error_num_ops"
-      value="20"/>
+      name="multi_controller_error_jar"
+      value="multi_controller_error.jar"/>
   <target
-      name="run_MultiControllerError"
+      name="multi_controller_error"
       depends="compile_libs,compile_experiments"
       description="Run multi controller error">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.MultiControllerError" fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="${error_children_to_contact_host_ports}"/>
-        <arg line="${error_port_to_listen_for_connections_on}"/>
-        <arg line="${error_num_ops}"/>
-        <arg line="${error_failure_prob}"/>
-        <arg line="${output_filename}"/>
-    </java>
+    <jar destfile="${multi_controller_error_jar}" filesetmanifest="mergewithoutmain">
+      <manifest>
+        <attribute name="Main-Class" value="${experiments_package}.MultiControllerError"/>
+        <attribute name="Class-Path"
+                   value="${single_host_build_classes_dir}:
+                          ${lib_class_path}:
+                          ${proto_class_path}:
+                          ${pronghorn_libs_class_path}:
+                          ${experiments_build_classes_dir}:
+                          ${floodlight_class_path}"/>
+      </manifest>
+      <fileset dir="${single_host_build_classes_dir}"/>
+      <fileset dir="${lib_class_path}"/>
+      <fileset dir="${pronghorn_libs_class_path}"/>
+      <fileset dir="${experiments_build_classes_dir}"/>
+      <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+      <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+    </jar>
   </target>
 
-  
+
   <!--
       Ant for running test for throughput test with fine grained
       locking and no contention on multiple controllers
   -->
   <property
-      name="throughput_children_to_contact_host_ports"
-      value="-1"/>
-  <property
-      name="throughput_port_to_listen_for_connections_on"
-      value="19393"/>
-  <property
-      name="throughput_num_ops"
-      value="5000"/>
+      name="multi_controller_throughput_jar"
+      value="multi_controller_throughput.jar"/>
   <target
-      name="run_MultiControllerNoContentionThroughput"
+      name="multi_controller_throughput"
       depends="compile_libs,compile_experiments"
       description="Run no contention throughput benchmark on multiple instances.">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.MultiControllerThroughput" fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="${throughput_children_to_contact_host_ports}"/>
-        <arg line="${throughput_port_to_listen_for_connections_on}"/>
-        <arg line="${throughput_num_ops}"/>
-        <arg line="${output_filename}"/>
-    </java>
+
+    <jar destfile="${multi_controller_throughput_jar}" filesetmanifest="mergewithoutmain">
+      <manifest>
+        <attribute name="Main-Class" value="${experiments_package}.MultiControllerThroughput"/>
+        <attribute name="Class-Path"
+                   value="${single_host_build_classes_dir}:
+                          ${lib_class_path}:
+                          ${proto_class_path}:
+                          ${pronghorn_libs_class_path}:
+                          ${experiments_build_classes_dir}:
+                          ${floodlight_class_path}"/>
+      </manifest>
+      <fileset dir="${single_host_build_classes_dir}"/>
+      <fileset dir="${lib_class_path}"/>
+      <fileset dir="${pronghorn_libs_class_path}"/>
+      <fileset dir="${experiments_build_classes_dir}"/>
+      <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+      <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+    </jar>
   </target>
 
-  
-
-  
   <!--
       Ant for running test for running test to show that we handle
       reordering
   -->
   <property
-      name="ordering_ensure_ordering"
-      value="true"/>
-  <property
-      name="ordering_num_tests"
-      value="100"/>  
+      name="ordering_jar"
+      value="ordering.jar"/>
   <target
-      name="run_Ordering"
+      name="ordering"
       depends="compile_libs,compile_experiments"
       description="Show that we handle reordering.">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.Ordering" fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="${ordering_num_tests}"/>
-        <arg line="${ordering_ensure_ordering}"/>
-        <arg line="${output_filename}"/>
-    </java>
+
+    <jar destfile="${ordering_jar}" filesetmanifest="mergewithoutmain">
+      <manifest>
+        <attribute name="Main-Class" value="${experiments_package}.Ordering"/>
+        <attribute name="Class-Path"
+                   value="${single_host_build_classes_dir}:
+                          ${lib_class_path}:
+                          ${proto_class_path}:
+                          ${pronghorn_libs_class_path}:
+                          ${experiments_build_classes_dir}:
+                          ${floodlight_class_path}"/>
+      </manifest>
+      <fileset dir="${single_host_build_classes_dir}"/>
+      <fileset dir="${lib_class_path}"/>
+      <fileset dir="${pronghorn_libs_class_path}"/>
+      <fileset dir="${experiments_build_classes_dir}"/>
+      <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+      <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+    </jar>
   </target>
 
 
   <!-- Testing fairness properties   -->
   <property
-      name="wound_wait"
-      value="false"/>
-  <property
-      name="fairness_num_ops"
-      value="1000"/>
+      name="fairness_jar"
+      value="fairness.jar"/>
   <target
-      name="run_Fairness"
+      name="fairness"
       depends="compile_libs,compile_experiments"
       description="Show that different deadlock
                    avoidance guarantees provide different
                    fairness guarantees.">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.Fairness" fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="${wound_wait}"/>
-        <arg line="${fairness_num_ops}"/>
-        <arg line="${output_filename}"/>
-    </java>
+
+    <jar destfile="${fairness_jar}" filesetmanifest="mergewithoutmain">
+      <manifest>
+        <attribute name="Main-Class" value="${experiments_package}.Fairness"/>
+        <attribute name="Class-Path"
+                   value="${single_host_build_classes_dir}:
+                          ${lib_class_path}:
+                          ${proto_class_path}:
+                          ${pronghorn_libs_class_path}:
+                          ${experiments_build_classes_dir}:
+                          ${floodlight_class_path}"/>
+      </manifest>
+      <fileset dir="${single_host_build_classes_dir}"/>
+      <fileset dir="${lib_class_path}"/>
+      <fileset dir="${pronghorn_libs_class_path}"/>
+      <fileset dir="${experiments_build_classes_dir}"/>
+      <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+      <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+    </jar>
   </target>
 
 
   <!-- Testing error on a single controller -->
   <property
-      name="error_num_ops_to_run_per_experiment"
-      value="100"/>
-  <property
-      name="error_failure_prob"
-      value="0.0"/>
-  <property
-      name="error_num_experiments_to_run"
-      value="10"
-      />
+      name="error_jar"
+      value="error.jar"/>
   <target
-      name="run_Error"
+      name="error"
       depends="compile_libs,compile_experiments"
-      description="Show that different deadlock
-                   avoidance guarantees provide different
-                   fairness guarantees.">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.SingleControllerError"
-        fork="yes">
-
-        <arg line="${rest_ports}"/>
-        <arg line="${error_num_ops_to_run_per_experiment}"/>
-        <arg line="${error_num_experiments_to_run}"/>
-        <arg line="${error_failure_prob}"/>
-        <arg line="${output_filename}"/>
-    </java>
+      description="">
+    <jar destfile="${error_jar}" filesetmanifest="mergewithoutmain">
+      <manifest>
+        <attribute name="Main-Class" value="${experiments_package}.SingleControllerError"/>
+        <attribute name="Class-Path"
+                   value="${single_host_build_classes_dir}:
+                          ${lib_class_path}:
+                          ${proto_class_path}:
+                          ${pronghorn_libs_class_path}:
+                          ${experiments_build_classes_dir}:
+                          ${floodlight_class_path}"/>
+      </manifest>
+      <fileset dir="${single_host_build_classes_dir}"/>
+      <fileset dir="${lib_class_path}"/>
+      <fileset dir="${pronghorn_libs_class_path}"/>
+      <fileset dir="${experiments_build_classes_dir}"/>
+      <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+      <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+    </jar>
   </target>
 
 
@@ -513,6 +450,19 @@
   <!-- Delete the build directories -->
   <target name="clean" description="get rid of build dir">
     <delete dir="${experiments_build_classes_dir}"/>
+
+    <!-- Delete generated jars -->
+    <delete file="${single_controller_throughput_jar}"/>
+    <delete file="${single_controller_variable_contention_throughput_jar}"/>
+    <delete file="${read_only_latency_jar}"/>
+    <delete file="${multi_controller_latency_jar}"/>
+    <delete file="${multi_controller_error_jar}"/>
+    <delete file="${multi_controller_throughput_jar}"/>
+    <delete file="${ordering_jar}"/>
+    <delete file="${fairness_jar}"/>
+    <delete file="${error_jar}"/>
+    <delete file="${single_controller_latency_jar}"/>
+    
   </target>
   
 </project>

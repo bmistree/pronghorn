@@ -45,6 +45,15 @@
       name="pronghorn_libs_class_path"
       location="${pronghorn_libs_build_path}/classes"/>
 
+  <!-- Floodlight dependency -->
+  <property
+      name="floodlight_dep_dir"
+      location="${experiments_build_dir}/../../../../externals/floodlight/"/>
+  
+  <property
+      name="floodlight_class_path"
+      location="${floodlight_dep_dir}/target/floodlight.jar"/>
+  
   <!-- Single host libraries -->
   <property
       name="single_host_dir"
@@ -100,7 +109,8 @@
         destdir="${experiments_build_classes_dir}"
         classpath="${single_host_build_classes_dir}:
                    ${lib_class_path}:
-                   ${pronghorn_libs_class_path}"
+                   ${pronghorn_libs_class_path}:
+                   ${floodlight_class_path}"
         debug="true"
         debuglevel="lines,vars,source"
         includeantruntime="false" />
@@ -125,7 +135,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.SingleControllerLatency" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="${latency_num_ops}"/>
@@ -149,7 +160,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.SingleControllerThroughput" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="30000"/>
@@ -176,7 +188,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.SingleControllerVariableContentionAllSwitches"
         fork="yes">
         <arg line="${rest_ports}"/>
@@ -202,7 +215,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.SingleControllerThroughput" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="10000"/>
@@ -227,7 +241,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.SingleControllerThroughput" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="10000"/>
@@ -251,7 +266,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.ReadOnlyLatency" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="10000"/>
@@ -275,7 +291,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.SingleControllerThroughput" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="10000"/>
@@ -303,7 +320,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.MultiControllerLatency" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="${latency_children_to_contact_host_ports}"/>
@@ -334,7 +352,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.MultiControllerError" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="${error_children_to_contact_host_ports}"/>
@@ -369,7 +388,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.MultiControllerThroughput" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="${throughput_children_to_contact_host_ports}"/>
@@ -402,7 +422,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.Ordering" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="${ordering_num_tests}"/>
@@ -431,7 +452,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.Fairness" fork="yes">
         <arg line="${rest_ports}"/>
         <arg line="${wound_wait}"/>
@@ -464,7 +486,8 @@
                    ${lib_class_path}:
                    ${proto_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}"
+                   ${experiments_build_classes_dir}:
+                   ${floodlight_class_path}"
         classname="${experiments_package}.SingleControllerError"
         fork="yes">
 

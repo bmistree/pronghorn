@@ -38,7 +38,6 @@ public class SingleHost
                 prong,
                 FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);
-        shim.start();
         boolean block_traffic = true;
         while (true)
         {

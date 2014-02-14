@@ -18,7 +18,7 @@ import net.floodlightcontroller.pronghornmodule.ISwitchAddedRemovedListener;
    Serves as intermediate layer between Ralph and Floodlight
  */
 public class SingleHostFloodlightShim
-    implements Runnable, ShimInterface, ISwitchAddedRemovedListener
+    implements ShimInterface, ISwitchAddedRemovedListener
 {
     private IPronghornService pronghorn_floodlight = null;
 
@@ -34,7 +34,6 @@ public class SingleHostFloodlightShim
     
     public SingleHostFloodlightShim(String settings_filename)
     {
-
         try
         {
             final Main.ProviderPronghornTuple ppt =
@@ -70,14 +69,8 @@ public class SingleHostFloodlightShim
             ex.printStackTrace();
             assert(false);
         }
-
     }
 
-    @Override
-    public void run()
-    {
-    }
-    
     /** ISwtichAddedRemovedListener */
     @Override
     public void switch_added(String unique_switch_id)

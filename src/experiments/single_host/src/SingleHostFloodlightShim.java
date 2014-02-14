@@ -4,6 +4,7 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
+import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import pronghorn.ShimInterface;
 import pronghorn.SwitchStatusHandler;
@@ -31,7 +32,6 @@ public class SingleHostFloodlightShim
         new HashSet<SwitchStatusHandler>();
 
 
-    
     public SingleHostFloodlightShim(String settings_filename)
     {
         try
@@ -39,7 +39,6 @@ public class SingleHostFloodlightShim
             final Main.ProviderPronghornTuple ppt =
                 Main.get_controller(settings_filename);
             pronghorn_floodlight = ppt.pronghorn;
-
 
             Thread t = new Thread()
             {
@@ -62,7 +61,6 @@ public class SingleHostFloodlightShim
             }
 
             pronghorn_floodlight.register_switch_changes_listener(this);
-
         }
         catch (FloodlightModuleException ex)
         {
@@ -110,7 +108,40 @@ public class SingleHostFloodlightShim
     public boolean switch_rtable_updates(
         String switch_id,List<RTableUpdate> updates)
     {
-        return true;
+        FloodlightShimBarrierCallback floodlight_callback =
+            new FloodlightShimBarrierCallback();
+        
+        for (RTableUpdate update : updates)
+        {
+            try
+            {
+                int xid = pronghorn_floodlight.add_entry(
+                    update.entry,switch_id);
+                floodlight_callback.add_xid(xid);
+            }
+            catch (IOException ex)
+            {
+                // FIXME: assuming that will not have IOException when
+                // sending commands to switch.  Should really remove
+                // switch if this happens instead.
+                ex.printStackTrace();
+                assert(false);
+            }
+        }
+
+        try
+        {
+            pronghorn_floodlight.barrier(switch_id,floodlight_callback);
+        }
+        catch (IOException ex)
+        {
+            // FIXME: assuming that will not have IOException when
+            // sending commands to switch.  Should really remove
+            // switch if this happens instead.
+            ex.printStackTrace();
+            assert(false);
+        }
+        return floodlight_callback.wait_on_complete();
     }
 
     @Override

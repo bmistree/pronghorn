@@ -4,13 +4,21 @@ import net.floodlightcontroller.pronghornmodule.IPronghornBarrierCallback;
 
 import java.util.Set;
 import java.util.HashSet;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 
 public class FloodlightShimBarrierCallback implements IPronghornBarrierCallback
 {
     private Set<Integer> xids = new HashSet<Integer>();
     private Set<Integer> failed_xids = new HashSet<Integer>();
 
-    private Boolean has_finished = false;
+    // Note: using atomicboolean here because it is mutable.  If we
+    // just used a Boolean, we would not be able to set its internal
+    // values.  Therefore, we would have to set it, eg., has_finished
+    // = true.  This would interfere with the notify, wait,
+    // synchronized code below: we would be waiting on another
+    // object's condition.
+    private AtomicBoolean has_finished = new AtomicBoolean(false);
     private boolean succeeded = false;
     
     public synchronized void add_xid(int xid)
@@ -24,7 +32,7 @@ public class FloodlightShimBarrierCallback implements IPronghornBarrierCallback
         {
             try
             {
-                while (! has_finished)
+                while (! has_finished.get())
                     has_finished.wait();
             }
             catch (InterruptedException ex)
@@ -33,7 +41,6 @@ public class FloodlightShimBarrierCallback implements IPronghornBarrierCallback
                 ex.printStackTrace();
                 assert(false);
             }
-
             return succeeded;
         }
     }
@@ -52,6 +59,7 @@ public class FloodlightShimBarrierCallback implements IPronghornBarrierCallback
         
         synchronized(has_finished)
         {
+            has_finished.set(true);
             has_finished.notifyAll();
         }
     }
@@ -62,6 +70,7 @@ public class FloodlightShimBarrierCallback implements IPronghornBarrierCallback
         succeeded = false;
         synchronized(has_finished)
         {
+            has_finished.set(true);
             has_finished.notifyAll();
         }
     }

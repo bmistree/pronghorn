@@ -33,9 +33,14 @@
   <property
       name="lib_class_path"
       location="${lib_build_path}/classes/"/>
+
+  <property
+      name="proto_jar_dir"
+      location="${lib_build_path}/../"/>
+  
   <property
       name="proto_class_path"
-      location="${lib_build_path}/../protobuf-java-2.4.1.jar"/>
+      location="${proto_jar_dir}/../protobuf-java-2.4.1.jar"/>
 
   <!-- Pronghorn libraries -->
   <property
@@ -49,6 +54,10 @@
   <property
       name="floodlight_dep_dir"
       location="${experiments_build_dir}/../../../../externals/floodlight/"/>
+
+  <property
+      name="floodlight_jar_dir"
+      location="${floodlight_dep_dir}/target/"/>
   
   <property
       name="floodlight_class_path"
@@ -116,33 +125,33 @@
         includeantruntime="false" />
   </target>
 
-  <!-- The default number of latency operations to run -->
+  <!-- Single controller latency jar -->
   <property
-      name="latency_num_ops"
-      value="30000"/>
-  <!-- The number of threads to run -->
-  <property
-      name="latency_num_threads"
-      value="1"/>
-  <!-- Ant for running test for latency test with no contention -->
+      name="single_controller_latency_jar"
+      value="single_controller_latency.jar"/>
   <target
-      name="run_SingleControllerLatency"
+      name="single_controller_latency"
       depends="compile_libs,compile_experiments"
       description="Run no contention latency benchmark on single instance.">
-    <java
-        dir="${experiments_build_classes_dir}"
-        classpath="${single_host_build_classes_dir}:
-                   ${lib_class_path}:
-                   ${proto_class_path}:
-                   ${pronghorn_libs_class_path}:
-                   ${experiments_build_classes_dir}:
-                   ${floodlight_class_path}"
-        classname="${experiments_package}.SingleControllerLatency" fork="yes">
-        <arg line="${rest_ports}"/>
-        <arg line="${latency_num_ops}"/>
-        <arg line="${latency_num_threads}"/>
-        <arg line="${output_filename}"/>
-    </java>
+
+    <jar destfile="${single_controller_latency_jar}" filesetmanifest="mergewithoutmain">
+        <manifest>
+            <attribute name="Main-Class" value="${experiments_package}.SingleControllerLatency"/>
+            <attribute name="Class-Path"
+                       value="${single_host_build_classes_dir}:
+                              ${lib_class_path}:
+                              ${proto_class_path}:
+                              ${pronghorn_libs_class_path}:
+                              ${experiments_build_classes_dir}:
+                              ${floodlight_class_path}"/>
+        </manifest>
+        <fileset dir="${single_host_build_classes_dir}"/>
+        <fileset dir="${lib_class_path}"/>
+        <fileset dir="${pronghorn_libs_class_path}"/>
+        <fileset dir="${experiments_build_classes_dir}"/>
+        <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+        <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+    </jar>
   </target>
 
 

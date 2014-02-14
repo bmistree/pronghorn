@@ -33,6 +33,15 @@
       location="${pronghorn_libs_build_dir}/../../emit_file.py"/>
 
 
+  <!-- Floodlight dependency -->
+  <property
+      name="floodlight_dep_dir"
+      location="${pronghorn_libs_build_dir}/../../../externals/floodlight/"/>
+
+  <property
+      name="floodlight_class_path"
+      location="${floodlight_dep_dir}/target/floodlight.jar"/>
+  
   <!-- Build files for pronghorn libs -->
   <property
       name="pronghorn_package"
@@ -101,7 +110,7 @@
     <javac
         srcdir="${pronghorn_ralph_emitted_dir}"
         destdir="${pronghorn_build_classes_dir}"
-        classpath="${lib_class_path}"
+        classpath="${lib_class_path}:${floodlight_class_path}"
         debug="true"
         debuglevel="lines,vars,source"
         includeantruntime="false" />
@@ -115,7 +124,9 @@
     <javac
         srcdir="${pronghorn_src_dir}"
         destdir="${pronghorn_build_classes_dir}"
-        classpath="${lib_class_path}:${pronghorn_build_classes_dir}"
+        classpath="${lib_class_path}:
+                   ${pronghorn_build_classes_dir}:
+                   ${floodlight_class_path}"
         debug="true"
         debuglevel="lines,vars,source"
         includeantruntime="false" />

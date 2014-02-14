@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import pronghorn.ShimInterface;
 import pronghorn.SwitchStatusHandler;
 import pronghorn.RTableUpdate;
+import net.floodlightcontroller.pronghornmodule.PronghornFlowTableEntry.Operation;
 
 /**
    Serves as intermediate layer between Ralph and Floodlight
@@ -82,7 +83,7 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
             String rtable_update_json =
                 rtable_update_to_json(switch_id, update);
 
-            if (update.op == RTableUpdate.Operation.INSERT)
+            if (update.entry.op == Operation.INSERT)
             {
                 String update_resource = "/wm/staticflowentrypusher/json";
                 issue_post(update_resource,rtable_update_json);
@@ -248,16 +249,16 @@ public class SingleHostRESTShim implements Runnable, ShimInterface
     public String rtable_update_to_json(String switch_id, RTableUpdate to_translate)
     {
         String translation = null;
-        if (to_translate.op == RTableUpdate.Operation.REMOVE)
+        if (to_translate.entry.op == Operation.REMOVE)
         {
             translation =
-                String.format("{\"name\":\"%s\"}",to_translate.entry_name);
+                String.format("{\"name\":\"%s\"}",to_translate.entry.entry_name);
         }
-        else if (to_translate.op == RTableUpdate.Operation.INSERT)
+        else if (to_translate.entry.op == Operation.INSERT)
         {
-            String entry_name = to_translate.entry_name;
+            String entry_name = to_translate.entry.entry_name;
             String active = "true";
-            String actions = to_translate.action;
+            String actions = to_translate.entry.actions;
             translation =
                 String.format(
                     "{\"switch\":\"%s\", \"name\":\"%s\",\"active\":\"%s\",\"actions\":\"%s\"}",

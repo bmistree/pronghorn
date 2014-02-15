@@ -3,6 +3,16 @@ package experiments;
 import java.util.HashSet;
 import java.util.Set;
 
+import java.io.FileWriter;
+import java.io.PrintWriter;
+import java.io.Writer;
+import java.io.IOException;
+
+import java.util.List;
+import java.util.ArrayList;
+
+import single_host.JavaPronghornInstance.PronghornInstance;
+
 public class Util
 {
     public static class HostPortPair
@@ -45,6 +55,88 @@ public class Util
         for (String port : ports)
             to_return.add(Integer.parseInt(port));
         return to_return;
+    }
+
+
+    public static void write_results_to_file(
+        String filename, String to_write)
+    {
+        Writer w;
+        try
+        {
+            w = new PrintWriter(new FileWriter(filename));
+            w.write(to_write);
+            w.close();
+        }
+        catch (IOException e)
+        {
+            e.printStackTrace();
+            assert(false);
+        }
+    }
+
+    public static class LatencyThread extends Thread
+    {
+        public List <Long> all_times = new ArrayList<Long>();
+
+        
+        private PronghornInstance prong = null;
+        private String switch_id = null;
+        private int num_ops_to_run = -1;
+        private boolean read_only = false;
+        
+        public LatencyThread(
+            PronghornInstance prong, String switch_id, int num_ops_to_run,
+            boolean read_only)
+        {
+            this.prong = prong;
+            this.switch_id = switch_id;
+            this.num_ops_to_run = num_ops_to_run;
+            this.read_only = read_only;
+        }
+        
+        public LatencyThread(
+            PronghornInstance prong, String switch_id, int num_ops_to_run)
+        {
+            this.prong = prong;
+            this.switch_id = switch_id;
+            this.num_ops_to_run = num_ops_to_run;
+        }
+
+        public void run()
+        {
+            /* perform all operations and determine how long they take */
+            for (int i = 0; i < num_ops_to_run; ++i)
+            {
+                long start_time = System.nanoTime();
+                try
+                {
+                    if (read_only)
+                        prong.read_first_instance_routing_table();
+                    else
+                        prong.single_op(switch_id);
+                }
+                catch (Exception _ex)
+                {
+                    _ex.printStackTrace();
+                    assert(false);
+                }
+                long total_time = System.nanoTime() - start_time;
+                all_times.add(total_time);
+            }
+        }
+
+        /**
+           Write the latencies that each operation took as a csv
+         */
+        public void write_times(StringBuffer buffer)
+        {
+            for (Long latency : all_times)
+                buffer.append(latency.toString()).append(",");
+            
+            if (! all_times.isEmpty())
+                buffer.append("\n");
+        }
     }
     
 }

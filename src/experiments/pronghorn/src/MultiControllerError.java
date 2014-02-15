@@ -9,7 +9,6 @@ import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 import pronghorn.FloodlightRoutingTableToHardware;
 import java.lang.Thread;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
@@ -230,17 +229,7 @@ public class MultiControllerError {
         System.out.println("\nFinished experiment\n");
         
         // actually output results
-        Writer w;
-        try {
-            w = new PrintWriter(new FileWriter(output_filename));
-            w.write(Integer.toString(result));
-            w.flush();
-            w.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            assert(false);
-        }
-
+        Util.write_results_to_file(output_filename,Integer.toString(result));
 
         while (true)
         {

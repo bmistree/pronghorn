@@ -190,24 +190,17 @@ public class SingleControllerError
         // disconnect the shim connection
         shim.stop();
 
-        // actually output results
-        Writer w;
-        try {
-            w = new PrintWriter(new FileWriter(output_filename));
-            for (Boolean result : run_results)
-            {
-                if (result.booleanValue())
-                    w.write("1");
-                else
-                    w.write("0");
-                w.write(",");
-            }
-            w.flush();
-            w.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            assert(false);
+        StringBuffer string_buffer = new StringBuffer();
+        for (Boolean result : run_results)
+        {
+            if (result.booleanValue())
+                string_buffer.append("1");
+            else
+                string_buffer.append("0");
+            string_buffer.append(",");
         }
+        
+        Util.write_results_to_file(output_filename,string_buffer.toString());
     }
 
     private static void print_usage()

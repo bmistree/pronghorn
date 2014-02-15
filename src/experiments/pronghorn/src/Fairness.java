@@ -15,7 +15,6 @@ import pronghorn.RTableUpdate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.io.*;
 import ralph.Ralph;
 import ralph.RalphGlobals;
 import ralph.BoostedManager.DeadlockAvoidanceAlgorithm;
@@ -30,6 +29,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.io.IOException;
 
 /**
    Experiment, start a number of transactions on one controller, then,
@@ -198,18 +198,8 @@ public class Fairness
         String to_write = "";
         for (String endpoint_id : tsafe_queue)
             to_write += endpoint_id + ",";
-        
-        // write result string to file
-        Writer w;
-        try {
-            w = new PrintWriter(new FileWriter(result_filename));
-            w.write(to_write);
-            w.write("\n");
-            w.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            assert(false);
-        }
+
+        Util.write_results_to_file(result_filename,to_write);
     }
     
     /**

@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-import java.io.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -170,28 +169,18 @@ public class Ordering
     
     private static void write_results_to_file(String filename,List<Boolean> results)
     {
+        StringBuffer string_buffer = new StringBuffer();
         // produce result string
-        String line_to_write = "";
         for (Boolean result : results)
         {
             if (result.booleanValue())
-                line_to_write += "1";
+                string_buffer.append("1");
             else
-                line_to_write += "0";
-            line_to_write += ",";
+                string_buffer.append("0");
+            string_buffer.append(",");
         }
 
-        // write result string to file
-        Writer w;
-        try {
-            w = new PrintWriter(new FileWriter(filename));
-            w.write(line_to_write);
-            w.write("\n");
-            w.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            assert(false);
-        }
+        Util.write_results_to_file(filename,string_buffer.toString());
     }
     
 

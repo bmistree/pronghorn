@@ -10,11 +10,11 @@ import pronghorn.FloodlightRoutingTableToHardware;
 import java.lang.Thread;
 import java.util.ArrayList;
 import java.util.List;
-import java.io.*;
 import java.util.HashSet;
 import java.util.Set;
 import experiments.Util.HostPortPair;
 import experiments.Util;
+import experiments.Util.LatencyThread;
 
 
 public class ReadOnlyLatency
@@ -93,7 +93,7 @@ public class ReadOnlyLatency
 
         List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
         for (int i = 0; i < num_threads; ++i)
-            all_threads.add(new LatencyThread(prong,num_ops_to_run));
+            all_threads.add(new LatencyThread(prong,"",num_ops_to_run,true));
 
         for (LatencyThread lt : all_threads)
             lt.start();
@@ -110,20 +110,12 @@ public class ReadOnlyLatency
             }
         }
 
-        // print csv list of runtimes to file
-        Writer w;
-        try {
-            w = new PrintWriter(new FileWriter(output_filename));
-            for (LatencyThread lt : all_threads)
-            {
-                lt.write_times(w);
-                w.write("\n");
-            }
-            w.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            assert(false);
-        }
+        StringBuffer string_buffer = new StringBuffer();
+        for (LatencyThread lt : all_threads)
+            lt.write_times(string_buffer);
+
+        Util.write_results_to_file(output_filename,string_buffer.toString());
+        
         // actually tell shims to stop.
         for (SingleHostRESTShim shim : shim_set)
             shim.stop();
@@ -144,49 +136,5 @@ public class ReadOnlyLatency
         usage_string += "\n\t<String> : output filename\n";
 
         System.out.println(usage_string);
-    }
-
-    private static class LatencyThread extends Thread
-    {
-        public List <Long> all_times = new ArrayList<Long>();
-
-        
-        private PronghornInstance prong = null;
-        private String switch_id = null;
-        private int num_ops_to_run = -1;
-        
-        public LatencyThread(
-            PronghornInstance prong, int num_ops_to_run)
-        {
-            this.prong = prong;
-            this.switch_id = switch_id;
-            this.num_ops_to_run = num_ops_to_run;
-        }
-
-        public void run()
-        {
-            /* perform all operations and determine how long they take */
-            for (int i = 0; i < num_ops_to_run; ++i)
-            {
-                long start_time = System.nanoTime();
-                try {
-                    prong.read_first_instance_routing_table();
-                } catch (Exception _ex) {
-                    _ex.printStackTrace();
-                    assert(false);
-                }
-                long total_time = System.nanoTime() - start_time;
-                all_times.add(total_time);
-            }
-        }
-
-        /**
-           Write the latencies that each operation took as a csv
-         */
-        public void write_times(Writer writer) throws IOException
-        {
-            for (Long latency : all_times)
-                writer.write(latency.toString() + ",");
-        }
     }
 }

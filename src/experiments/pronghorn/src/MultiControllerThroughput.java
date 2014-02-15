@@ -9,7 +9,6 @@ import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 import pronghorn.FloodlightRoutingTableToHardware;
 import java.lang.Thread;
-import java.io.*;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
@@ -198,9 +197,13 @@ public class MultiControllerThroughput {
         long start = System.nanoTime();
         for (int i = 0; i < num_switches; i++) {
             String switch_id = null;
-            try { 
-                switch_id = switch_list.get_val_on_key(null, new Double((double)i));
-            } catch (Exception _ex) {
+            try
+            { 
+                switch_id = switch_list.get_val_on_key(
+                    null, new Double((double)i));
+            }
+            catch (Exception _ex)
+            {
                 _ex.printStackTrace();
                 assert(false);
             }
@@ -223,28 +226,21 @@ public class MultiControllerThroughput {
         long end = System.nanoTime();
         long elapsedNano = end-start;
 
-        Writer w;
-        try {
-            w = new PrintWriter(new FileWriter(output_filename));
-
-            // TODO maybe use a csv library...
-            for (String switch_id : results.keySet()) {
-                List<Long> times = results.get(switch_id);
-                String line = "";
-                for (Long time : times)
-                    line += time.toString() + ",";
-                if (line != "") {
-                    // trim off trailing comma
-                    line = line.substring(0, line.length() - 1);
-                }
-                w.write(line);
-                w.write("\n");
+        StringBuffer result_string = new StringBuffer();
+        for (String switch_id : results.keySet())
+        {
+            List<Long> times = results.get(switch_id);
+            String line = "";
+            for (Long time : times)
+                line += time.toString() + ",";
+            if (line != "")
+            {
+                // trim off trailing comma
+                line = line.substring(0, line.length() - 1);
             }
-            w.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-            assert(false);
+            result_string.append(line).append("\n");
         }
+        Util.write_results_to_file(output_filename,result_string.toString());
 
         double throughputPerS =
             ((double) (num_switches * threads_per_switch * num_ops_to_run)) /
@@ -353,5 +349,4 @@ public class MultiControllerThroughput {
             return to_return;
         }
     }
-    
 }

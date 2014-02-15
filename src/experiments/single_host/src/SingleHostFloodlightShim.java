@@ -31,13 +31,12 @@ public class SingleHostFloodlightShim
     private Set<SwitchStatusHandler> switch_status_handlers =
         new HashSet<SwitchStatusHandler>();
 
-
-    public SingleHostFloodlightShim(String settings_filename)
+    public SingleHostFloodlightShim()
     {
         try
         {
             final Main.ProviderPronghornTuple ppt =
-                Main.get_controller(settings_filename);
+                Main.get_controller(null);
             pronghorn_floodlight = ppt.pronghorn;
 
             Thread t = new Thread()

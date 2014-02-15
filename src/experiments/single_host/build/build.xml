@@ -68,11 +68,6 @@
       location="${single_host_build_dir}/classes"/>
 
 
-  <property
-      name="floodlight_conf_file"
-      value="${floodlight_dep_dir}/config/floodlight.properties"/>
-  
-  
   <!-- set up build directories for test -->
   <target name="init" description="setup build directories">
     <echo message="Setting up build directories for tests"/>
@@ -173,7 +168,6 @@
                    ${pronghorn_libs_class_path}:
                    ${floodlight_class_path}"
         classname="${single_host_package}.SingleHost" fork="yes">
-      <arg line="${floodlight_conf_file}"/>
     </java>
   </target>
 

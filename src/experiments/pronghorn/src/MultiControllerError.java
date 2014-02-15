@@ -38,7 +38,6 @@ import ralph.Ralph;
 public class MultiControllerError {
 	
     public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
-
     public static final int CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX = 1;
     public static final int PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX = 2;
     public static final int NUMBER_OPS_TO_RUN_PER_EXPERIMENT_ARG_INDEX = 3;
@@ -63,6 +62,7 @@ public class MultiControllerError {
         if (args.length != 6)
         {
             System.out.println("\nExpected 6 arguments: exiting\n");
+            print_usage();
             return;
         }
 
@@ -252,12 +252,45 @@ public class MultiControllerError {
             }
         }
 
-
         // disconnect the shim connection
         shim.stop();
     }
 
 
+    private static void print_usage()
+    {
+        String usage_string = "";
+
+        // FLOODLIGHT_PORT_ARG_INDEX 
+        usage_string += "\n\t<int>: floodlight port to connect to\n";
+
+        // CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX 
+        usage_string +=
+            "\n\t<csv>: Children to contact host port csv.  Pronghorn ";
+        usage_string += "controllers to connect to.  ";
+        usage_string += "Format host:port,host:port\n";
+
+        // PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Port to listen for connections on.\n";
+
+        // NUMBER_OPS_TO_RUN_PER_EXPERIMENT_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to run per experiment\n";
+
+        // FAILURE_PROB_ARG_INDEX
+        usage_string +=
+            "\n\t<double>: Failure probability.  For each transaction a ";
+        usage_string +=
+            "switch will independently fail with this probability.\n";
+
+        // OUTPUT_FILENAME_ARG_INDEX
+        usage_string += "\n\t<String> : output filename\n";
+
+        System.out.println(usage_string);
+    }
+    
+    
     private static class DummyConnectionConstructor implements EndpointConstructorObj
     {
         @Override

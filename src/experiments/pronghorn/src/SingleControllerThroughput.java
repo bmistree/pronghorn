@@ -180,12 +180,32 @@ public class SingleControllerThroughput {
         for (SingleHostRESTShim shim : shim_set)
             shim.stop();
     }
-    
-    public static void print_usage()
+
+    private static void print_usage()
     {
-        System.out.println(
-            "\nSingleHost <int: floodlight port number> " + 
-            "<int: num ops to run>\n");
+        String usage_string = "";
+
+        // FLOODLIGHT_PORT_ARG_INDEX 
+        usage_string += "\n\t<int>: floodlight port to connect to\n";
+
+        // NUMBER_TIMES_TO_RUN_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to run per experiment\n";
+
+        // COARSE_LOCKING_ARG_INDEX_ARG_INDEX
+        usage_string +=
+            "\n\t<boolean>: true if should use coarse locking; ";
+        usage_string += "false otherwise\n";
+
+        // NUMBER_THREADS_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number threads.\n";
+
+        // OUTPUT_FILENAME_ARG_INDEX
+        usage_string += "\n\t<String> : output filename\n";
+
+        System.out.println(usage_string);
+        
     }
     
     public static class ThroughputThread extends Thread {

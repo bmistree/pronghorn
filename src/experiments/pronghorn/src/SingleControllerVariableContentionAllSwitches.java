@@ -21,8 +21,6 @@ import experiments.Util.HostPortPair;
 import experiments.Util;
 
 
-
-
 public class SingleControllerVariableContentionAllSwitches {
 	
     public static final int FLOODLIGHT_PORT_CSV_ARG_INDEX = 0;
@@ -147,12 +145,27 @@ public class SingleControllerVariableContentionAllSwitches {
         for (SingleHostRESTShim shim : shim_set)
             shim.stop();
     }
-    
+
     public static void print_usage()
     {
-        System.out.println(
-            "\nSingleHost <int: floodlight port number> " + 
-            "<int: num ops to run>\n");
+        String usage_string = "";
+
+        // FLOODLIGHT_PORT_ARG_INDEX 
+        usage_string += "\n\t<int>: floodlight port to connect to\n";
+
+        // NUMBER_OPS_TO_RUN_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to run per experiment\n";
+
+        // NUMBER_THREADS_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number threads.\n";
+        
+        // OUTPUT_FILENAME_ARG_INDEX
+        usage_string += "\n\t<String> : output filename\n";
+
+        System.out.println(usage_string);
+
     }
     
     public static class ThroughputThread extends Thread {

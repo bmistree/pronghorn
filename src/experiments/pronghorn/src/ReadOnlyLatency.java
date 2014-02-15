@@ -31,6 +31,7 @@ public class ReadOnlyLatency
         /* Grab arguments */
         if (args.length != 3)
         {
+            System.out.println("\nExpecting 3 arguments.\n");
             print_usage();
             return;
         }
@@ -128,14 +129,22 @@ public class ReadOnlyLatency
             shim.stop();
     }
 
-
-    public static void print_usage()
+    private static void print_usage()
     {
-        System.out.println(
-            "\nSingleHost <int: floodlight port number> " + 
-            "<int: num ops to run> <output_filename>\n");
-    }
+        String usage_string = "";
 
+        // FLOODLIGHT_PORT_ARG_INDEX 
+        usage_string += "\n\t<int>: floodlight port to connect to\n";
+
+        // NUMBER_TIMES_TO_RUN_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to run per experiment\n";
+
+        // OUTPUT_FILENAME_ARG_INDEX
+        usage_string += "\n\t<String> : output filename\n";
+
+        System.out.println(usage_string);
+    }
 
     private static class LatencyThread extends Thread
     {

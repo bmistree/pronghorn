@@ -45,7 +45,6 @@ public class Ordering
     private static final int NUMBER_TIMES_TO_RUN_ARG_INDEX = 1;
     private static final int ENSURE_ORDERING_ARG_INDEX = 2;
     private static final int RESULT_FILENAME_ARG_INDEX = 3;
-
     
     // wait this long for pronghorn to add all switches
     private static final int STARTUP_SETTLING_TIME_WAIT = 5000;
@@ -56,9 +55,8 @@ public class Ordering
         /* Grab arguments */
         if (args.length != 4)
         {
-            System.out.println(
-                "\nIncorrect number of arguments passed in.\n");            
-            assert(false);
+            System.out.println("\nExpected 4 arguments.\n");
+            print_usage();
             return;
         }
         
@@ -149,6 +147,27 @@ public class Ordering
     }
 
 
+    private static void print_usage()
+    {
+        String usage_string = "";
+
+        // FLOODLIGHT_PORT_ARG_INDEX 
+        usage_string += "\n\t<int>: floodlight port to connect to\n";
+
+        // NUMBER_TIMES_TO_RUN_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to run per experiment\n";
+
+        // ENSURE_ORDERING_ARG_INDEX
+        usage_string +=
+            "\n\t<boolean>: true if should ensure ordering false otherwise.\n";
+        
+        // OUTPUT_FILENAME_ARG_INDEX
+        usage_string += "\n\t<String> : output filename\n";
+
+        System.out.println(usage_string);
+    }
+    
     private static void write_results_to_file(String filename,List<Boolean> results)
     {
         // produce result string

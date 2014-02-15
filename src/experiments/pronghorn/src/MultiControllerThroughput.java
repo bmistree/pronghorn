@@ -249,7 +249,9 @@ public class MultiControllerThroughput {
         double throughputPerS =
             ((double) (num_switches * threads_per_switch * num_ops_to_run)) /
             ((double)elapsedNano/1000000000);
-        System.out.println("Switches: " + num_switches + " Throughput(op/s): " + throughputPerS);
+        System.out.println(
+            "Switches: " + num_switches + " Throughput(op/s): " +
+            throughputPerS);
 
         while (true)
         {
@@ -265,12 +267,32 @@ public class MultiControllerThroughput {
         for (SingleHostRESTShim shim : shim_set)
             shim.stop();
     }
-    
+
     public static void print_usage()
     {
-        System.out.println(
-            "\nSingleHost <int: floodlight port number> " + 
-            "<int: num ops to run>\n");
+        String usage_string = "";
+
+        // FLOODLIGHT_PORT_ARG_INDEX 
+        usage_string += "\n\t<int>: floodlight port to connect to\n";
+
+        // CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX 
+        usage_string +=
+            "\n\t<csv>: Children to contact host port csv.  Pronghorn ";
+        usage_string += "controllers to connect to.  ";
+        usage_string += "Format host:port,host:port\n";
+
+        // PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Port to listen for connections on.\n";
+
+        // NUMBER_OPS_TO_RUN_PER_EXPERIMENT_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to run per experiment\n";
+
+        // OUTPUT_FILENAME_ARG_INDEX
+        usage_string += "\n\t<String> : output filename\n";
+
+        System.out.println(usage_string);
     }
     
     public static class ThroughputThread extends Thread {

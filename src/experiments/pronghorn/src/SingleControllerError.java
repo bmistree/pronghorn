@@ -26,8 +26,8 @@ import experiments.Util.HostPortPair;
 import experiments.Util;
 
 
-public class SingleControllerError {
-	
+public class SingleControllerError
+{
     public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
     public static final int NUMBER_OPS_TO_RUN_PER_EXPERIMENT_ARG_INDEX = 1;
     public static final int NUMBER_EXPERIMENTS_TO_RUN_ARG_INDEX = 2;
@@ -45,6 +45,7 @@ public class SingleControllerError {
         if (args.length != 5)
         {
             System.out.println("\nExpected 5 arguments: exiting\n");
+            print_usage();
             return;
         }
 
@@ -209,6 +210,32 @@ public class SingleControllerError {
         }
     }
 
+    private static void print_usage()
+    {
+        String usage_string = "";
+
+        // FLOODLIGHT_PORT_ARG_INDEX 
+        usage_string += "\n\t<int>: floodlight port to connect to\n";
+
+        // NUMBER_TIMES_TO_RUN_PER_EXPERIMENT_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to run per experiment\n";
+
+        // NUMBER_EXPERIMENTS_TO_TO_RUN_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number experiments to run\n";
+
+        // FAILURE_PROB_ARG_INDEX
+        usage_string +=
+            "\n\t<double>: Failure probability.  For each transaction a ";
+        usage_string +=
+            "switch will independently fail with this probability.\n";
+        
+        // OUTPUT_FILENAME_ARG_INDEX
+        usage_string += "\n\t<String> : output filename\n";
+
+        System.out.println(usage_string);
+    }
 
     public static class ErrorShim extends SingleHostRESTShim
     {

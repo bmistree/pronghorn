@@ -11,10 +11,14 @@ import java.io.IOException;
 import java.util.List;
 import java.util.ArrayList;
 
+import ralph.NonAtomicInternalList;
 import single_host.JavaPronghornInstance.PronghornInstance;
 
 public class Util
 {
+    final static int TIME_TO_WAIT_AFTER_FIRST_SWITCH_MS = 5000;
+    final static int FIRST_SWITCH_POLL_PERIOD_MS = 250;
+    
     public static class HostPortPair
     {
         public String host = null;
@@ -75,6 +79,76 @@ public class Util
         }
     }
 
+    public static void wait_on_switches(PronghornInstance prong)
+    {
+        Double num_switches = null;
+        while (true)
+        {
+            try
+            {
+                num_switches = prong.num_switches();
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+                assert(false);
+            }
+
+            if (num_switches.doubleValue() != 0.)
+                break;
+
+            try
+            {
+                Thread.sleep(FIRST_SWITCH_POLL_PERIOD_MS);
+            }
+            catch (InterruptedException ex)
+            {
+                ex.printStackTrace();
+                assert(false);
+            }
+        }
+
+        // how long to wait to begin after see first switch.
+
+        try
+        {
+            Thread.sleep(TIME_TO_WAIT_AFTER_FIRST_SWITCH_MS);
+        }
+        catch (InterruptedException ex)
+        {
+            ex.printStackTrace();
+            assert(false);
+        }
+    }
+
+    public static String first_connected_switch_id (PronghornInstance prong)
+    {
+        /* Discover the id of the first connected switch */
+        String switch_id = null;
+        try {
+            NonAtomicInternalList<String,String> switch_list =
+                prong.list_switch_ids();
+
+            if (switch_list.get_len(null) == 0)
+            {
+                System.out.println(
+                    "No switches attached to pronghorn: error");
+                assert(false);
+            }
+
+            // get first switch id from key.  (If used Double(1), would get
+            // second element from list)
+            Double index_to_get_from = new Double(0);
+            switch_id = switch_list.get_val_on_key(null,index_to_get_from);
+        } catch (Exception _ex) {
+            _ex.printStackTrace();
+            assert(false);
+        }
+        
+        return switch_id;
+    }
+
+    
     public static class LatencyThread extends Thread
     {
         public List <Long> all_times = new ArrayList<Long>();
@@ -137,6 +211,7 @@ public class Util
             if (! all_times.isEmpty())
                 buffer.append("\n");
         }
+        
     }
     
 }

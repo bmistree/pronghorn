@@ -1,6 +1,6 @@
 package experiments;
 
-import single_host.SingleHostRESTShim;
+import single_host.SingleHostFloodlightShim;
 import single_host.SingleHostSwitchStatusHandler;
 import single_host.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
@@ -19,10 +19,9 @@ import experiments.Util.LatencyThread;
 
 public class SingleControllerLatency
 {
-    public static final int FLOODLIGHT_PORT_CSV_ARG_INDEX = 0;
-    public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 1;
-    public static final int NUMBER_THREADS_ARG_INDEX = 2;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
+    public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
+    public static final int NUMBER_THREADS_ARG_INDEX = 1;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -30,15 +29,12 @@ public class SingleControllerLatency
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 3)
         {
             print_usage();
             return;
         }
 
-        Set<Integer> floodlight_port_set = Util.parse_csv_ports(
-            args[FLOODLIGHT_PORT_CSV_ARG_INDEX]);
-        
         int num_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
 
@@ -60,52 +56,21 @@ public class SingleControllerLatency
             return;
         }
 
-        Set<SingleHostRESTShim> shim_set = new HashSet<SingleHostRESTShim>();
-        for (Integer port : floodlight_port_set)
-            shim_set.add ( new SingleHostRESTShim(port.intValue()));
+        SingleHostFloodlightShim shim = new SingleHostFloodlightShim();
         
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 prong,
                 FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
 
-        for (SingleHostRESTShim shim : shim_set)
-        {
-            shim.subscribe_switch_status_handler(switch_status_handler);
-            shim.start();
-        }
+        shim.subscribe_switch_status_handler(switch_status_handler);
+        shim.start();
         
+        // wait for first switch to connect
+        Util.wait_on_switches(prong);
+        // what's the first switch's id.
+        String switch_id = Util.first_connected_switch_id(prong);
 
-        /* wait a while to ensure that all switches are connected */
-        try {
-            Thread.sleep(SETTLING_TIME_WAIT);
-        } catch (InterruptedException _ex) {
-            _ex.printStackTrace();
-            assert(false);
-        }
-            
-
-        /* Discover the id of the first connected switch */
-        String switch_id = null;
-        try {
-            NonAtomicInternalList<String,String> switch_list =
-                prong.list_switch_ids();
-
-            if (switch_list.get_len(null) == 0)
-            {
-                System.out.println(
-                    "No switches attached to pronghorn: error");
-                assert(false);
-            }
-
-            // get first switch id from key.  (If used Double(1), would get
-            // second element from list)
-            Double index_to_get_from = new Double(0);
-            switch_id = switch_list.get_val_on_key(null,index_to_get_from);
-        } catch (Exception _ex) {
-            _ex.printStackTrace();
-            assert(false);
-        }
 
         List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
         for (int i = 0; i < num_threads; ++i)
@@ -133,18 +98,13 @@ public class SingleControllerLatency
         for (LatencyThread lt : all_threads)
             lt.write_times(results_buffer);
         Util.write_results_to_file(output_filename,results_buffer.toString());
-        
-        // actually tell shims to stop.
-        for (SingleHostRESTShim shim : shim_set)
-            shim.stop();
+
+        shim.stop();
     }
 
     private static void print_usage()
     {
         String usage_string = "";
-
-        // FLOODLIGHT_PORT_ARG_INDEX 
-        usage_string += "\n\t<int>: floodlight port to connect to\n";
 
         // NUMBER_OPS_TO_RUN_ARG_INDEX
         usage_string +=

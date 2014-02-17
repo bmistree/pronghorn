@@ -201,6 +201,8 @@ public class SingleControllerError
         }
         
         Util.write_results_to_file(output_filename,string_buffer.toString());
+
+        Util.force_shutdown();
     }
 
     private static void print_usage()

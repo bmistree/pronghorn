@@ -26,7 +26,7 @@ public class SingleControllerLatency
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
     
-    public static void main (String[] args)
+    public static void main (String[] args) 
     {
         /* Grab arguments */
         if (args.length != 3)
@@ -99,7 +99,9 @@ public class SingleControllerLatency
             lt.write_times(results_buffer);
         Util.write_results_to_file(output_filename,results_buffer.toString());
 
+        // stop and forst stop
         shim.stop();
+        Util.force_shutdown();
     }
 
     private static void print_usage()

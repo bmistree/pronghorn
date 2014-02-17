@@ -143,6 +143,8 @@ public class Ordering
 
         // write results to file
         write_results_to_file(result_filename,results);
+
+        Util.force_shutdown();
     }
 
 

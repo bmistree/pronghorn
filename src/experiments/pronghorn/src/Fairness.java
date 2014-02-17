@@ -184,12 +184,15 @@ public class Fairness
 
         // actually run all operations 
         run_operations(side_a,side_b);
+
+        write_results(result_filename);
         
         // actually tell shims to stop.
         shim_a.stop();
         shim_b.stop();
 
-        write_results(result_filename);
+
+        Util.force_shutdown();
     }
 
 

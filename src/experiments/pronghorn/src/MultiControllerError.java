@@ -243,6 +243,7 @@ public class MultiControllerError {
 
         // disconnect the shim connection
         shim.stop();
+        Util.force_shutdown();
     }
 
 

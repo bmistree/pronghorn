@@ -150,6 +150,8 @@ public class SingleControllerThroughput
 
         // actually tell shims to stop.
         shim.stop();
+
+        Util.force_shutdown();
     }
 
     private static void print_usage()

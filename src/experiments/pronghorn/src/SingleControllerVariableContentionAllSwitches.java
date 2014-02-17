@@ -138,6 +138,8 @@ public class SingleControllerVariableContentionAllSwitches {
         // actually tell shims to stop.
         for (SingleHostRESTShim shim : shim_set)
             shim.stop();
+        
+        Util.force_shutdown();
     }
 
     public static void print_usage()

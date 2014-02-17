@@ -10,9 +10,14 @@ import java.io.IOException;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.lang.StackTraceElement;
+import java.util.Map;
+import java.util.HashMap;
+
 
 import ralph.NonAtomicInternalList;
 import single_host.JavaPronghornInstance.PronghornInstance;
+
 
 public class Util
 {
@@ -61,6 +66,21 @@ public class Util
         return to_return;
     }
 
+    /**
+       Force pronghorn+floodlight to shutdown.  This is not clean: it
+       forces a bunch of exceptions to be thrown.  It would be nice to
+       figure out a clean way of shutting down.
+     */
+    public static void force_shutdown()
+    {
+        Map<Thread,StackTraceElement[]> all_stack_traces = Thread.getAllStackTraces();
+        for (Map.Entry<Thread,StackTraceElement[]> entry : all_stack_traces.entrySet())
+        {
+            Thread t = entry.getKey();
+            t.stop();
+        }
+    }
+    
 
     public static void write_results_to_file(
         String filename, String to_write)

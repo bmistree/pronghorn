@@ -151,5 +151,6 @@ public class SingleHostFloodlightShim
     @Override
     public void stop()
     {
+        pronghorn_floodlight.shutdown_all_now();
     }
 }

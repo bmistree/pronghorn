@@ -192,6 +192,8 @@ public class MultiControllerLatency
         // actually tell shims to stop.
         for (SingleHostRESTShim shim : shim_set)
             shim.stop();
+
+        Util.force_shutdown();
     }
 
     private static void print_usage()

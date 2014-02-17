@@ -19,7 +19,12 @@ public class RTableUpdate
         to_return.entry.active = true;
         to_return.entry.ip_src = src_ip;
         to_return.entry.ip_dst = dst_ip;
-        to_return.entry.actions = actions;
+
+        if (actions.equals(""))
+            to_return.entry.actions = null;
+        else
+            to_return.entry.actions = actions;
+        
         return to_return;
     }
     

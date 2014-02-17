@@ -121,31 +121,44 @@ public class Util
         }
     }
 
-    public static String first_connected_switch_id (PronghornInstance prong)
+    public static List<String> get_switch_id_list (PronghornInstance prong)
     {
-        /* Discover the id of the first connected switch */
-        String switch_id = null;
-        try {
+        List<String> to_return = new ArrayList<String>();
+        
+        try
+        {
             NonAtomicInternalList<String,String> switch_list =
                 prong.list_switch_ids();
 
-            if (switch_list.get_len(null) == 0)
+            int num_switches = switch_list.get_len(null);
+            if (num_switches == 0)
             {
                 System.out.println(
                     "No switches attached to pronghorn: error");
                 assert(false);
             }
 
-            // get first switch id from key.  (If used Double(1), would get
-            // second element from list)
-            Double index_to_get_from = new Double(0);
-            switch_id = switch_list.get_val_on_key(null,index_to_get_from);
-        } catch (Exception _ex) {
+
+            for (int i = 0; i < num_switches; ++i)
+            {
+                Double index_to_get_from = new Double(i);
+                String switch_id =
+                    switch_list.get_val_on_key(null,index_to_get_from);
+                to_return.add(switch_id);
+            }
+        }
+        catch (Exception _ex)
+        {
             _ex.printStackTrace();
             assert(false);
         }
-        
-        return switch_id;
+
+        return to_return;
+    }
+
+    public static String first_connected_switch_id (PronghornInstance prong)
+    {
+        return get_switch_id_list(prong).get(0);
     }
 
     

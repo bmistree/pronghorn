@@ -1,6 +1,6 @@
 package experiments;
 
-import single_host.SingleHostRESTShim;
+import single_host.SingleHostFloodlightShim;
 import single_host.SingleHostSwitchStatusHandler;
 import single_host.JavaPronghornInstance.PronghornInstance;
 import single_host.JavaPronghornConnection.PronghornConnection;
@@ -27,13 +27,12 @@ import ralph.Ralph;
 
 
 
-public class MultiControllerThroughput {
-	
-    public static final int FLOODLIGHT_PORT_CSV_ARG_INDEX = 0;
-    public static final int CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX = 1;
-    public static final int PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX = 2;
-    public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 3;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
+public class MultiControllerThroughput
+{
+    public static final int CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX = 0;
+    public static final int PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX = 1;
+    public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 2;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -47,14 +46,11 @@ public class MultiControllerThroughput {
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 4)
         {
             print_usage();
             return;
         }
-
-        Set<Integer> floodlight_port_set = Util.parse_csv_ports(
-            args[FLOODLIGHT_PORT_CSV_ARG_INDEX]);
 
         Set<HostPortPair> children_to_contact_hpp = null;
         if (! args[CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX].equals("-1"))
@@ -83,21 +79,16 @@ public class MultiControllerThroughput {
             return;
         }
 
-        Set<SingleHostRESTShim> shim_set = new HashSet<SingleHostRESTShim>();
-        for (Integer port : floodlight_port_set)
-            shim_set.add ( new SingleHostRESTShim(port.intValue()));
 
+        SingleHostFloodlightShim shim = new SingleHostFloodlightShim();
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 prong,
                 FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
 
-        for (SingleHostRESTShim shim : shim_set)
-        {
-            shim.subscribe_switch_status_handler(switch_status_handler);
-            shim.start();
-        }
-
+        shim.subscribe_switch_status_handler(switch_status_handler);
+        shim.start();
+        
 
         // start listening for connections from parents
         Ralph.tcp_accept(
@@ -119,95 +110,23 @@ public class MultiControllerThroughput {
             }
         }
 
-        
         /* wait a while to ensure that all switches are connected */
-        try {
-            Thread.sleep(SETTLING_TIME_WAIT);
-        } catch (InterruptedException _ex) {
-            _ex.printStackTrace();
-            assert(false);
-        }
+        Util.wait_on_switches(prong);
 
-
-        NonAtomicInternalList<String,String> switch_list = null;
-        int num_switches = -1;
-        try {
-            switch_list = prong.list_switch_ids();
-            num_switches = switch_list.get_len(null);
-
-            if (num_switches == 0)
-            {
-                System.out.println(
-                    "No switches attached to pronghorn: error");
-                assert(false);
-            }
-        } catch (Exception _ex) {
-            _ex.printStackTrace();
-            assert(false);
-        }
-
-
-        /* warmup */
-        if (num_ops_to_run != 0) {
-            ArrayList<Thread> threads = new ArrayList<Thread>();
-            // each thread has a unique index into this results map
-            ConcurrentHashMap<String,List<Long>> results =
-                new ConcurrentHashMap<String,List<Long>>();
-
-            for (int i = 0; i < num_switches; i++) {
-                String switch_id = null;
-                try { 
-                    switch_id = switch_list.get_val_on_key(null, new Double((double)i));
-                } catch (Exception _ex) {
-                    _ex.printStackTrace();
-                    assert(false);
-                }
-
-                ThroughputThread t =
-                    new ThroughputThread(
-                        switch_id, prong, num_ops_to_run, results);
-            
-                t.start();
-                threads.add(t);
-            }
-            for (Thread t : threads) {
-                try {
-                    t.join();
-                } catch (Exception _ex) {
-                    _ex.printStackTrace();
-                    assert(false);
-                }
-            }
-            System.out.println("warmed up, sleep");
-            try {
-                Thread.sleep(5000);
-            } catch (Exception _ex) {
-                _ex.printStackTrace();
-                assert(false);
-            }
-        }
-
-        
         /* Spawn thread per switch to operate on it */
         ArrayList<Thread> threads = new ArrayList<Thread>();
         // each thread has a unique index into this results map
         ConcurrentHashMap<String,List<Long>> results =
             new ConcurrentHashMap<String,List<Long>>();
 
+        // list of all switches in the system
+        List<String> switch_id_list = Util.get_switch_id_list (prong);
+        int num_switches = switch_id_list.size();
+        
+        // generate throughput tasks for each switch
         long start = System.nanoTime();
-        for (int i = 0; i < num_switches; i++) {
-            String switch_id = null;
-            try
-            { 
-                switch_id = switch_list.get_val_on_key(
-                    null, new Double((double)i));
-            }
-            catch (Exception _ex)
-            {
-                _ex.printStackTrace();
-                assert(false);
-            }
-
+        for (String switch_id : switch_id_list)
+        {
             ThroughputThread t =
                 new ThroughputThread(
                     switch_id, prong, num_ops_to_run, results);
@@ -226,29 +145,16 @@ public class MultiControllerThroughput {
         long end = System.nanoTime();
         long elapsedNano = end-start;
 
-        StringBuffer result_string = new StringBuffer();
-        for (String switch_id : results.keySet())
-        {
-            List<Long> times = results.get(switch_id);
-            String line = "";
-            for (Long time : times)
-                line += time.toString() + ",";
-            if (line != "")
-            {
-                // trim off trailing comma
-                line = line.substring(0, line.length() - 1);
-            }
-            result_string.append(line).append("\n");
-        }
+        
+        // produce results string
+        StringBuffer result_string = produce_result_string(results);
         Util.write_results_to_file(output_filename,result_string.toString());
 
-        double throughputPerS =
-            ((double) (num_switches * threads_per_switch * num_ops_to_run)) /
-            ((double)elapsedNano/1000000000);
-        System.out.println(
-            "Switches: " + num_switches + " Throughput(op/s): " +
-            throughputPerS);
+        // print to stdout the throughput of this experiments
+        print_throughput_results(
+            num_switches,threads_per_switch,num_ops_to_run,elapsedNano);
 
+        // run indefinitely
         while (true)
         {
             try {
@@ -260,18 +166,13 @@ public class MultiControllerThroughput {
         }
         
         // actually tell shims to stop.
-        for (SingleHostRESTShim shim : shim_set)
-            shim.stop();
-        
+        shim.stop();
         Util.force_shutdown();        
     }
 
     public static void print_usage()
     {
         String usage_string = "";
-
-        // FLOODLIGHT_PORT_ARG_INDEX 
-        usage_string += "\n\t<int>: floodlight port to connect to\n";
 
         // CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX 
         usage_string +=
@@ -331,6 +232,39 @@ public class MultiControllerThroughput {
     }
 
 
+    private static StringBuffer produce_result_string(
+        ConcurrentHashMap<String,List<Long>> results)
+    {
+        StringBuffer result_string = new StringBuffer();
+        for (String switch_id : results.keySet())
+        {
+            List<Long> times = results.get(switch_id);
+            String line = "";
+            for (Long time : times)
+                line += time.toString() + ",";
+            if (line != "")
+            {
+                // trim off trailing comma
+                line = line.substring(0, line.length() - 1);
+            }
+            result_string.append(line).append("\n");
+        }
+        return result_string;
+    }
+
+    private static void print_throughput_results(
+        int num_switches,int threads_per_switch,int num_ops_to_run,
+        long elapsedNano)
+    {
+        double throughputPerS =
+            ((double) (num_switches * threads_per_switch * num_ops_to_run)) /
+            ((double)elapsedNano/1000000000);
+        System.out.println(
+            "Switches: " + num_switches + " Throughput(op/s): " +
+            throughputPerS);
+    }
+
+    
     private static class DummyConnectionConstructor implements EndpointConstructorObj
     {
         @Override

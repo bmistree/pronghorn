@@ -1,6 +1,6 @@
 package experiments;
 
-import single_host.SingleHostRESTShim;
+import single_host.SingleHostFloodlightShim;
 import single_host.SingleHostSwitchStatusHandler;
 import single_host.JavaPronghornInstance.PronghornInstance;
 import single_host.JavaPronghornConnection.PronghornConnection;
@@ -25,12 +25,12 @@ import ralph.Ralph;
 
 public class MultiControllerLatency
 {
-    public static final int FLOODLIGHT_PORT_CSV_ARG_INDEX = 0;
-    public static final int CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX = 1;
-    public static final int PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX = 2;
-    public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 3;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
+    public static final int CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX = 0;
+    public static final int PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX = 1;
+    public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 2;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
 
+    
     public static PronghornInstance prong = null;
     
     // wait this long for pronghorn to add all switches
@@ -41,14 +41,11 @@ public class MultiControllerLatency
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 4)
         {
             print_usage();
             return;
         }
-        
-        Set<Integer> floodlight_port_set = Util.parse_csv_ports(
-            args[FLOODLIGHT_PORT_CSV_ARG_INDEX]);
 
         Set<HostPortPair> children_to_contact_hpp = null;
         if (! args[CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX].equals("-1"))
@@ -79,20 +76,16 @@ public class MultiControllerLatency
             return;
         }
 
-        Set<SingleHostRESTShim> shim_set = new HashSet<SingleHostRESTShim>();
-        for (Integer port : floodlight_port_set)
-            shim_set.add ( new SingleHostRESTShim(port.intValue()));
-        
+
+        SingleHostFloodlightShim shim = new SingleHostFloodlightShim();
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 prong,
                 FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
 
-        for (SingleHostRESTShim shim : shim_set)
-        {
-            shim.subscribe_switch_status_handler(switch_status_handler);
-            shim.start();
-        }
+        shim.subscribe_switch_status_handler(switch_status_handler);
+        shim.start();
+
 
         // start listening for connections from parents
         Ralph.tcp_accept(
@@ -116,41 +109,11 @@ public class MultiControllerLatency
         }
 
         
-        /* wait a while to ensure that all switches are connected */
-        try {
-            Thread.sleep(SETTLING_TIME_WAIT);
-        } catch (InterruptedException _ex) {
-            _ex.printStackTrace();
-            assert(false);
-        }
-
+        // wait for first switch to connect
+        Util.wait_on_switches(prong);
+        // what's the first switch's id.
+        String switch_id = Util.first_connected_switch_id(prong);
         
-        
-
-
-        /* Discover the id of the first connected switch */
-        String switch_id = null;
-        try {
-            NonAtomicInternalList<String,String> switch_list =
-                prong.list_switch_ids();
-
-            if (switch_list.get_len(null) == 0)
-            {
-                System.out.println(
-                    "No switches attached to pronghorn: error");
-                assert(false);
-            }
-
-            // get first switch id from key.  (If used Double(1), would get
-            // second element from list)
-            Double index_to_get_from = new Double(0);
-            switch_id = switch_list.get_val_on_key(null,index_to_get_from);
-        } catch (Exception _ex) {
-            _ex.printStackTrace();
-            assert(false);
-        }
-
-
         if (num_ops_to_run != 0)
         {
             List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
@@ -179,6 +142,7 @@ public class MultiControllerLatency
                 output_filename,string_buffer.toString());
         }
 
+        // run indefinitely
         while (true)
         {
             try{
@@ -190,18 +154,13 @@ public class MultiControllerLatency
         }
 
         // actually tell shims to stop.
-        for (SingleHostRESTShim shim : shim_set)
-            shim.stop();
-
+        shim.stop();
         Util.force_shutdown();
     }
 
     private static void print_usage()
     {
         String usage_string = "";
-
-        // FLOODLIGHT_PORT_ARG_INDEX 
-        usage_string += "\n\t<int>: floodlight port to connect to\n";
 
         // CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX 
         usage_string +=

@@ -99,6 +99,16 @@
       <arg line="${pronghorn_package}"/>
       <arg line="SwitchJava"/>
     </exec>
+
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="${pronghorn_ralph_src_dir}/port.rph"/>
+      <arg line="${pronghorn_ralph_emitted_dir}/PortJava.java"/>
+      <arg line="${pronghorn_package}"/>
+      <arg line="PortJava"/>
+    </exec>
+
     
   </target>
 

@@ -1,4 +1,11 @@
 alias Struct RoutingTableEntry as 'pronghorn.RTable.RoutingTableEntry';
+alias Struct Port as 'pronghorn.PortJava.Port';
+
+Struct Port
+{
+    // do not need to fill in fields here
+    // because fields are never accessed.
+}
 
 Struct RoutingTableEntry
 {
@@ -13,5 +20,13 @@ Struct Switch
     TVar Text switch_id;    
     TVar Number available_capacity;
     TVar List (element: Struct RoutingTableEntry) rtable;
+
+    // Indices are port numbers on local switch
+    TVar Map (from: Number, to: Struct Port) all_ports;
+    // Ports link two switches.  available ports is a map of ports
+    // that the other end of the port exists for.  (Example of a case
+    // where other end does not exist: added multiple switches to the
+    // network simultaneously.)
+    TVar Map (from: Number, to: Struct Port) available_ports;
 }
 

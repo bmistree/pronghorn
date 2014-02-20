@@ -1,6 +1,5 @@
 package single_host;
 
-import pronghorn.SwitchStatusHandler;
 import single_host.JavaPronghornInstance.PronghornInstance;
 import pronghorn.SwitchFactory;
 import pronghorn.RoutingTableToHardware;
@@ -9,10 +8,19 @@ import pronghorn.SwitchFactory.PronghornInternalSwitch;
 import java.util.HashMap;
 import pronghorn.FloodlightRoutingTableToHardware;
 import pronghorn.ShimInterface;
+import net.floodlightcontroller.core.IOFSwitchListener;
+import net.floodlightcontroller.core.ImmutablePort;
+import net.floodlightcontroller.core.IOFSwitch;
 
+import org.openflow.util.HexString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class SingleHostSwitchStatusHandler implements SwitchStatusHandler
+public class SingleHostSwitchStatusHandler implements IOFSwitchListener
 {
+    protected static final Logger log =
+        LoggerFactory.getLogger(SingleHostSwitchStatusHandler.class);
+    
     private PronghornInstance prong;
     private SwitchFactory switch_factory;
     private final static String UNIQUE_SWITCH_FACTORY_PREFIX =
@@ -28,48 +36,33 @@ public class SingleHostSwitchStatusHandler implements SwitchStatusHandler
     private HashMap<String,String> pronghorn_to_floodlight_ids =
         new HashMap<String,String>();
     private RoutingTableToHardwareFactory rtable_to_hardware_factory = null;
+
+    private ShimInterface shim = null;
     
     
     public SingleHostSwitchStatusHandler(
-        PronghornInstance _prong,
-        RoutingTableToHardwareFactory _rtable_to_hardware_factory)
+        ShimInterface shim,
+        PronghornInstance prong,
+        RoutingTableToHardwareFactory rtable_to_hardware_factory)
     {
-        prong = _prong;
+        this.shim = shim;
+        this.prong = prong;
         switch_factory = new SwitchFactory();
         switch_factory.init(UNIQUE_SWITCH_FACTORY_PREFIX);
-        rtable_to_hardware_factory = _rtable_to_hardware_factory;
+        this.rtable_to_hardware_factory = rtable_to_hardware_factory;
     }
-    
+
+
+    /** IOFSwitchListener */
     @Override
-    public void new_switch(ShimInterface shim,String floodlight_switch_id)
+    public void switchAdded(long switchId)
     {
-        RoutingTableToHardware rtable_to_hardware =
-            rtable_to_hardware_factory.construct(shim,floodlight_switch_id);
-        
-        /// FIXME: Should overload RoutingTableToHardware object to
-        /// actually push changes to hardware.
-        PronghornInternalSwitch new_switch =
-            switch_factory.construct(
-                DEFAULT_INITIAL_SWITCH_CAPACITY,rtable_to_hardware);
-        
-        String pronghorn_switch_id = new_switch.ralph_internal_switch_id;
-        floodlight_to_pronghorn_ids.put(
-            floodlight_switch_id,pronghorn_switch_id);
-        pronghorn_to_floodlight_ids.put(
-            pronghorn_switch_id,floodlight_switch_id);
-        
-        try {
-            prong.add_switch(new_switch);
-        } catch (Exception _ex)
-        {
-            _ex.printStackTrace();
-            System.out.println(
-                "\nError: Should not generate exception from adding switch\n");
-        }
+        log.info("Ignoring switch added message: waiting on activated.");
     }
     @Override
-    public void removed_switch(ShimInterface shim, String floodlight_switch_id)
+    public void switchRemoved(long switch_id)
     {
+        String floodlight_switch_id = HexString.toHexString(switch_id);
         String pronghorn_switch_id =
             floodlight_to_pronghorn_ids.remove(floodlight_switch_id);
 
@@ -90,5 +83,47 @@ public class SingleHostSwitchStatusHandler implements SwitchStatusHandler
             System.out.println(
                 "\nError: Should not generate exception from removing switch\n");
         }
+    }
+    @Override
+    public void switchActivated(long switch_id)
+    {
+        String floodlight_switch_id = HexString.toHexString(switch_id);
+        
+        RoutingTableToHardware rtable_to_hardware =
+            rtable_to_hardware_factory.construct(shim,floodlight_switch_id);
+        PronghornInternalSwitch new_switch =
+            switch_factory.construct(
+                DEFAULT_INITIAL_SWITCH_CAPACITY,rtable_to_hardware);
+        
+        String pronghorn_switch_id = new_switch.ralph_internal_switch_id;
+        floodlight_to_pronghorn_ids.put(
+            floodlight_switch_id,pronghorn_switch_id);
+        pronghorn_to_floodlight_ids.put(
+            pronghorn_switch_id,floodlight_switch_id);
+        
+        try {
+            prong.add_switch(new_switch);
+        } catch (Exception _ex)
+        {
+            _ex.printStackTrace();
+            System.out.println(
+                "\nError: Should not generate exception from adding switch\n");
+        }
+    }
+    @Override
+    public void switchPortChanged(long switchId,
+                                  ImmutablePort port,
+                                  IOFSwitch.PortChangeType type)
+    {
+        log.error(
+            "Still not handling switchPortChangedMessage " +
+            "in switch status handler.");
+    }
+    @Override
+    public void switchChanged(long switchId)
+    {
+        log.error(
+            "Still not handling switchChangedMessage " +
+            "in switch status handler.");
     }
 }

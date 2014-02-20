@@ -24,7 +24,7 @@ public class SingleHost
         SingleHostFloodlightShim shim = new SingleHostFloodlightShim();
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
-                prong,
+                shim,prong,
                 FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);
         boolean block_traffic = true;

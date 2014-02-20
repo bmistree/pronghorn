@@ -7,19 +7,17 @@ import java.util.List;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 import pronghorn.ShimInterface;
-import pronghorn.SwitchStatusHandler;
 import pronghorn.RTableUpdate;
-
+import net.floodlightcontroller.core.IOFSwitchListener;
 import net.floodlightcontroller.pronghornmodule.IPronghornService;
 import net.floodlightcontroller.core.Main;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.pronghornmodule.IPronghornService;
-import net.floodlightcontroller.pronghornmodule.ISwitchAddedRemovedListener;
 /**
    Serves as intermediate layer between Ralph and Floodlight
  */
 public class SingleHostFloodlightShim
-    implements ShimInterface, ISwitchAddedRemovedListener
+    implements ShimInterface
 {
     private IPronghornService pronghorn_floodlight = null;
 
@@ -28,9 +26,7 @@ public class SingleHostFloodlightShim
        switch went down, we notify these handlers. 
      */
     private ReentrantLock handler_lock = new ReentrantLock();
-    private Set<SwitchStatusHandler> switch_status_handlers =
-        new HashSet<SwitchStatusHandler>();
-
+    
     public SingleHostFloodlightShim()
     {
         try
@@ -58,8 +54,6 @@ public class SingleHostFloodlightShim
                 ex.printStackTrace();
                 assert(false);
             }
-
-            pronghorn_floodlight.register_switch_changes_listener(this);
         }
         catch (FloodlightModuleException ex)
         {
@@ -68,39 +62,18 @@ public class SingleHostFloodlightShim
         }
     }
 
-    /** ISwtichAddedRemovedListener */
-    @Override
-    public void switch_added(String unique_switch_id)
-    {
-        handler_lock.lock();
-        for (SwitchStatusHandler ssh : switch_status_handlers)
-            ssh.new_switch(this,unique_switch_id);
-        handler_lock.unlock();
-    }
-    @Override    
-    public void switch_removed(String unique_switch_id)
-    {
-        handler_lock.lock();
-        for (SwitchStatusHandler ssh : switch_status_handlers)
-            ssh.removed_switch(this,unique_switch_id);
-        handler_lock.unlock();
-    }
-    
     
     /** ShimInterface methods */
     @Override
-    public void subscribe_switch_status_handler(SwitchStatusHandler ssh)
+    public void subscribe_switch_status_handler(IOFSwitchListener switch_listener)
     {
-        handler_lock.lock();
-        switch_status_handlers.add(ssh);
-        handler_lock.unlock();
+        pronghorn_floodlight.register_switch_listener(switch_listener);
     }
+    
     @Override
-    public void unsubscribe_switch_status_handler(SwitchStatusHandler ssh)
+    public void unsubscribe_switch_status_handler(IOFSwitchListener switch_listener)
     {
-        handler_lock.lock();
-        switch_status_handlers.remove(ssh);
-        handler_lock.unlock();
+        pronghorn_floodlight.unregister_switch_listener(switch_listener);
     }
     
     @Override

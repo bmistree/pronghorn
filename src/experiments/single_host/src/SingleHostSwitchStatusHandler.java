@@ -13,8 +13,11 @@ import pronghorn.SwitchFactory.PronghornInternalSwitch;
 import pronghorn.FloodlightRoutingTableToHardware;
 import pronghorn.ShimInterface;
 import pronghorn.PortJava._InternalPort;
+import pronghorn.PortJava;;
 
+import RalphExceptions.BackoutException;
 import ralph.Variables.AtomicTrueFalseVariable;
+import ralph.Variables.NonAtomicListVariable;
 
 import net.floodlightcontroller.core.IOFSwitchListener;
 import net.floodlightcontroller.core.ImmutablePort;
@@ -75,18 +78,47 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
     @Override
     public void linkDiscoveryUpdate(List<LDUpdate> update_list)
     {
-        List<_InternalPort> ralph_update_list = new ArrayList<_InternalPort>();
+        NonAtomicListVariable<_InternalPort,_InternalPort> ralph_update_list =
+            new NonAtomicListVariable<_InternalPort,_InternalPort>(
+                "",false,PortJava.STRUCT_LOCKED_MAP_WRAPPER__Port);
         
         // only handle link up messages to start with
         for (LDUpdate update : update_list)
         {
             _InternalPort ralph_port = create_internal_port_from_update(update);
             if (ralph_port != null)
-                ralph_update_list.add(ralph_port);
+            {
+                try
+                {
+                    ralph_update_list.get_val(null).append(null,ralph_port);
+                }
+                catch (BackoutException ex)
+                {
+                    // 1: Should never receive a backout exception on
+                    // a non atomic.
+                    // 2: Nothing else should no about
+                    // ralph_update_list.  Therefore, nothing else
+                    // should be contending for it.
+                    ex.printStackTrace();
+                    assert(false);
+                }
+            }
         }
-        //prong.process_port_updates(ralph_update_list);
+
+        try
+        {
+            prong.process_port_updates(ralph_update_list.get_val(null));
+        }
+        catch (Exception ex)
+        {
+            // FIXME: Is it safe to assume that there will not be
+            // application errors in this call?
+            ex.printStackTrace();
+            assert(false);
+        }
     }
 
+    
     /**
        @returns --- Either null or _InternalPort.  Will return null if
        the update is not for an added port.  Will return _InternalPort

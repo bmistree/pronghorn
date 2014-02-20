@@ -1,22 +1,27 @@
 package single_host;
 
+import java.util.List;
+import java.util.HashMap;
+
 import single_host.JavaPronghornInstance.PronghornInstance;
 import pronghorn.SwitchFactory;
+import pronghorn.ISwitchStatusHandler;
 import pronghorn.RoutingTableToHardware;
 import pronghorn.RoutingTableToHardwareFactory;
 import pronghorn.SwitchFactory.PronghornInternalSwitch;
-import java.util.HashMap;
 import pronghorn.FloodlightRoutingTableToHardware;
 import pronghorn.ShimInterface;
+
 import net.floodlightcontroller.core.IOFSwitchListener;
 import net.floodlightcontroller.core.ImmutablePort;
 import net.floodlightcontroller.core.IOFSwitch;
+import net.floodlightcontroller.linkdiscovery.ILinkDiscoveryListener;
 
 import org.openflow.util.HexString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingleHostSwitchStatusHandler implements IOFSwitchListener
+public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
 {
     protected static final Logger log =
         LoggerFactory.getLogger(SingleHostSwitchStatusHandler.class);
@@ -52,7 +57,19 @@ public class SingleHostSwitchStatusHandler implements IOFSwitchListener
         this.rtable_to_hardware_factory = rtable_to_hardware_factory;
     }
 
+    /** ILinkDiscoveryListener */
+    @Override
+    public void linkDiscoveryUpdate(LDUpdate update)
+    {
+        System.out.println("\nI got a link update\n");
+    }
 
+    @Override
+    public void linkDiscoveryUpdate(List<LDUpdate> update_list)
+    {
+        System.out.println("\nI got a series of link updates\n");
+    }
+    
     /** IOFSwitchListener */
     @Override
     public void switchAdded(long switchId)
@@ -111,19 +128,14 @@ public class SingleHostSwitchStatusHandler implements IOFSwitchListener
         }
     }
     @Override
-    public void switchPortChanged(long switchId,
-                                  ImmutablePort port,
-                                  IOFSwitch.PortChangeType type)
+    public void switchPortChanged(
+        long switch_id,ImmutablePort port, IOFSwitch.PortChangeType type)
     {
-        log.error(
-            "Still not handling switchPortChangedMessage " +
-            "in switch status handler.");
+        // ignoring: using link discovery service instead for port messages.
     }
     @Override
     public void switchChanged(long switchId)
     {
-        log.error(
-            "Still not handling switchChangedMessage " +
-            "in switch status handler.");
+        // ignoring: using link discovery service instead for port messages.
     }
 }

@@ -6,19 +6,30 @@ import java.util.HashSet;
 import java.util.List;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
+
 import pronghorn.ShimInterface;
 import pronghorn.RTableUpdate;
+import pronghorn.ISwitchStatusHandler;
+
 import net.floodlightcontroller.core.IOFSwitchListener;
 import net.floodlightcontroller.pronghornmodule.IPronghornService;
 import net.floodlightcontroller.core.Main;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.pronghornmodule.IPronghornService;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 /**
    Serves as intermediate layer between Ralph and Floodlight
  */
 public class SingleHostFloodlightShim
     implements ShimInterface
 {
+    protected static final Logger log =
+        LoggerFactory.getLogger(SingleHostFloodlightShim.class);
+    
     private IPronghornService pronghorn_floodlight = null;
 
     /**
@@ -34,7 +45,7 @@ public class SingleHostFloodlightShim
             final Main.ProviderPronghornTuple ppt =
                 Main.get_controller(null);
             pronghorn_floodlight = ppt.pronghorn;
-
+            
             Thread t = new Thread()
             {
                 @Override
@@ -65,15 +76,18 @@ public class SingleHostFloodlightShim
     
     /** ShimInterface methods */
     @Override
-    public void subscribe_switch_status_handler(IOFSwitchListener switch_listener)
+    public void subscribe_switch_status_handler(ISwitchStatusHandler status_handler)
     {
-        pronghorn_floodlight.register_switch_listener(switch_listener);
+        pronghorn_floodlight.register_switch_listener(status_handler);
+        pronghorn_floodlight.register_link_discovery_listener(status_handler);
     }
     
     @Override
-    public void unsubscribe_switch_status_handler(IOFSwitchListener switch_listener)
+    public void unsubscribe_switch_status_handler(ISwitchStatusHandler status_handler)
     {
-        pronghorn_floodlight.unregister_switch_listener(switch_listener);
+        pronghorn_floodlight.unregister_switch_listener(status_handler);
+        log.warn("No method for unregistering for link discovery messages.");
+        // still need to register link discovery listener
     }
     
     @Override

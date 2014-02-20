@@ -156,6 +156,10 @@
   <target name="clean" description="get rid of build dir">
     <delete dir="${pronghorn_build_classes_dir}"/>
     <delete dir="${pronghorn_ralph_emitted_dir}"/>
+    
+    <!-- Delete ralph compiler output -->
+    <delete file="parser.out"/>
+    <delete file="parsetab.py"/>
   </target>
 
   <target

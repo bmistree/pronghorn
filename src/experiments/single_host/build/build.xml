@@ -209,6 +209,11 @@
   <target name="clean" description="get rid of build dir">
     <delete dir="${single_host_build_classes_dir}"/>
     <delete dir="${single_host_ralph_emitted_dir}"/>
+    
+    <!-- Delete ralph compiler output -->
+    <delete file="parser.out"/>
+    <delete file="parsetab.py"/>
+    
   </target>
 
   <target

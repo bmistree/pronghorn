@@ -451,6 +451,10 @@
   <target name="clean" description="get rid of build dir">
     <delete dir="${experiments_build_classes_dir}"/>
 
+    <!-- Delete ralph compiler output -->
+    <delete file="parser.out"/>
+    <delete file="parsetab.py"/>
+    
     <!-- Delete generated jars -->
     <delete file="${single_controller_throughput_jar}"/>
     <delete file="${single_controller_variable_contention_throughput_jar}"/>

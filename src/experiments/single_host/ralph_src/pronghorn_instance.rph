@@ -99,6 +99,20 @@ Endpoint PronghornInstance
     process_port_updates(List(element: Struct Port) port_updates)
     {
         print ('\nI received port updates\n');
+        atomically
+        {
+            for (Struct Port port in port_updates)
+            {
+                if (instance_switches.contains(port.local_switch_id))
+                {
+                    Struct Switch target_switch =
+                        instance_switches.get(port.local_switch_id);
+                    target_switch.all_ports.set(port.local_port_number,port);
+                    target_switch.available_ports.set(
+                        port.local_port_number,port);
+                }
+            }
+        }
     }
 
     

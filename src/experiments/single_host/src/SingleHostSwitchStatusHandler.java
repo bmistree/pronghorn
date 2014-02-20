@@ -81,13 +81,14 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
         NonAtomicListVariable<_InternalPort,_InternalPort> ralph_update_list =
             new NonAtomicListVariable<_InternalPort,_InternalPort>(
                 "",false,PortJava.STRUCT_LOCKED_MAP_WRAPPER__Port);
-        
+        boolean should_update_ralph = false;
         // only handle link up messages to start with
         for (LDUpdate update : update_list)
         {
             _InternalPort ralph_port = create_internal_port_from_update(update);
             if (ralph_port != null)
             {
+                should_update_ralph = true;
                 try
                 {
                     ralph_update_list.get_val(null).append(null,ralph_port);
@@ -105,16 +106,19 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
             }
         }
 
-        try
+        if (should_update_ralph)
         {
-            prong.process_port_updates(ralph_update_list.get_val(null));
-        }
-        catch (Exception ex)
-        {
-            // FIXME: Is it safe to assume that there will not be
-            // application errors in this call?
-            ex.printStackTrace();
-            assert(false);
+            try
+            {
+                prong.process_port_updates(ralph_update_list.get_val(null));
+            }
+            catch (Exception ex)
+            {
+                // FIXME: Is it safe to assume that there will not be
+                // application errors in this call?
+                ex.printStackTrace();
+                assert(false);
+            }
         }
     }
 
@@ -126,7 +130,7 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
      */
     private _InternalPort create_internal_port_from_update(LDUpdate update)
     {
-        if (update.getOperation() != UpdateOperation.SWITCH_UPDATED)
+        if (update.getOperation() == UpdateOperation.LINK_UPDATED)
         {
             String src_floodlight_switch_id =
                 HexString.toHexString(update.getSrc());
@@ -140,15 +144,17 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
 
             // FIXME: assume as soon as a switch gets updated with a port
             // that we can use that port.
-            to_return.other_end_available = new AtomicTrueFalseVariable("",false,true);
+            to_return.other_end_available =
+                new AtomicTrueFalseVariable("",false,true);
             to_return.port_up = new AtomicTrueFalseVariable("",false,true);
 
-            
             to_return.remote_switch_id.set_val(null,dst_floodlight_switch_id);
-            to_return.remote_port_number.set_val(null,new Double(dst_port_num));
+            to_return.remote_port_number.set_val(
+                null,new Double(dst_port_num));
 
             to_return.local_switch_id.set_val(null,src_floodlight_switch_id);
-            to_return.local_port_number.set_val(null,new Double(src_port_num));
+            to_return.local_port_number.set_val(
+                null,new Double(src_port_num));
 
             return to_return;
             

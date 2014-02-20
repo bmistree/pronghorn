@@ -1,6 +1,6 @@
 package experiments;
 
-import single_host.SingleHostRESTShim;
+import single_host.SingleHostFloodlightShim;
 import single_host.SingleHostSwitchStatusHandler;
 import single_host.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
@@ -29,9 +29,8 @@ import experiments.Util;
    Otherwise, performs normally.
 
    Usage:
-       ordering <int> <int> <boolean> <string>
+       ordering <int> <boolean> <string>
        
-   <int> : The port that a floodlight controller is running on.
    <int> : The number of times to run experiment on controller.
    <boolean> : true if should allow internal reordering, false otherwise
    <string> : filename to save final result to.  true if rule exists.
@@ -40,10 +39,9 @@ import experiments.Util;
 
 public class Ordering
 {
-    private static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
-    private static final int NUMBER_TIMES_TO_RUN_ARG_INDEX = 1;
-    private static final int ENSURE_ORDERING_ARG_INDEX = 2;
-    private static final int RESULT_FILENAME_ARG_INDEX = 3;
+    private static final int NUMBER_TIMES_TO_RUN_ARG_INDEX = 0;
+    private static final int ENSURE_ORDERING_ARG_INDEX = 1;
+    private static final int RESULT_FILENAME_ARG_INDEX = 2;
     
     // wait this long for pronghorn to add all switches
     private static final int STARTUP_SETTLING_TIME_WAIT = 5000;
@@ -52,19 +50,12 @@ public class Ordering
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 3)
         {
             System.out.println("\nExpected 4 arguments.\n");
             print_usage();
             return;
         }
-        
-        Set<Integer> port_set =
-            Util.parse_csv_ports(args[FLOODLIGHT_PORT_ARG_INDEX]);
-
-        int floodlight_port = -1;
-        for (Integer port : port_set)
-            floodlight_port = port.intValue();
 
         int num_times_to_run = 
             Integer.parseInt(args[NUMBER_TIMES_TO_RUN_ARG_INDEX]);
@@ -90,11 +81,10 @@ public class Ordering
         }
 
         boolean allow_reordering = ! ensure_ordering;
-        OrderingRESTShim shim = new OrderingRESTShim(
-            floodlight_port,allow_reordering);
+        OrderingShim shim = new OrderingShim(allow_reordering);
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
-                prong,
+                shim,prong,
                 FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -152,9 +142,6 @@ public class Ordering
     {
         String usage_string = "";
 
-        // FLOODLIGHT_PORT_ARG_INDEX 
-        usage_string += "\n\t<int>: floodlight port to connect to\n";
-
         // NUMBER_TIMES_TO_RUN_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
@@ -194,7 +181,7 @@ public class Ordering
      */
     private static boolean run_once(
         PronghornInstance prong, String switch_id,
-        OrderingRESTShim shim,boolean allow_reordering)
+        OrderingShim shim,boolean allow_reordering)
     {
         // Run operation a random number of times: the below should
         // produce a random number from 2-10.
@@ -215,8 +202,6 @@ public class Ordering
         } catch (Exception e) {
             e.printStackTrace();
         }
-
-
         
         try{
             for (int i = 0; i < number_times_to_run; ++i)
@@ -262,7 +247,7 @@ public class Ordering
     /**
        Creating a private subclass of shim that allows reordering 
      */
-    private static class OrderingRESTShim extends SingleHostRESTShim
+    private static class OrderingShim extends SingleHostFloodlightShim
     {
         private boolean allow_reordering;
         private int num_outstanding_before_push = -1;
@@ -274,10 +259,9 @@ public class Ordering
            operations to allow to buffer before we actually force
            pushing updates.
          */
-        public OrderingRESTShim(
-            int _floodlight_port, boolean _allow_reordering)
+        public OrderingShim(boolean _allow_reordering)
         {
-            super(_floodlight_port);
+            super();
             allow_reordering = _allow_reordering;
         }
 
@@ -294,9 +278,10 @@ public class Ordering
          */
         public void force_clear()
         {
-            String force_clear_resource =
-                "/wm/staticflowentrypusher/clear/all/json";
-            String get_result = issue_get (force_clear_resource);
+            /// FIXME: Must reimplement
+            System.out.println(
+                "FIXME: Must reimplement force_clear in ordering test.");
+            assert(false);
         }
 
         /**
@@ -309,27 +294,11 @@ public class Ordering
         
         public boolean rules_exist()
         {
-            // we're assuming that only a single switch is connected.
-            // Get that single switch's id.
-            String switch_id = null;
-            for (String some_switch_id : switch_id_set)
-            {
-                switch_id = some_switch_id;
-                break;
-            }
-            if (switch_id == null)
-                assert(false);
-
-
-            String rules_exist_resource =
-                "/wm/staticflowentrypusher/list/all/json";
-            String get_result = issue_get (rules_exist_resource);
-
-            // all rule names have an underscore in them; if the
-            // returned result has an underscore, it means that rules
-            // exist.
-            boolean rules_exist = (get_result.indexOf("_") != -1);
-            return rules_exist;
+            /// FIXME: Must reimplement
+            System.out.println(
+                "FIXME: Must reimplement rules_exist in ordering test.");
+            assert(false);
+            return false;
         }
         
         

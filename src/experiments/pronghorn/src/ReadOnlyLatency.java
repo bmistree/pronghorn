@@ -1,6 +1,6 @@
 package experiments;
 
-import single_host.SingleHostRESTShim;
+import single_host.SingleHostFloodlightShim;
 import single_host.SingleHostSwitchStatusHandler;
 import single_host.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
@@ -19,9 +19,8 @@ import experiments.Util.LatencyThread;
 
 public class ReadOnlyLatency
 {
-    public static final int FLOODLIGHT_PORT_CSV_ARG_INDEX = 0;
-    public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 1;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
+    public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 1;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -29,16 +28,13 @@ public class ReadOnlyLatency
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 3)
+        if (args.length != 2)
         {
-            System.out.println("\nExpecting 3 arguments.\n");
+            System.out.println("\nExpecting 2 arguments.\n");
             print_usage();
             return;
         }
 
-        Set<Integer> floodlight_port_set = Util.parse_csv_ports(
-            args[FLOODLIGHT_PORT_CSV_ARG_INDEX]);
-        
         int num_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
 
@@ -60,21 +56,15 @@ public class ReadOnlyLatency
             return;
         }
 
-        Set<SingleHostRESTShim> shim_set = new HashSet<SingleHostRESTShim>();
-        for (Integer port : floodlight_port_set)
-            shim_set.add ( new SingleHostRESTShim(port.intValue()));
+        SingleHostFloodlightShim shim = new SingleHostFloodlightShim();
         
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
-                prong,
+                shim,prong,
                 FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
 
-        for (SingleHostRESTShim shim : shim_set)
-        {
-            shim.subscribe_switch_status_handler(switch_status_handler);
-            shim.start();
-        }
-        
+        shim.subscribe_switch_status_handler(switch_status_handler);
+        shim.start();
 
         /* wait a while to ensure that all switches are connected */
         try {
@@ -117,17 +107,13 @@ public class ReadOnlyLatency
         Util.write_results_to_file(output_filename,string_buffer.toString());
         
         // actually tell shims to stop.
-        for (SingleHostRESTShim shim : shim_set)
-            shim.stop();
+        shim.stop();
         Util.force_shutdown();        
     }
 
     private static void print_usage()
     {
         String usage_string = "";
-
-        // FLOODLIGHT_PORT_ARG_INDEX 
-        usage_string += "\n\t<int>: floodlight port to connect to\n";
 
         // NUMBER_TIMES_TO_RUN_ARG_INDEX
         usage_string +=

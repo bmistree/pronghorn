@@ -1,6 +1,6 @@
 package experiments;
 
-import single_host.SingleHostRESTShim;
+import single_host.SingleHostFloodlightShim;
 import single_host.SingleHostSwitchStatusHandler;
 import single_host.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
@@ -28,11 +28,10 @@ import experiments.Util;
 
 public class SingleControllerError
 {
-    public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
-    public static final int NUMBER_OPS_TO_RUN_PER_EXPERIMENT_ARG_INDEX = 1;
-    public static final int NUMBER_EXPERIMENTS_TO_RUN_ARG_INDEX = 2;
-    public static final int FAILURE_PROB_ARG_INDEX = 3;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
+    public static final int NUMBER_OPS_TO_RUN_PER_EXPERIMENT_ARG_INDEX = 0;
+    public static final int NUMBER_EXPERIMENTS_TO_RUN_ARG_INDEX = 1;
+    public static final int FAILURE_PROB_ARG_INDEX = 2;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
 
     // wait this long for pronghorn to add all switches
     private static final int SETTLING_TIME_WAIT = 5000;
@@ -42,20 +41,12 @@ public class SingleControllerError
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 4)
         {
             System.out.println("\nExpected 5 arguments: exiting\n");
             print_usage();
             return;
         }
-
-        Set<Integer> port_set =
-            Util.parse_csv_ports(args[FLOODLIGHT_PORT_ARG_INDEX]);
-
-        int floodlight_port = -1;
-        for (Integer port : port_set)
-            floodlight_port = port.intValue();
-
 
         int num_ops_to_run_per_experiment = 
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_PER_EXPERIMENT_ARG_INDEX]);
@@ -85,13 +76,13 @@ public class SingleControllerError
             return;
         }
 
-        ErrorShim shim = new ErrorShim(floodlight_port);
+        ErrorShim shim = new ErrorShim();
         ErrorProneFloodlightRoutingTableToHardware.ErrorProneFactory routing_table_to_hardware_factory
             = new ErrorProneFloodlightRoutingTableToHardware.ErrorProneFactory(failure_prob);
         
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
-                prong,
+                shim,prong,
                 routing_table_to_hardware_factory);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -232,22 +223,23 @@ public class SingleControllerError
         System.out.println(usage_string);
     }
 
-    public static class ErrorShim extends SingleHostRESTShim
+    public static class ErrorShim extends SingleHostFloodlightShim
     {
-        public ErrorShim(int _floodlight_port)
+        public ErrorShim()
         {
-            super(_floodlight_port);
+            super();
         }
 
+        
         /**
            Actually push command to clear routing table to all
            switches.  Definitely use a barrier here.
          */
         public void force_clear()
         {
-            String force_clear_resource =
-                "/wm/staticflowentrypusher/clear/all/json";
-            String get_result = issue_get (force_clear_resource);
+            /// FIXME: Should reimplement
+            System.out.println("Must reimplement force_clear for error shim");
+            assert(false);
         }
 
         /**
@@ -256,46 +248,13 @@ public class SingleControllerError
          */
         public HashMap<String,Integer> num_rules_in_system()
         {
-            // we're assuming that only a single switch is connected.
-            // Get that single switch's id.
-            HashMap<String,Integer> to_return = new HashMap<String,Integer>();
-            for (String some_switch_id : switch_id_set)
-            {
-                String switch_id = some_switch_id;
-                to_return.put(
-                    switch_id,
-                    num_rules_single_switch(switch_id));
-            }
-            return to_return;
-        }
-
-        private int num_rules_single_switch (String switch_id)
-        {
-            String rules_exist_resource =
-                "/wm/staticflowentrypusher/list/" + switch_id + "/json";
-            String get_result = issue_get (rules_exist_resource);
-
-            // Each rule has two underscores associated with it.  One,
-            // an underscore from the type: "FLOW_MOD".  The other
-            // associated with the rule's name.  Divide by 2 at end
-            // when return.
-            int last_index = 0;
-            int rule_count = 0;
-            String needle = "_";
-            while(last_index != -1)
-            {
-                last_index = get_result.indexOf(needle,last_index);
-
-                if( last_index != -1)
-                {
-                    ++rule_count;
-                    last_index += needle.length();
-                }
-            }
-            return rule_count/2;
+            /// FIXME: Should reimplement
+            System.out.println("Must reimplement force_clear for error shim");
+            assert(false);
+            return null;
         }
     }
-    
+
 
     /**
        Performs the same operations as

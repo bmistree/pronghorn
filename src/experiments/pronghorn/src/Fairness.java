@@ -1,6 +1,6 @@
 package experiments;
 
-import single_host.SingleHostRESTShim;
+import single_host.SingleHostFloodlightShim;
 import single_host.SingleHostSwitchStatusHandler;
 import single_host.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
@@ -38,30 +38,16 @@ import java.io.IOException;
 
    The transactions that each controller performs should conflict, so
    that transactions can only run serially.  
-
-
-   Insert artificial delay between messages on controller.  
-   
-   Usage:
-       fairness <int> <int> <boolean> <string>
-       
-   <int> : The port that a floodlight controller is running on.
-   <int> : The number of times to run experiment on controller.
-   <boolean> : true if should allow internal reordering, false otherwise
-   <string> : filename to save final result to.  true if rule exists.
-   false otherwise.
  */
 
 public class Fairness
 {
-    public static final int FLOODLIGHT_PORTS_ARG_INDEX = 0;
-    public static final int USE_WOUND_WAIT_ARG_INDEX = 1;
-    public static final int NUM_EXTERNAL_CALLS_ARG_INDEX = 2;    
-    public static final int OUTPUT_FILENAME_INDEX = 3;
+    public static final int USE_WOUND_WAIT_ARG_INDEX = 0;
+    public static final int NUM_EXTERNAL_CALLS_ARG_INDEX = 1;
+    public static final int OUTPUT_FILENAME_INDEX = 2;
     
     // wait this long for pronghorn to add all switches
     public static final int STARTUP_SETTLING_TIME_WAIT = 5000;
-
 
     // Ports to listen on and connect to for each side of the connection.
     private static final int TCP_LISTENING_PORT = 30955;
@@ -96,29 +82,10 @@ public class Fairness
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 3)
         {
-            assert(false);
+            System.out.println("\nExpecting 3 arguments\n");
             return;
-        }
-
-        Set<Integer> port_set =
-            Util.parse_csv_ports(args[FLOODLIGHT_PORTS_ARG_INDEX]);
-        if (port_set.size() < 2)
-        {
-            System.out.println("\nNot enough arguments\n");
-            assert(false);
-            return;
-        }
-        int floodlight_port_a = -1;
-        int floodlight_port_b = -1;
-
-        for (Integer port: port_set)
-        {
-            if (floodlight_port_a == -1)
-                floodlight_port_a = port.intValue();
-            else
-                floodlight_port_b = port.intValue();
         }
         
         NUM_EXTERNAL_CALLS =
@@ -168,10 +135,8 @@ public class Fairness
 
         // now that both sides are connected, connect shims to them to
         // connect to floodlight.
-        SingleHostRESTShim shim_a =
-            create_started_shim(side_a,floodlight_port_a);
-        SingleHostRESTShim shim_b =
-            create_started_shim(side_b,floodlight_port_b);
+        SingleHostFloodlightShim shim_a = create_started_shim(side_a);
+        SingleHostFloodlightShim shim_b = create_started_shim(side_b);
 
         
         /* wait a while to ensure that all switches are connected,etc. */
@@ -341,14 +306,14 @@ public class Fairness
         }
     }
     
-    private static SingleHostRESTShim create_started_shim(
-        PronghornInstance prong, int floodlight_port_to_connect_to)
+    private static SingleHostFloodlightShim create_started_shim(
+        PronghornInstance prong)
     {
-        SingleHostRESTShim shim =
-            new SingleHostRESTShim(floodlight_port_to_connect_to);
+        SingleHostFloodlightShim shim =
+            new SingleHostFloodlightShim();
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
-                prong,
+                shim,prong,
                 FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

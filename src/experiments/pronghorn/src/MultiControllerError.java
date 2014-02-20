@@ -1,6 +1,6 @@
 package experiments;
 
-import single_host.SingleHostRESTShim;
+import single_host.SingleHostFloodlightShim;
 import single_host.SingleHostSwitchStatusHandler;
 import single_host.JavaPronghornInstance.PronghornInstance;
 import single_host.JavaPronghornConnection.PronghornConnection;
@@ -34,14 +34,13 @@ import ralph.Endpoint;
 import ralph.Ralph;
 
 
-public class MultiControllerError {
-	
-    public static final int FLOODLIGHT_PORT_ARG_INDEX = 0;
-    public static final int CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX = 1;
-    public static final int PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX = 2;
-    public static final int NUMBER_OPS_TO_RUN_PER_EXPERIMENT_ARG_INDEX = 3;
-    public static final int FAILURE_PROB_ARG_INDEX = 4;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 5;
+public class MultiControllerError
+{
+    public static final int CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX = 0;
+    public static final int PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX = 1;
+    public static final int NUMBER_OPS_TO_RUN_PER_EXPERIMENT_ARG_INDEX = 2;
+    public static final int FAILURE_PROB_ARG_INDEX = 3;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
 
 
     // wait this long for pronghorn to add all switches
@@ -58,20 +57,12 @@ public class MultiControllerError {
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 6)
+        if (args.length != 5)
         {
-            System.out.println("\nExpected 6 arguments: exiting\n");
+            System.out.println("\nExpected 5 arguments: exiting\n");
             print_usage();
             return;
         }
-
-        Set<Integer> port_set =
-            Util.parse_csv_ports(args[FLOODLIGHT_PORT_ARG_INDEX]);
-
-        int floodlight_port = -1;
-        for (Integer port : port_set)
-            floodlight_port = port.intValue();
-
 
         Set<HostPortPair> children_to_contact_hpp = null;
         if (! args[CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX].equals("-1"))
@@ -106,14 +97,13 @@ public class MultiControllerError {
             return;
         }
 
-
-        ErrorShim shim = new ErrorShim(floodlight_port);
+        ErrorShim shim = new ErrorShim();
         ErrorProneFloodlightRoutingTableToHardware.ErrorProneFactory routing_table_to_hardware_factory
             = new ErrorProneFloodlightRoutingTableToHardware.ErrorProneFactory(failure_prob);
         
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
-                prong,
+                shim,prong,
                 routing_table_to_hardware_factory);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -250,9 +240,6 @@ public class MultiControllerError {
     private static void print_usage()
     {
         String usage_string = "";
-
-        // FLOODLIGHT_PORT_ARG_INDEX 
-        usage_string += "\n\t<int>: floodlight port to connect to\n";
 
         // CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX 
         usage_string +=

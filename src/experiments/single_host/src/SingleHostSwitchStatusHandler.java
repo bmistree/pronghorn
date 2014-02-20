@@ -1,6 +1,7 @@
 package single_host;
 
 import java.util.List;
+import java.util.ArrayList;
 import java.util.HashMap;
 
 import single_host.JavaPronghornInstance.PronghornInstance;
@@ -11,6 +12,9 @@ import pronghorn.RoutingTableToHardwareFactory;
 import pronghorn.SwitchFactory.PronghornInternalSwitch;
 import pronghorn.FloodlightRoutingTableToHardware;
 import pronghorn.ShimInterface;
+import pronghorn.PortJava._InternalPort;
+
+import ralph.Variables.AtomicTrueFalseVariable;
 
 import net.floodlightcontroller.core.IOFSwitchListener;
 import net.floodlightcontroller.core.ImmutablePort;
@@ -61,13 +65,63 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
     @Override
     public void linkDiscoveryUpdate(LDUpdate update)
     {
-        System.out.println("\nI got a link update\n");
+        // FIXME: Inefficient to create a list here and push into
+        // linkDiscoveryUpdate.
+        List<LDUpdate> update_list = new ArrayList<LDUpdate>();
+        update_list.add(update);
+        linkDiscoveryUpdate(update_list);
     }
 
     @Override
     public void linkDiscoveryUpdate(List<LDUpdate> update_list)
     {
-        System.out.println("\nI got a series of link updates\n");
+        List<_InternalPort> ralph_update_list = new ArrayList<_InternalPort>();
+        
+        // only handle link up messages to start with
+        for (LDUpdate update : update_list)
+        {
+            _InternalPort ralph_port = create_internal_port_from_update(update);
+            if (ralph_port != null)
+                ralph_update_list.add(ralph_port);
+        }
+        //prong.process_port_updates(ralph_update_list);
+    }
+
+    /**
+       @returns --- Either null or _InternalPort.  Will return null if
+       the update is not for an added port.  Will return _InternalPort
+       if it is for an addition.
+     */
+    private _InternalPort create_internal_port_from_update(LDUpdate update)
+    {
+        if (update.getOperation() != UpdateOperation.SWITCH_UPDATED)
+        {
+            String src_floodlight_switch_id =
+                HexString.toHexString(update.getSrc());
+            String dst_floodlight_switch_id =
+                HexString.toHexString(update.getDst());
+
+            short src_port_num = update.getSrcPort();
+            short dst_port_num = update.getDstPort();
+
+            _InternalPort to_return = new _InternalPort ();
+
+            // FIXME: assume as soon as a switch gets updated with a port
+            // that we can use that port.
+            to_return.other_end_available = new AtomicTrueFalseVariable("",false,true);
+            to_return.port_up = new AtomicTrueFalseVariable("",false,true);
+
+            
+            to_return.remote_switch_id.set_val(null,dst_floodlight_switch_id);
+            to_return.remote_port_number.set_val(null,new Double(dst_port_num));
+
+            to_return.local_switch_id.set_val(null,src_floodlight_switch_id);
+            to_return.local_port_number.set_val(null,new Double(src_port_num));
+
+            return to_return;
+            
+        }
+        return null;
     }
     
     /** IOFSwitchListener */
@@ -101,6 +155,7 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
                 "\nError: Should not generate exception from removing switch\n");
         }
     }
+    
     @Override
     public void switchActivated(long switch_id)
     {

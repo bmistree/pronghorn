@@ -85,7 +85,7 @@ Endpoint PronghornInstance
 	instance_switches.set(switch_id,new_switch);
         last_added_switch_id = switch_id;
     }
-
+    
     switch_failure(Text switch_id)
     {
 	instance_switches.remove(switch_id);
@@ -96,6 +96,13 @@ Endpoint PronghornInstance
         return instance_switches.size();
     }
 
+    process_port_updates(List(element: Struct Port) port_updates)
+    {
+        print ('\nI received port updates\n');
+    }
+
+    
+    
 
     single_op_and_ask_children_for_single_op()
     {

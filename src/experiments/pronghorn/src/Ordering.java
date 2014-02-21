@@ -73,8 +73,7 @@ public class Ordering
 
         try {
             prong = new PronghornInstance(
-                new RalphGlobals(),
-                "", new SingleSideConnection());
+                new RalphGlobals(),new SingleSideConnection());
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;

@@ -59,7 +59,7 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
     {
         this.shim = shim;
         this.prong = prong;
-        switch_factory = new SwitchFactory();
+        switch_factory = new SwitchFactory(prong.ralph_globals);
         switch_factory.init(UNIQUE_SWITCH_FACTORY_PREFIX);
         this.rtable_to_hardware_factory = rtable_to_hardware_factory;
     }
@@ -80,7 +80,7 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
     {
         NonAtomicListVariable<_InternalPort,_InternalPort> ralph_update_list =
             new NonAtomicListVariable<_InternalPort,_InternalPort>(
-                "",false,PortJava.STRUCT_LOCKED_MAP_WRAPPER__Port);
+                false,PortJava.STRUCT_LOCKED_MAP_WRAPPER__Port,prong.ralph_globals);
         boolean should_update_ralph = false;
         // only handle link up messages to start with
         for (LDUpdate update : update_list)
@@ -140,13 +140,14 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
             short src_port_num = update.getSrcPort();
             short dst_port_num = update.getDstPort();
 
-            _InternalPort to_return = new _InternalPort ();
+            _InternalPort to_return = new _InternalPort (prong.ralph_globals);
 
             // FIXME: assume as soon as a switch gets updated with a port
             // that we can use that port.
             to_return.other_end_available =
-                new AtomicTrueFalseVariable("",false,true);
-            to_return.port_up = new AtomicTrueFalseVariable("",false,true);
+                new AtomicTrueFalseVariable(false,true,prong.ralph_globals);
+            to_return.port_up =
+                new AtomicTrueFalseVariable(false,true,prong.ralph_globals);
 
             to_return.remote_switch_id.set_val(null,dst_floodlight_switch_id);
             to_return.remote_port_number.set_val(

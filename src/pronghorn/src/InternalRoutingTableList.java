@@ -1,14 +1,18 @@
 package pronghorn;
 
+import pronghorn.RTable;
 import pronghorn.RTable._InternalRoutingTableEntry;
+import pronghorn.RoutingTableToHardware.WrapApplyToHardware;
+
 import RalphDataWrappers.ListTypeDataWrapper;
 import ralph.ExtendedVariables.ExtendedInternalAtomicList;
-import pronghorn.RTable;
 import RalphExceptions.BackoutException;
 import ralph.ActiveEvent;
+import ralph.RalphGlobals;
+
 import java.util.concurrent.Future;
-import pronghorn.RoutingTableToHardware.WrapApplyToHardware;
 import java.util.concurrent.ExecutorService;
+import java.util.concurrent.locks.ReentrantLock;
 
 /**
    Each switch's routing table is represented as a list of routing
@@ -52,17 +56,21 @@ class InternalRoutingTableList
     
     // For now, any change to the internal routing table just gets
     // accepted.
-    public InternalRoutingTableList(ExecutorService _hardware_push_service)
+    public InternalRoutingTableList(
+        ExecutorService _hardware_push_service, RalphGlobals ralph_globals)
     {
-        super (RTable.STRUCT_LOCKED_MAP_WRAPPER__RoutingTableEntry);
+        super (
+            RTable.STRUCT_LOCKED_MAP_WRAPPER__RoutingTableEntry,ralph_globals);
         hardware_push_service = _hardware_push_service;
     }
 
     public InternalRoutingTableList(
         RoutingTableToHardware _rtable_to_hardware_obj,
-        ExecutorService _hardware_push_service)
+        ExecutorService _hardware_push_service, RalphGlobals ralph_globals)
     {
-        super (RTable.STRUCT_LOCKED_MAP_WRAPPER__RoutingTableEntry);
+        super (
+            RTable.STRUCT_LOCKED_MAP_WRAPPER__RoutingTableEntry,
+            ralph_globals);
         rtable_to_hardware_obj = _rtable_to_hardware_obj;
         hardware_push_service = _hardware_push_service;
     }
@@ -93,19 +101,25 @@ class InternalRoutingTableList
     protected
         ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry>
         acquire_read_lock(
-            ActiveEvent active_event) throws BackoutException
+            ActiveEvent active_event,ReentrantLock to_unlock) throws BackoutException
     {
         // if hardware has failed, cannot operate on data anymore:
         // will backout event.  relies on another event that doesn't
         // actually operate on routing table list to remove all
         // references to it.  See discussion above in hardware_failed.
         if (hardware_failed)
+        {
+            if (to_unlock != null)
+                to_unlock.unlock();
+            
             throw new BackoutException();
+        }
 
         return
             (ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry>)
-            super.acquire_read_lock(active_event);
+            super.acquire_read_lock(active_event,to_unlock);
     }
+
     
     /**
        @see discussion above hardware_failed private variable.
@@ -114,13 +128,18 @@ class InternalRoutingTableList
     protected
         ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry>
         acquire_write_lock(
-            ActiveEvent active_event) throws BackoutException
+            ActiveEvent active_event, ReentrantLock to_unlock)
+            throws BackoutException
     {
         if (hardware_failed)
+        {
+            if (to_unlock != null)
+                to_unlock.unlock();
             throw new BackoutException();
+        }
         
         return
             (ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry>)
-            super.acquire_write_lock(active_event);
+            super.acquire_write_lock(active_event,to_unlock);
     }
 }

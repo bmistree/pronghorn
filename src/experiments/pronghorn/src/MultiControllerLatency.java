@@ -69,8 +69,7 @@ public class MultiControllerLatency
         /* Start up pronghorn */
         try {
             prong = new PronghornInstance(
-                ralph_globals,
-                "", new SingleSideConnection());
+                ralph_globals,new SingleSideConnection());
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
@@ -187,13 +186,12 @@ public class MultiControllerLatency
     {
         @Override
         public Endpoint construct(
-            RalphGlobals globals, String host_uuid,
-            RalphConnObj.ConnectionObj conn_obj)
+            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj)
         {
             PronghornConnection to_return = null;
             System.out.println("\nBuilt a connection\n\n");
             try {
-                to_return = new PronghornConnection(ralph_globals,host_uuid,conn_obj);
+                to_return = new PronghornConnection(ralph_globals,conn_obj);
                 to_return.set_service(prong);
                 // prong.add_child_connection(to_return);
             } catch (Exception _ex) {

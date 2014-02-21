@@ -6,6 +6,8 @@ import pronghorn.SwitchJava._InternalSwitch;
 import ralph.Variables.AtomicTextVariable;
 import ralph.Variables.AtomicNumberVariable;
 import ralph.Variables.AtomicListVariable;
+import ralph.RalphGlobals;
+
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -51,9 +53,13 @@ public class SwitchFactory
                     return t;
                 }
             });
-    
-    public SwitchFactory()
-    {}
+
+    private RalphGlobals ralph_globals = null;
+
+    public SwitchFactory(RalphGlobals _ralph_globals)
+    {
+        ralph_globals = _ralph_globals;
+    }
 
     /**
        @param _factory_switch_prefix --- @see doc for
@@ -90,34 +96,38 @@ public class SwitchFactory
             factory_switch_prefix + SWITCH_PREFIX_TO_ID_SEPARATOR +
             factory_local_unique_id.toString();
                 
-        PronghornInternalSwitch to_return = new PronghornInternalSwitch(new_switch_id);
+        PronghornInternalSwitch to_return =
+            new PronghornInternalSwitch(new_switch_id,ralph_globals);
 
         // override internal routing table variable
         InternalRoutingTableList internal_rtable_list = null;
         if (to_handle_pushing_changes == null)
         {
             internal_rtable_list =
-                new InternalRoutingTableList(hardware_pushing_service);
+                new InternalRoutingTableList(
+                    hardware_pushing_service,ralph_globals);
         }
         else
         {
             internal_rtable_list =
                 new InternalRoutingTableList(
-                    to_handle_pushing_changes,
-                    hardware_pushing_service);
+                    to_handle_pushing_changes,hardware_pushing_service,
+                    ralph_globals);
         }
         
         to_return.rtable =
             new AtomicListVariable<_InternalRoutingTableEntry,_InternalRoutingTableEntry>(
-                "",false,internal_rtable_list,
-                RTable.STRUCT_LOCKED_MAP_WRAPPER__RoutingTableEntry);
+                false,internal_rtable_list,
+                RTable.STRUCT_LOCKED_MAP_WRAPPER__RoutingTableEntry,
+                ralph_globals);
         
         // produce and overwrite a switch id associated with this switch
-        to_return.switch_id = new AtomicTextVariable("",false,new_switch_id);
+        to_return.switch_id =
+            new AtomicTextVariable(false,new_switch_id,ralph_globals);
 
         // set available capacity
         to_return.available_capacity =
-            new AtomicNumberVariable("",false,available_capacity);
+            new AtomicNumberVariable(false,available_capacity,ralph_globals);
         
         return to_return;
     }
@@ -125,9 +135,10 @@ public class SwitchFactory
     public class PronghornInternalSwitch extends _InternalSwitch
     {
         public String ralph_internal_switch_id;
-        public PronghornInternalSwitch(String _ralph_internal_switch_id)
+        public PronghornInternalSwitch(
+            String _ralph_internal_switch_id,RalphGlobals ralph_globals)
         {
-            super();
+            super(ralph_globals);
             ralph_internal_switch_id = _ralph_internal_switch_id;
         }
     }

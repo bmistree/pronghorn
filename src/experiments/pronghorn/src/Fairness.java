@@ -279,8 +279,7 @@ public class Fairness
         
         @Override
         public Endpoint construct(
-            RalphGlobals globals, String host_uuid,
-            RalphConnObj.ConnectionObj conn_obj)
+            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj)
         {
             PronghornInstance to_return = null;
 
@@ -293,7 +292,7 @@ public class Fairness
             
             try {
                 to_return =
-                    new PronghornInstance(globals_to_use,host_uuid,conn_obj);
+                    new PronghornInstance(globals_to_use,conn_obj);
                 if (for_side_a)
                     side_a = to_return;
                 else

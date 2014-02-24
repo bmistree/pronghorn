@@ -17,7 +17,7 @@ import single_host.JavaPronghornInstance.PronghornInstance;
 
 public class Util
 {
-    final static int TIME_TO_WAIT_AFTER_FIRST_SWITCH_MS = 5000;
+    final static int TIME_TO_WAIT_AFTER_FIRST_SWITCH_MS = 12000;
     final static int FIRST_SWITCH_POLL_PERIOD_MS = 250;
     
     public static class HostPortPair

@@ -112,12 +112,16 @@ public class MultiControllerLatency
         Util.wait_on_switches(prong);
         // what's the first switch's id.
         String switch_id = Util.first_connected_switch_id(prong);
-        
+
         if (num_ops_to_run != 0)
         {
             List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
             for (int i = 0; i < num_threads; ++i)
-                all_threads.add(new LatencyThread(prong,switch_id,num_ops_to_run));
+            {
+                all_threads.add(
+                    new LatencyThread(
+                        prong,switch_id,num_ops_to_run,false,true));
+            }
 
             for (LatencyThread lt : all_threads)
                 lt.start();

@@ -182,6 +182,7 @@ public class Util
         private String switch_id = null;
         private int num_ops_to_run = -1;
         private boolean read_only = false;
+        private boolean distributed = false;
         
         public LatencyThread(
             PronghornInstance prong, String switch_id, int num_ops_to_run,
@@ -192,6 +193,18 @@ public class Util
             this.num_ops_to_run = num_ops_to_run;
             this.read_only = read_only;
         }
+
+        public LatencyThread(
+            PronghornInstance prong, String switch_id, int num_ops_to_run,
+            boolean read_only, boolean distributed)
+        {
+            this.prong = prong;
+            this.switch_id = switch_id;
+            this.num_ops_to_run = num_ops_to_run;
+            this.read_only = read_only;
+            this.distributed = distributed;
+        }
+        
         
         public LatencyThread(
             PronghornInstance prong, String switch_id, int num_ops_to_run)
@@ -211,6 +224,8 @@ public class Util
                 {
                     if (read_only)
                         prong.read_first_instance_routing_table();
+                    else if (distributed)
+                        prong.single_op_and_ask_children_for_single_op();
                     else
                         prong.single_op(switch_id);
                 }

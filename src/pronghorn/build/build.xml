@@ -86,27 +86,27 @@
 
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
-      <arg line="${pronghorn_ralph_src_dir}/routing_table_entry.rph"/>
-      <arg line="${pronghorn_ralph_emitted_dir}/RTable.java"/>
-      <arg line="${pronghorn_package}"/>
-      <arg line="RTable"/>
+      <arg line="-i ${pronghorn_ralph_src_dir}/routing_table_entry.rph"/>
+      <arg line="-o ${pronghorn_ralph_emitted_dir}/RTable.java"/>
+      <arg line="-p ${pronghorn_package}"/>
+      <arg line="-c RTable"/>
     </exec>
 
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
-      <arg line="${pronghorn_ralph_src_dir}/switch.rph"/>
-      <arg line="${pronghorn_ralph_emitted_dir}/SwitchJava.java"/>
-      <arg line="${pronghorn_package}"/>
-      <arg line="SwitchJava"/>
+      <arg line="-i ${pronghorn_ralph_src_dir}/switch.rph"/>
+      <arg line="-o ${pronghorn_ralph_emitted_dir}/SwitchJava.java"/>
+      <arg line="-p ${pronghorn_package}"/>
+      <arg line="-c SwitchJava"/>
     </exec>
 
 
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
-      <arg line="${pronghorn_ralph_src_dir}/port.rph"/>
-      <arg line="${pronghorn_ralph_emitted_dir}/PortJava.java"/>
-      <arg line="${pronghorn_package}"/>
-      <arg line="PortJava"/>
+      <arg line="-i ${pronghorn_ralph_src_dir}/port.rph"/>
+      <arg line="-o ${pronghorn_ralph_emitted_dir}/PortJava.java"/>
+      <arg line="-p ${pronghorn_package}"/>
+      <arg line="-c PortJava"/>
     </exec>
 
     

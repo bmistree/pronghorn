@@ -7,10 +7,10 @@ import java.util.HashMap;
 import single_host.JavaPronghornInstance.PronghornInstance;
 import pronghorn.SwitchFactory;
 import pronghorn.ISwitchStatusHandler;
-import pronghorn.RoutingTableToHardware;
-import pronghorn.RoutingTableToHardwareFactory;
+import pronghorn.FlowTableToHardware;
+import pronghorn.FlowTableToHardwareFactory;
 import pronghorn.SwitchFactory.PronghornInternalSwitch;
-import pronghorn.FloodlightRoutingTableToHardware;
+import pronghorn.FloodlightFlowTableToHardware;
 import pronghorn.ShimInterface;
 import pronghorn.PortJava._InternalPort;
 import pronghorn.PortJava;;
@@ -47,7 +47,7 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
         new HashMap<String,String>();
     private HashMap<String,String> pronghorn_to_floodlight_ids =
         new HashMap<String,String>();
-    private RoutingTableToHardwareFactory rtable_to_hardware_factory = null;
+    private FlowTableToHardwareFactory rtable_to_hardware_factory = null;
 
     private ShimInterface shim = null;
     
@@ -55,7 +55,7 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
     public SingleHostSwitchStatusHandler(
         ShimInterface shim,
         PronghornInstance prong,
-        RoutingTableToHardwareFactory rtable_to_hardware_factory)
+        FlowTableToHardwareFactory rtable_to_hardware_factory)
     {
         this.shim = shim;
         this.prong = prong;
@@ -200,7 +200,7 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
     {
         String floodlight_switch_id = HexString.toHexString(switch_id);
         
-        RoutingTableToHardware rtable_to_hardware =
+        FlowTableToHardware rtable_to_hardware =
             rtable_to_hardware_factory.construct(shim,floodlight_switch_id);
         PronghornInternalSwitch new_switch =
             switch_factory.construct(

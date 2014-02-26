@@ -2,7 +2,7 @@ package pronghorn;
 
 import java.util.ArrayList;
 import RalphDataWrappers.ListTypeDataWrapper;
-import pronghorn.RTable._InternalRoutingTableEntry;
+import pronghorn.FTable._InternalFlowTableEntry;
 import ralph.RalphObject;
 import RalphExceptions.BackoutException;
 import java.util.Set;
@@ -16,34 +16,34 @@ import java.util.List;
    it is asked to push changes to hardware or undo pushed changes
    to hardware.
  */
-public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
+public class FloodlightFlowTableToHardware extends FlowTableToHardware
 {
-    private static class FloodlightRoutingTableToHardwareFactory
-        implements RoutingTableToHardwareFactory
+    private static class FloodlightFlowTableToHardwareFactory
+        implements FlowTableToHardwareFactory
     {
         @Override
-        public RoutingTableToHardware construct(
+        public FlowTableToHardware construct(
             ShimInterface shim, String internal_switch_id)
         {
-            return new FloodlightRoutingTableToHardware(
+            return new FloodlightFlowTableToHardware(
                 shim,internal_switch_id);
         }
     }
 
     public final static
-      FloodlightRoutingTableToHardwareFactory FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY =
-        new FloodlightRoutingTableToHardwareFactory();
+      FloodlightFlowTableToHardwareFactory FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY =
+        new FloodlightFlowTableToHardwareFactory();
     
     
     /**
-       Each routing table entry requires a unique name to associate it
-       with routing table entries on actual switches.  This int can be
+       Each flow table entry requires a unique name to associate it
+       with flow table entries on actual switches.  This int can be
        used to generate these names.
      */
     private int unique_entry_name_generator = 0;
     
     /**
-       Keeps track of the associated unique name of each routing table
+       Keeps track of the associated unique name of each flow table
        entry in each element of the list.
      */
     private ArrayList<String> entry_names = new ArrayList<String>();
@@ -51,7 +51,7 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
     private ShimInterface shim;
     private String floodlight_switch_id;
 
-    protected FloodlightRoutingTableToHardware(
+    protected FloodlightFlowTableToHardware(
         ShimInterface _shim, String _floodlight_switch_id)
     {
         shim = _shim;
@@ -70,9 +70,9 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
        reverse is true, this means that we must go backwards through
        the list.
      */
-    private ArrayList<RTableUpdate> produce_rtable_updates(
+    private ArrayList<FTableUpdate> produce_rtable_updates(
         ListTypeDataWrapper<
-            _InternalRoutingTableEntry,_InternalRoutingTableEntry> dirty,
+            _InternalFlowTableEntry,_InternalFlowTableEntry> dirty,
         boolean reverse)
     {
         /*
@@ -90,23 +90,23 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
           when we get to the second operation (add to index 1), we do not
           know where the object will be stored in the final array list and
           therefore will not be able to read the changes that that operation
-          makes to the routing table.
+          makes to the flow table.
 
           Instead, we use a different algorithm:
           
-            1) Run through all changes to routing table and
+            1) Run through all changes to flow table and
 
-                a) update entry_names: a list that stores the routing table
-                   entry name associated with each index in the routing
+                a) update entry_names: a list that stores the flow table
+                   entry name associated with each index in the flow
                    table list.  After 1, entry_names should be a list of
-                   names for routing table entries that would be stored on
+                   names for flow table entries that would be stored on
                    the switch after pushing the change.
 
                 b) Map each added tuple to its entry name.  For each add
                    tuple, assign it a unique entry name and create a map
                    from add tuples to entry names.
 
-             2) Run through the list of changes to the routing table again.
+             2) Run through the list of changes to the flow table again.
                 Each time notice an added tuple:
 
                 a) Check that the added tuple was not in the removed tuple.
@@ -167,7 +167,7 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
         }
 
         // Step 2 from above
-        ArrayList<RTableUpdate> floodlight_updates = new ArrayList<RTableUpdate>();
+        ArrayList<FTableUpdate> floodlight_updates = new ArrayList<FTableUpdate>();
         for (ListTypeDataWrapper.OpTuple op_tuple : changes_to_iter_over)
         {
             if (
@@ -188,9 +188,9 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
                 int added_entry_index = entry_names.indexOf(entry_name);
 
                 RalphObject ro = op_tuple.what_added_or_removed;
-                _InternalRoutingTableEntry added_entry = null;
+                _InternalFlowTableEntry added_entry = null;
                 try { 
-                    added_entry = (_InternalRoutingTableEntry) (ro.get_val(null));
+                    added_entry = (_InternalFlowTableEntry) (ro.get_val(null));
                 } catch (Exception _ex) {
                     _ex.printStackTrace();
                     System.out.println("\nShould never get to this point.");
@@ -201,7 +201,7 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
                 String dst_ip = added_entry.dst_ip.dirty_val.val;
                 String action = added_entry.action.dirty_val.val;
 
-                RTableUpdate update_to_push =  RTableUpdate.create_insert_update(
+                FTableUpdate update_to_push =  FTableUpdate.create_insert_update(
                     entry_name, src_ip, dst_ip,action);
 
                 floodlight_updates.add(update_to_push);
@@ -211,7 +211,7 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
         // Step 3 from above
         for (String removed_entry_name : entries_to_remove)
             floodlight_updates.add(
-                RTableUpdate.create_remove_update(removed_entry_name));
+                FTableUpdate.create_remove_update(removed_entry_name));
         
         return floodlight_updates;
     }
@@ -219,9 +219,9 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
     @Override
     public boolean apply_changes_to_hardware(
         ListTypeDataWrapper<
-            _InternalRoutingTableEntry,_InternalRoutingTableEntry> dirty)
+            _InternalFlowTableEntry,_InternalFlowTableEntry> dirty)
     {
-        ArrayList<RTableUpdate> floodlight_updates =
+        ArrayList<FTableUpdate> floodlight_updates =
             produce_rtable_updates(dirty,false);
         // request shim to push the changes to swithces.
         return shim.switch_rtable_updates(
@@ -230,10 +230,10 @@ public class FloodlightRoutingTableToHardware extends RoutingTableToHardware
     
     @Override
     public void undo_dirty_changes_to_hardware(
-        ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry>
+        ListTypeDataWrapper<_InternalFlowTableEntry,_InternalFlowTableEntry>
         to_undo)
     {
-        ArrayList<RTableUpdate> floodlight_updates =
+        ArrayList<FTableUpdate> floodlight_updates =
             produce_rtable_updates(to_undo,true);
         // FIXME: should actually return boolean;
         shim.switch_rtable_updates(

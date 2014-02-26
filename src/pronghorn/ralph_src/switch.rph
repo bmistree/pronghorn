@@ -1,6 +1,6 @@
 #include 'port.rph'
-#include 'routing_table_entry.rph'
-alias Struct RoutingTableEntry as 'pronghorn.RTable.RoutingTableEntry';
+#include 'flow_table_entry.rph'
+alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
 alias Struct Port as 'pronghorn.PortJava.Port';
 
 Struct Switch
@@ -8,7 +8,7 @@ Struct Switch
     // unique id for each switch
     TVar Text switch_id;    
     TVar Number available_capacity;
-    TVar List (element: Struct RoutingTableEntry) rtable;
+    TVar List (element: Struct FlowTableEntry) rtable;
 
     // Indices are port numbers on local switch
     TVar Map (from: Number, to: Struct Port) all_ports;

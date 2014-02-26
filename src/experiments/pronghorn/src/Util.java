@@ -223,7 +223,7 @@ public class Util
                 try
                 {
                     if (read_only)
-                        prong.read_first_instance_routing_table();
+                        prong.read_first_instance_flow_table();
                     else if (distributed)
                         prong.single_op_and_ask_children_for_single_op();
                     else

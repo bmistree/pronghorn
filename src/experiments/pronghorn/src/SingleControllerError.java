@@ -6,17 +6,17 @@ import single_host.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
-import pronghorn.FloodlightRoutingTableToHardware;
+import pronghorn.FloodlightFlowTableToHardware;
 import java.lang.Thread;
 import java.io.*;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import RalphDataWrappers.ListTypeDataWrapper;
-import pronghorn.RTable._InternalRoutingTableEntry;
+import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.ShimInterface;
-import pronghorn.RoutingTableToHardwareFactory;
-import pronghorn.RoutingTableToHardware;
+import pronghorn.FlowTableToHardwareFactory;
+import pronghorn.FlowTableToHardware;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -76,13 +76,13 @@ public class SingleControllerError
         }
 
         ErrorShim shim = new ErrorShim();
-        ErrorProneFloodlightRoutingTableToHardware.ErrorProneFactory routing_table_to_hardware_factory
-            = new ErrorProneFloodlightRoutingTableToHardware.ErrorProneFactory(failure_prob);
+        ErrorProneFloodlightFlowTableToHardware.ErrorProneFactory flow_table_to_hardware_factory
+            = new ErrorProneFloodlightFlowTableToHardware.ErrorProneFactory(failure_prob);
         
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 shim,prong,
-                routing_table_to_hardware_factory);
+                flow_table_to_hardware_factory);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
 
@@ -231,7 +231,7 @@ public class SingleControllerError
 
         
         /**
-           Actually push command to clear routing table to all
+           Actually push command to clear flow table to all
            switches.  Definitely use a barrier here.
          */
         public void force_clear()
@@ -257,14 +257,14 @@ public class SingleControllerError
 
     /**
        Performs the same operations as
-       FloodlightRoutingTableToHardware, except every so often
+       FloodlightFlowTableToHardware, except every so often
        responds that could not push change to hardware
      */
-    public static class ErrorProneFloodlightRoutingTableToHardware
-        extends FloodlightRoutingTableToHardware
+    public static class ErrorProneFloodlightFlowTableToHardware
+        extends FloodlightFlowTableToHardware
     {
         public static class ErrorProneFactory
-            implements RoutingTableToHardwareFactory
+            implements FlowTableToHardwareFactory
         {
             private double independent_switch_failure_prob = -1.0;
             public ErrorProneFactory (double independent_switch_failure_prob)
@@ -274,10 +274,10 @@ public class SingleControllerError
             }
             
             @Override
-            public RoutingTableToHardware construct(
+            public FlowTableToHardware construct(
                 ShimInterface shim, String internal_switch_id)
             {
-                return new ErrorProneFloodlightRoutingTableToHardware(
+                return new ErrorProneFloodlightFlowTableToHardware(
                     shim,internal_switch_id,independent_switch_failure_prob);
             }
         }
@@ -285,7 +285,7 @@ public class SingleControllerError
 
         private double independent_switch_failure_prob = -1;
         
-        private ErrorProneFloodlightRoutingTableToHardware(
+        private ErrorProneFloodlightFlowTableToHardware(
             ShimInterface _shim, String _floodlight_switch_id,
             double independent_switch_failure_prob)
         {
@@ -298,7 +298,7 @@ public class SingleControllerError
         @Override
         public boolean apply_changes_to_hardware(
             ListTypeDataWrapper<
-                _InternalRoutingTableEntry,_InternalRoutingTableEntry> dirty)
+                _InternalFlowTableEntry,_InternalFlowTableEntry> dirty)
         {
             boolean real_result = super.apply_changes_to_hardware(dirty);
             if (Math.random() < independent_switch_failure_prob)
@@ -308,7 +308,7 @@ public class SingleControllerError
 
         @Override
         public void undo_dirty_changes_to_hardware(
-            ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry>
+            ListTypeDataWrapper<_InternalFlowTableEntry,_InternalFlowTableEntry>
             to_undo)
         {
             super.undo_dirty_changes_to_hardware(to_undo);

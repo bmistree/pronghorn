@@ -7,16 +7,16 @@ import single_host.JavaPronghornConnection.PronghornConnection;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
-import pronghorn.FloodlightRoutingTableToHardware;
+import pronghorn.FloodlightFlowTableToHardware;
 import java.lang.Thread;
 import java.util.ArrayList;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.List;
 import RalphDataWrappers.ListTypeDataWrapper;
-import pronghorn.RTable._InternalRoutingTableEntry;
+import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.ShimInterface;
-import pronghorn.RoutingTableToHardwareFactory;
-import pronghorn.RoutingTableToHardware;
+import pronghorn.FlowTableToHardwareFactory;
+import pronghorn.FlowTableToHardware;
 import java.util.HashMap;
 import java.util.Map.Entry;
 
@@ -26,7 +26,7 @@ import experiments.Util.HostPortPair;
 import experiments.Util;
 
 import experiments.SingleControllerError.ErrorShim;
-import experiments.SingleControllerError.ErrorProneFloodlightRoutingTableToHardware;
+import experiments.SingleControllerError.ErrorProneFloodlightFlowTableToHardware;
 
 import ralph.RalphGlobals;
 import ralph.EndpointConstructorObj;
@@ -98,13 +98,13 @@ public class MultiControllerError
         }
 
         ErrorShim shim = new ErrorShim();
-        ErrorProneFloodlightRoutingTableToHardware.ErrorProneFactory routing_table_to_hardware_factory
-            = new ErrorProneFloodlightRoutingTableToHardware.ErrorProneFactory(failure_prob);
+        ErrorProneFloodlightFlowTableToHardware.ErrorProneFactory flow_table_to_hardware_factory
+            = new ErrorProneFloodlightFlowTableToHardware.ErrorProneFactory(failure_prob);
         
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 shim,prong,
-                routing_table_to_hardware_factory);
+                flow_table_to_hardware_factory);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
 

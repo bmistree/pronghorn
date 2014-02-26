@@ -4,15 +4,15 @@ import net.floodlightcontroller.pronghornmodule.PronghornFlowTableEntry;
 import net.floodlightcontroller.pronghornmodule.PronghornFlowTableEntry.Operation;
 
 
-public class RTableUpdate
+public class FTableUpdate
 {
     public PronghornFlowTableEntry entry = null;
     
-    public static RTableUpdate create_insert_update(
+    public static FTableUpdate create_insert_update(
         String entry_name, String src_ip, String dst_ip,
         String actions)
     {
-        RTableUpdate to_return = new RTableUpdate();
+        FTableUpdate to_return = new FTableUpdate();
         to_return.entry =
             new PronghornFlowTableEntry(Operation.INSERT);
         to_return.entry.entry_name = entry_name;
@@ -28,9 +28,9 @@ public class RTableUpdate
         return to_return;
     }
     
-    public static RTableUpdate create_remove_update(String _entry_name)
+    public static FTableUpdate create_remove_update(String _entry_name)
     {
-        RTableUpdate to_return = new RTableUpdate();
+        FTableUpdate to_return = new FTableUpdate();
         to_return.entry =
             new PronghornFlowTableEntry(Operation.REMOVE);
         to_return.entry.entry_name = _entry_name;
@@ -41,6 +41,6 @@ public class RTableUpdate
        Private constructor: use static methods to construct insertion
        and remove updates.
      */
-    private RTableUpdate()
+    private FTableUpdate()
     {}
 }

@@ -6,10 +6,10 @@ import single_host.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
-import pronghorn.FloodlightRoutingTableToHardware;
+import pronghorn.FloodlightFlowTableToHardware;
 import java.lang.Thread;
 import java.util.ArrayList;
-import pronghorn.RTableUpdate;
+import pronghorn.FTableUpdate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -84,7 +84,7 @@ public class Ordering
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 shim,prong,
-                FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
+                FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
         
@@ -175,7 +175,7 @@ public class Ordering
 
     /**
        Returns true if after running everything, switch does not have
-       any routing table rules (ie, final operations applied in
+       any flow table rules (ie, final operations applied in
        order).  False otherwise.
      */
     private static boolean run_once(
@@ -250,8 +250,8 @@ public class Ordering
     {
         private boolean allow_reordering;
         private int num_outstanding_before_push = -1;
-        private HashMap<String,List<RTableUpdate>> outstanding_updates =
-            new HashMap<String,List<RTableUpdate>>();
+        private HashMap<String,List<FTableUpdate>> outstanding_updates =
+            new HashMap<String,List<FTableUpdate>>();
 
         /**
            @param _num_outstanding_before_push --- The number of
@@ -272,7 +272,7 @@ public class Ordering
         
 
         /**
-           Actually push command to clear routing table to all
+           Actually push command to clear flow table to all
            switches.  Definitely use a barrier here.
          */
         public void force_clear()
@@ -303,7 +303,7 @@ public class Ordering
         
         @Override
         public boolean switch_rtable_updates(
-            String switch_id,List<RTableUpdate> updates)
+            String switch_id,List<FTableUpdate> updates)
         {
             // if we are not allowing reordering, just call parent
             // method.
@@ -311,11 +311,11 @@ public class Ordering
                 return super.switch_rtable_updates(switch_id,updates);
 
             // if we are allowing reordering, then try reordering.
-            List<RTableUpdate> switch_outstanding_updates =
+            List<FTableUpdate> switch_outstanding_updates =
                 outstanding_updates.get(switch_id);
             if (switch_outstanding_updates == null)
             {
-                switch_outstanding_updates = new ArrayList<RTableUpdate>();
+                switch_outstanding_updates = new ArrayList<FTableUpdate>();
                 outstanding_updates.put(
                     switch_id,switch_outstanding_updates);
             }
@@ -325,7 +325,7 @@ public class Ordering
             if (switch_outstanding_updates.size() >= num_outstanding_before_push)
             {
                 // grab the first few commands to push to switch
-                List<RTableUpdate> to_push =
+                List<FTableUpdate> to_push =
                     switch_outstanding_updates.subList(
                         0,num_outstanding_before_push);
                 

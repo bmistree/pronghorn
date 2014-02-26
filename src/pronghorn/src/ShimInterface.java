@@ -15,5 +15,5 @@ public interface ShimInterface
     public void unsubscribe_switch_status_handler(
         ISwitchStatusHandler status_handler);
     public boolean switch_rtable_updates(
-        String switch_id,List<RTableUpdate> updates);
+        String switch_id,List<FTableUpdate> updates);
 }

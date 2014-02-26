@@ -1,7 +1,7 @@
 package pronghorn;
 
-import pronghorn.RTable;
-import pronghorn.RTable._InternalRoutingTableEntry;
+import pronghorn.FTable;
+import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.SwitchJava._InternalSwitch;
 import ralph.Variables.AtomicTextVariable;
 import ralph.Variables.AtomicNumberVariable;
@@ -71,7 +71,7 @@ public class SwitchFactory
     }
 
     /**
-       Do not actually push changes to routing table to hardware, just
+       Do not actually push changes to flow table to hardware, just
        say that we did.
      */
     public PronghornInternalSwitch construct(
@@ -88,7 +88,7 @@ public class SwitchFactory
      */
     public PronghornInternalSwitch construct(
         double available_capacity,
-        RoutingTableToHardware to_handle_pushing_changes)
+        FlowTableToHardware to_handle_pushing_changes)
     {
         // create a new switch id
         Integer factory_local_unique_id = atomic_switch_id.addAndGet(1);
@@ -99,26 +99,26 @@ public class SwitchFactory
         PronghornInternalSwitch to_return =
             new PronghornInternalSwitch(new_switch_id,ralph_globals);
 
-        // override internal routing table variable
-        InternalRoutingTableList internal_rtable_list = null;
+        // override internal flow table variable
+        InternalFlowTableList internal_rtable_list = null;
         if (to_handle_pushing_changes == null)
         {
             internal_rtable_list =
-                new InternalRoutingTableList(
+                new InternalFlowTableList(
                     hardware_pushing_service,ralph_globals);
         }
         else
         {
             internal_rtable_list =
-                new InternalRoutingTableList(
+                new InternalFlowTableList(
                     to_handle_pushing_changes,hardware_pushing_service,
                     ralph_globals);
         }
         
         to_return.rtable =
-            new AtomicListVariable<_InternalRoutingTableEntry,_InternalRoutingTableEntry>(
+            new AtomicListVariable<_InternalFlowTableEntry,_InternalFlowTableEntry>(
                 false,internal_rtable_list,
-                RTable.STRUCT_LOCKED_MAP_WRAPPER__RoutingTableEntry,
+                FTable.STRUCT_LOCKED_MAP_WRAPPER__FlowTableEntry,
                 ralph_globals);
         
         // produce and overwrite a switch id associated with this switch

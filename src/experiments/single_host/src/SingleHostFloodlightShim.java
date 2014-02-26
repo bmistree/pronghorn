@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import pronghorn.ShimInterface;
-import pronghorn.RTableUpdate;
+import pronghorn.FTableUpdate;
 import pronghorn.ISwitchStatusHandler;
 
 import net.floodlightcontroller.core.IOFSwitchListener;
@@ -92,12 +92,12 @@ public class SingleHostFloodlightShim
     
     @Override
     public boolean switch_rtable_updates(
-        String switch_id,List<RTableUpdate> updates)
+        String switch_id,List<FTableUpdate> updates)
     {
         FloodlightShimBarrierCallback floodlight_callback =
             new FloodlightShimBarrierCallback();
         
-        for (RTableUpdate update : updates)
+        for (FTableUpdate update : updates)
         {
             try
             {

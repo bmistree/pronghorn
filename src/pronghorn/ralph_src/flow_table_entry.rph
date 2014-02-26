@@ -1,4 +1,4 @@
-Struct RoutingTableEntry
+Struct FlowTableEntry
 {
     // ipv4 addresses specified as a.b.c.d
     TVar Text src_ip;

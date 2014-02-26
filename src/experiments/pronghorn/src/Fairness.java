@@ -8,10 +8,10 @@ import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 import ralph.Endpoint;
 import ralph.EndpointConstructorObj;
-import pronghorn.FloodlightRoutingTableToHardware;
+import pronghorn.FloodlightFlowTableToHardware;
 import java.lang.Thread;
 import java.util.ArrayList;
-import pronghorn.RTableUpdate;
+import pronghorn.FTableUpdate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -313,7 +313,7 @@ public class Fairness
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 shim,prong,
-                FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
+                FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
         return shim;

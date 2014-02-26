@@ -7,7 +7,7 @@ import single_host.JavaPronghornConnection.PronghornConnection;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
-import pronghorn.FloodlightRoutingTableToHardware;
+import pronghorn.FloodlightFlowTableToHardware;
 import java.lang.Thread;
 import java.util.ArrayList;
 import java.util.List;
@@ -80,7 +80,7 @@ public class MultiControllerLatency
         SingleHostSwitchStatusHandler switch_status_handler =
             new SingleHostSwitchStatusHandler(
                 shim,prong,
-                FloodlightRoutingTableToHardware.FLOODLIGHT_ROUTING_TABLE_TO_HARDWARE_FACTORY);
+                FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

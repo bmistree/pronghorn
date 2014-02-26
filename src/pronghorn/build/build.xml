@@ -86,10 +86,10 @@
 
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
-      <arg line="-i ${pronghorn_ralph_src_dir}/routing_table_entry.rph"/>
-      <arg line="-o ${pronghorn_ralph_emitted_dir}/RTable.java"/>
+      <arg line="-i ${pronghorn_ralph_src_dir}/flow_table_entry.rph"/>
+      <arg line="-o ${pronghorn_ralph_emitted_dir}/FTable.java"/>
       <arg line="-p ${pronghorn_package}"/>
-      <arg line="-c RTable"/>
+      <arg line="-c FTable"/>
     </exec>
 
     <exec executable="python" failonerror="true">

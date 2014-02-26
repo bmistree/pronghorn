@@ -1,7 +1,7 @@
 package pronghorn;
 
 import RalphDataWrappers.ListTypeDataWrapper;
-import pronghorn.RTable._InternalRoutingTableEntry;
+import pronghorn.FTable._InternalFlowTableEntry;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.Condition;
@@ -12,16 +12,16 @@ import java.util.concurrent.TimeUnit;
    it is asked to push changes to hardware or undo pushed changes
    to hardware.
  */
-public class RoutingTableToHardware
+public class FlowTableToHardware
 {
     public boolean apply_changes_to_hardware(
         ListTypeDataWrapper<
-            _InternalRoutingTableEntry,_InternalRoutingTableEntry> dirty)
+            _InternalFlowTableEntry,_InternalFlowTableEntry> dirty)
     {
         return true;
     }
     public void undo_dirty_changes_to_hardware(
-        ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry>
+        ListTypeDataWrapper<_InternalFlowTableEntry,_InternalFlowTableEntry>
         to_undo)
     { }
 
@@ -30,14 +30,14 @@ public class RoutingTableToHardware
     {
         public ApplyToHardwareFuture to_notify_when_complete =
             new ApplyToHardwareFuture();
-        private RoutingTableToHardware rtable_to_hardware = null;
+        private FlowTableToHardware rtable_to_hardware = null;
         private
-            ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry>
+            ListTypeDataWrapper<_InternalFlowTableEntry,_InternalFlowTableEntry>
             to_apply = null;
         
         public WrapApplyToHardware(
-            RoutingTableToHardware _rtable_to_hardware,
-            ListTypeDataWrapper<_InternalRoutingTableEntry,_InternalRoutingTableEntry> _to_apply)
+            FlowTableToHardware _rtable_to_hardware,
+            ListTypeDataWrapper<_InternalFlowTableEntry,_InternalFlowTableEntry> _to_apply)
         {
             rtable_to_hardware = _rtable_to_hardware;
             to_apply = _to_apply;

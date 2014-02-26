@@ -115,7 +115,6 @@ Endpoint PronghornInstance
     insert_entry_on_last_switch()
     {
         Struct RoutingTableEntry to_add;
-        to_add.active = True;
         to_add.src_ip = '20.30.13.1';
         to_add.dst_ip = '18.18.18.19';
         // drop all packets
@@ -154,7 +153,6 @@ Endpoint PronghornInstance
                 Struct Switch target_switch =
                     instance_switches.get(switch_id);
                 Struct RoutingTableEntry to_add;
-                to_add.active = True;
                 to_add.src_ip = ip_src;
                 to_add.dst_ip = '18.18.18.19';
                 // drop all packets
@@ -203,7 +201,6 @@ Endpoint PronghornInstance
                 else
                 {
                     Struct RoutingTableEntry to_add;
-                    to_add.active = True;
                     to_add.src_ip = '18.18.18.18';
                     to_add.dst_ip = '18.18.18.19';
                     // drop all packets
@@ -236,7 +233,6 @@ Endpoint PronghornInstance
                 else
                 {
                     Struct RoutingTableEntry to_add;
-                    to_add.active = True;
                     to_add.src_ip = '18.18.18.18';
                     to_add.dst_ip = '18.18.18.19';
                     // drop all packets
@@ -265,7 +261,6 @@ Endpoint PronghornInstance
             else
             {
                 Struct RoutingTableEntry to_add;
-                to_add.active = True;
                 to_add.src_ip = '18.18.18.18';
                 to_add.dst_ip = '18.18.18.19';
                 // drop all packets
@@ -293,7 +288,6 @@ Endpoint PronghornInstance
                 else
                 {
                     Struct RoutingTableEntry to_add;
-                    to_add.active = True;
                     to_add.src_ip = '18.18.18.18';
                     to_add.dst_ip = '18.18.18.19';
                     // drop all packets
@@ -316,7 +310,6 @@ Endpoint PronghornInstance
                 Struct Switch switch_to_add_to = instance_switches.get(switch_id);
 
                 Struct RoutingTableEntry to_add;
-                to_add.active = True;
                 to_add.src_ip = src_ip;
                 to_add.dst_ip = dst_ip;
                 // send packet out all ports

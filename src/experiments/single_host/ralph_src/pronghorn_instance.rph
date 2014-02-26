@@ -1,59 +1,11 @@
+#include 'port.rph'
+#include 'routing_table_entry.rph'
+#include 'switch.rph'
+
 alias Struct RoutingTableEntry as 'pronghorn.RTable.RoutingTableEntry';
 alias Struct Switch as 'pronghorn.SwitchJava.Switch';
 alias Struct Port as 'pronghorn.PortJava.Port';
 alias Endpoint PronghornConnection as 'single_host.JavaPronghornConnection.PronghornConnection';
-
-Struct RoutingTableEntry
-{
-    TVar TrueFalse active;
-    // ipv4 addresses specified as a.b.c.d
-    TVar Text src_ip;
-    TVar Text dst_ip;
-    // See
-    // http://www.openflowhub.org/display/floodlightcontroller/Static+Flow+Pusher+API+%28New%29
-    // for list of supported actions.    
-    TVar Text action;    
-}
-
-
-Struct Port
-{
-    // Not making these tvars because expectation is that these are
-    // write-once variables.
-    Text local_switch_id;
-    Number local_port_number;
-
-    Text remote_switch_id;
-    Number remote_port_number;
-
-    
-    // User's modulating bringing the link between two switches down
-    // or bring it up.  True if port is up, false if it is not.
-    TVar TrueFalse port_up;
-
-    // If have two, connected switches join the network
-    // simultaneously, then when one comes up it will announce all of
-    // its ports, including a connection to a switch that does not yet
-    // exist in the network.  In this case, user should not be able to
-    // change any of the port's 
-    TVar TrueFalse other_end_available;
-}
-
-Struct Switch
-{
-    // unique id for each switch
-    TVar Text switch_id;    
-    TVar Number available_capacity;
-    TVar List (element: Struct RoutingTableEntry) rtable;
-
-    // Indices are port numbers on local switch
-    TVar Map (from: Number, to: Struct Port) all_ports;
-    // Ports link two switches.  available ports is a map of ports
-    // that the other end of the port exists for.  (Example of a case
-    // where other end does not exist: added multiple switches to the
-    // network simultaneously.)
-    TVar Map (from: Number, to: Struct Port) available_ports;
-}
 
 
 Struct ConnectionWrapper
@@ -114,9 +66,6 @@ Endpoint PronghornInstance
             }
         }
     }
-
-    
-    
 
     single_op_and_ask_children_for_single_op()
     {

@@ -48,6 +48,10 @@
   <property
       name="pronghorn_libs_class_path"
       location="${pronghorn_libs_build_path}/classes"/>
+
+  <property
+      name="pronghorn_ralph_src_path"
+      location="${pronghorn_libs_build_path}/../ralph_src/"/>  
   
   <!-- Build files in singledummytests -->
   <property
@@ -95,14 +99,16 @@
       <arg line="-o ${single_host_ralph_emitted_dir}/JavaPronghornInstance.java"/>
       <arg line="-p ${single_host_package}"/>
       <arg line="-c JavaPronghornInstance"/>
+      <arg line="-I ${single_host_ralph_src_dir}"/>
     </exec>
-    
+
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${single_host_ralph_src_dir}/pronghorn_connection.rph"/>
       <arg line="-o ${single_host_ralph_emitted_dir}/JavaPronghornConnection.java"/>
       <arg line="-p ${single_host_package}"/>
       <arg line="-c JavaPronghornConnection"/>
+      <arg line="-I ${single_host_ralph_src_dir}"/>
     </exec>
     
   </target>

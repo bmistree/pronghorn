@@ -83,7 +83,7 @@
   <!-- Compile to java -->
   <target name="translate_ralph" depends="init"
           description="translate ralph files">
-
+    
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${pronghorn_ralph_src_dir}/flow_table_entry.rph"/>
@@ -100,7 +100,6 @@
       <arg line="-c SwitchJava"/>
     </exec>
 
-
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${pronghorn_ralph_src_dir}/port.rph"/>
@@ -109,6 +108,13 @@
       <arg line="-c PortJava"/>
     </exec>
 
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${pronghorn_ralph_src_dir}/switch_delta.rph"/>
+      <arg line="-o ${pronghorn_ralph_emitted_dir}/SwitchDeltaJava.java"/>
+      <arg line="-p ${pronghorn_package}"/>
+      <arg line="-c SwitchDeltaJava"/>
+    </exec>
     
   </target>
 

@@ -1,0 +1,24 @@
+#include 'flow_table_entry.rph'
+#include 'port.rph'
+alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
+alias Struct Port as 'pronghorn.PortJava.Port';
+
+
+Struct PortDelta
+{
+    // empty for now.
+}
+
+Struct FlowTableDelta
+{
+    // True if this mapping was inserted
+    TrueFalse inserted;
+    Struct FlowTableEntry entry = null;
+}
+
+Struct SwitchDelta
+{
+    TVar Number switch_lock = 0;
+    TVar List(element: Struct PortDelta) port_deltas;
+    TVar List(element: Struct FlowTableDelta) ft_deltas;
+}

@@ -8,7 +8,6 @@ Struct Port
     Text remote_switch_id;
     Number remote_port_number;
 
-    
     // User's modulating bringing the link between two switches down
     // or bring it up.  True if port is up, false if it is not.
     TVar TrueFalse port_up;

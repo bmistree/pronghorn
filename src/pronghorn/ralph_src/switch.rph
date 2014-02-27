@@ -1,7 +1,9 @@
 #include 'port.rph'
 #include 'flow_table_entry.rph'
+#include 'switch_delta.rph'
 alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
 alias Struct Port as 'pronghorn.PortJava.Port';
+alias Struct SwitchDelta as 'pronghorn.SwitchDeltaJava.SwitchDelta';
 
 Struct Switch
 {
@@ -17,4 +19,6 @@ Struct Switch
     // where other end does not exist: added multiple switches to the
     // network simultaneously.)
     TVar Map (from: Number, to: Struct Port) available_ports;
+
+    Struct SwitchDelta switch_delta;
 }

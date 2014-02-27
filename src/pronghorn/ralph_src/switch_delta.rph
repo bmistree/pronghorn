@@ -12,8 +12,12 @@ Struct PortDelta
 Struct FlowTableDelta
 {
     // True if this mapping was inserted
-    TrueFalse inserted;
+    TrueFalse inserted = null;
     Struct FlowTableEntry entry = null;
+    // index added or removed at the time that the index was added or removed.
+    // Eg., if added index at 3, and then removed two elements before it, index
+    // still stays 3.
+    Number index = null;
 }
 
 Struct SwitchDelta

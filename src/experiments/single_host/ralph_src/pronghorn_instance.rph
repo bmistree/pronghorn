@@ -99,7 +99,7 @@ Endpoint PronghornInstance
         atomically {
             Struct Switch target_switch =
                 instance_switches.get(last_added_switch_id);
-            target_switch.rtable.size();
+            target_switch.ftable.size();
         }        
     }
     
@@ -108,7 +108,7 @@ Endpoint PronghornInstance
         atomically {
             Struct Switch target_switch =
                 instance_switches.get(last_added_switch_id);
-            target_switch.rtable.remove(0);
+            target_switch.ftable.remove(0);
         }
     }
 
@@ -123,7 +123,7 @@ Endpoint PronghornInstance
         atomically {
             Struct Switch target_switch =
                 instance_switches.get(last_added_switch_id);
-            target_switch.rtable.append(to_add);            
+            target_switch.ftable.append(to_add);            
         }
     }
     
@@ -157,7 +157,7 @@ Endpoint PronghornInstance
                 to_add.dst_ip = '18.18.18.19';
                 // drop all packets
                 to_add.action = '';
-                target_switch.rtable.append(to_add);
+                target_switch.ftable.append(to_add);
             }
         }
     }
@@ -175,9 +175,9 @@ Endpoint PronghornInstance
         for (Text switch_id in instance_switches)
         {
             Struct Switch target_switch = instance_switches.get(switch_id);
-            // note: clearing an rtable does not actually push commands to
+            // note: clearing an ftable does not actually push commands to
             // switches.  This was a bug, but now we're taking advantage of it.
-            target_switch.rtable.clear();
+            target_switch.ftable.clear();
         }
     }
 
@@ -193,10 +193,10 @@ Endpoint PronghornInstance
             {
                 had_switch = True;
                 Struct Switch target_switch = instance_switches.get(switch_id);
-                if (target_switch.rtable.size() != 0)
+                if (target_switch.ftable.size() != 0)
                 {
-                    target_switch.rtable.remove(0);
-                    //target_switch.rtable.clear();
+                    target_switch.ftable.remove(0);
+                    //target_switch.ftable.clear();
                 }
                 else
                 {
@@ -205,7 +205,7 @@ Endpoint PronghornInstance
                     to_add.dst_ip = '18.18.18.19';
                     // drop all packets
                     to_add.action = '';
-                    target_switch.rtable.append(to_add);
+                    target_switch.ftable.append(to_add);
                 }
             }
             else
@@ -225,10 +225,10 @@ Endpoint PronghornInstance
             {
                 had_switch = True;
                 Struct Switch target_switch = instance_switches.get(switch_id);
-                if (target_switch.rtable.size() != 0)
+                if (target_switch.ftable.size() != 0)
                 {
-                    target_switch.rtable.remove(0);
-                    //target_switch.rtable.clear();
+                    target_switch.ftable.remove(0);
+                    //target_switch.ftable.clear();
                 }
                 else
                 {
@@ -237,7 +237,7 @@ Endpoint PronghornInstance
                     to_add.dst_ip = '18.18.18.19';
                     // drop all packets
                     to_add.action = '';
-                    target_switch.rtable.append(to_add);
+                    target_switch.ftable.append(to_add);
                 }
             }
             else
@@ -253,10 +253,10 @@ Endpoint PronghornInstance
         for (Text switch_id in instance_switches)
         {
             Struct Switch target_switch = instance_switches.get(switch_id);
-            if (target_switch.rtable.size() != 0)
+            if (target_switch.ftable.size() != 0)
             {
-                target_switch.rtable.remove(0);
-                //target_switch.rtable.clear();
+                target_switch.ftable.remove(0);
+                //target_switch.ftable.clear();
             }
             else
             {
@@ -265,7 +265,7 @@ Endpoint PronghornInstance
                 to_add.dst_ip = '18.18.18.19';
                 // drop all packets
                 to_add.action = '';
-                target_switch.rtable.append(to_add);
+                target_switch.ftable.append(to_add);
             }
         }
     }
@@ -280,10 +280,10 @@ Endpoint PronghornInstance
             for (Text switch_id in instance_switches)
             {
                 Struct Switch target_switch = instance_switches.get(switch_id);
-                if (target_switch.rtable.size() != 0)
+                if (target_switch.ftable.size() != 0)
                 {
-                    target_switch.rtable.remove(0);
-                    //target_switch.rtable.clear();
+                    target_switch.ftable.remove(0);
+                    //target_switch.ftable.clear();
                 }
                 else
                 {
@@ -292,7 +292,7 @@ Endpoint PronghornInstance
                     to_add.dst_ip = '18.18.18.19';
                     // drop all packets
                     to_add.action = '';
-                    target_switch.rtable.append(to_add);
+                    target_switch.ftable.append(to_add);
                 }
             }
         }
@@ -317,7 +317,7 @@ Endpoint PronghornInstance
                 // drop packet
                 to_add.action = '';
                 
-                switch_to_add_to.rtable.append(to_add);
+                switch_to_add_to.ftable.append(to_add);
             }
         }
     }
@@ -330,8 +330,8 @@ Endpoint PronghornInstance
             {
                 Struct Switch switch_to_remove_from =
                     instance_switches.get(switch_id);
-                if (switch_to_remove_from.rtable.size() > 0)
-                    switch_to_remove_from.rtable.remove(0);
+                if (switch_to_remove_from.ftable.size() > 0)
+                    switch_to_remove_from.ftable.remove(0);
             }
         }
     }

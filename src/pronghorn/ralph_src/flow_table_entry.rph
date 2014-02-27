@@ -8,3 +8,18 @@ Struct FlowTableEntry
     // for list of supported actions.
     TVar Text action;
 }
+
+/**
+   Holds utilities for managing flowtable entries.
+ */
+Service FlowTableUtil
+{
+    copy_entry (Struct FlowTableEntry to_copy) returns Struct FlowTableEntry
+    {
+        Struct FlowTableEntry to_return;
+        to_return.src_ip = to_copy.src_ip;
+        to_return.dst_ip = to_copy.dst_ip;
+        to_return.action = to_copy.action;
+        return to_return;
+    }
+}

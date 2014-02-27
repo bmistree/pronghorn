@@ -100,24 +100,24 @@ public class SwitchFactory
             new PronghornInternalSwitch(new_switch_id,ralph_globals);
 
         // override internal flow table variable
-        InternalFlowTableList internal_rtable_list = null;
+        InternalFlowTableList internal_ftable_list = null;
         if (to_handle_pushing_changes == null)
         {
-            internal_rtable_list =
+            internal_ftable_list =
                 new InternalFlowTableList(
                     hardware_pushing_service,ralph_globals);
         }
         else
         {
-            internal_rtable_list =
+            internal_ftable_list =
                 new InternalFlowTableList(
                     to_handle_pushing_changes,hardware_pushing_service,
                     ralph_globals);
         }
         
-        to_return.rtable =
+        to_return.ftable =
             new AtomicListVariable<_InternalFlowTableEntry,_InternalFlowTableEntry>(
-                false,internal_rtable_list,
+                false,internal_ftable_list,
                 FTable.STRUCT_LOCKED_MAP_WRAPPER__FlowTableEntry,
                 ralph_globals);
         

@@ -1,0 +1,49 @@
+#include 'wrapped_switch.rph'
+alias Service WrappedSwitch as 'pronghorn.WrappedSwitchJava.WrappedSwitch';
+
+#include 'switch.rph'
+alias Struct Switch as 'pronghorn.SwitchJava.Switch';
+
+#include 'flow_table_entry.rph'
+alias Service FlowTableUtil as 'pronghorn.FTable.FlowTableUtil';
+
+alias Service IApplication as 'pronghorn.IApplicationJava.IApplication';
+
+Struct StructWrappedSwitch
+{
+    Service WrappedSwitch wrapped_switch = null;
+}
+
+Service Instance
+{
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+    Service FlowTableUtil shared_ft_util;
+
+    // called from external code
+    add_switch(Struct Switch to_add)
+    {
+        Service WrappedSwitch ws;
+        ws.init(to_add,shared_ft_util);
+        Struct StructWrappedSwitch sws;
+        sws.wrapped_switch = ws;
+        atomically
+        {
+            switch_map.set(to_add.switch_id,sws);
+        }
+    }
+
+    // called from external code
+    remove_switch(Text to_remove_id)
+    {
+        atomically
+        {
+            switch_map.remove(to_remove_id);
+        }
+    }
+
+    add_application(Service IApplication app)
+    {
+        app.init(self);
+        app.run();
+    }
+}

@@ -1,0 +1,11 @@
+
+alias Service Instance as 'pronghorn.InstanceJava.Instance';
+
+Service IApplication
+{
+    init(Service Instance inst_)
+    {}
+
+    run()
+    {}
+}

@@ -2,7 +2,6 @@
 #include 'switch_delta.rph'
 #include 'flow_table_entry.rph'
 alias Struct Switch as 'pronghorn.SwitchJava.Switch';
-alias Struct SwitchDelta as 'pronghorn.SwitchDeltaJava.SwitchDelta';
 alias Struct FlowTableDelta as 'pronghorn.SwitchDeltaJava.FlowTableDelta';
 alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
 alias Service FlowTableUtil as 'pronghorn.FTable.FlowTableUtil';
@@ -12,15 +11,11 @@ Service WrappedSwitch
 {
     Struct Switch wrapped_switch = null;
     Service FlowTableUtil ft_util = null;
-    Struct SwitchDelta wrapped_delta = null;
 
     init(Struct Switch wrapped_switch_, Service FlowTableUtil ft_util_)
     {
         wrapped_switch = wrapped_switch_;
         ft_util = ft_util_;
-        // Ugly approx of wrapped_delta = Struct SwitchDelta();
-        Struct SwitchDelta wrapped_delta_;
-        wrapped_delta = wrapped_delta_;
     }
 
     id () returns Text
@@ -45,7 +40,7 @@ Service WrappedSwitch
         // problem if the very next thing that they do is to all try to acquire
         // write locks: one of them will win and all the others will be fully
         // rolled back.
-        wrapped_delta.switch_lock = 5;
+        wrapped_switch.delta.switch_lock = 5;
     }
     
     add_entry(Struct FlowTableEntry to_add)
@@ -59,7 +54,7 @@ Service WrappedSwitch
             ftd.inserted = True;
             ftd.entry = copied_to_add;
             ftd.index = wrapped_switch.ftable.size();
-            wrapped_delta.ft_deltas.append(ftd);
+            wrapped_switch.delta.ft_deltas.append(ftd);
 
             wrapped_switch.ftable.append(copied_to_add);
         }
@@ -79,7 +74,7 @@ Service WrappedSwitch
                 wrapped_switch.ftable.get(index_to_remove_from);
             wrapped_switch.ftable.remove(index_to_remove_from);
             
-            wrapped_delta.ft_deltas.append(ftd);
+            wrapped_switch.delta.ft_deltas.append(ftd);
         }
     }
 

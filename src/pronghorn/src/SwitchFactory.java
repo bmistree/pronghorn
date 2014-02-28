@@ -3,7 +3,7 @@ package pronghorn;
 import pronghorn.FTable;
 import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.SwitchJava._InternalSwitch;
-import ralph.Variables.AtomicTextVariable;
+import ralph.Variables.NonAtomicTextVariable;
 import ralph.Variables.AtomicNumberVariable;
 import ralph.Variables.AtomicListVariable;
 import ralph.RalphGlobals;
@@ -123,7 +123,7 @@ public class SwitchFactory
         
         // produce and overwrite a switch id associated with this switch
         to_return.switch_id =
-            new AtomicTextVariable(false,new_switch_id,ralph_globals);
+            new NonAtomicTextVariable(false,new_switch_id,ralph_globals);
 
         // set available capacity
         to_return.available_capacity =

@@ -115,6 +115,14 @@
       <arg line="-p ${pronghorn_package}"/>
       <arg line="-c SwitchDeltaJava"/>
     </exec>
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${pronghorn_ralph_src_dir}/wrapped_switch.rph"/>
+      <arg line="-o ${pronghorn_ralph_emitted_dir}/WrappedSwitchJava.java"/>
+      <arg line="-p ${pronghorn_package}"/>
+      <arg line="-c WrappedSwitchJava"/>
+    </exec>
     
   </target>
 

@@ -1,0 +1,91 @@
+#include 'switch.rph'
+#include 'switch_delta.rph'
+#include 'flow_table_entry.rph'
+alias Struct Switch as 'pronghorn.SwitchJava.Switch';
+alias Struct SwitchDelta as 'pronghorn.SwitchDeltaJava.SwitchDelta';
+alias Struct FlowTableDelta as 'pronghorn.SwitchDeltaJava.FlowTableDelta';
+alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
+alias Service FlowTableUtil as 'pronghorn.FTable.FlowTableUtil';
+
+
+Service WrappedSwitch
+{
+    Struct Switch wrapped_switch = null;
+    Service FlowTableUtil ft_util = null;
+    Struct SwitchDelta wrapped_delta = null;
+
+    init(Struct Switch wrapped_switch_, Service FlowTableUtil ft_util_)
+    {
+        wrapped_switch = wrapped_switch_;
+        ft_util = ft_util_;
+        // Ugly approx of wrapped_delta = Struct SwitchDelta();
+        Struct SwitchDelta wrapped_delta_;
+        wrapped_delta = wrapped_delta_;
+    }
+
+    id () returns Text
+    {
+        return wrapped_switch.switch_id;
+    }
+    
+    ftable_size() returns Number
+    {
+        return wrapped_switch.ftable.size();
+    }
+
+    // should only be called from within WrappedSwitch service.  Assumption is
+    // that it is being called from within an atomically statement.  Otherwise,
+    // write lock doesn't do anything.
+    write_lock_switch()
+    {
+        // acquires switch lock by writing to tvar.  note: not incrementing
+        // value here because that requires acquiring a read lock first.
+        // semantics of lock manager are such that if many wait for read lock,
+        // then they all get scheduled when a writer releases.  This is a
+        // problem if the very next thing that they do is to all try to acquire
+        // write locks: one of them will win and all the others will be fully
+        // rolled back.
+        wrapped_delta.switch_lock = 5;
+    }
+    
+    add_entry(Struct FlowTableEntry to_add)
+    {
+        Struct FlowTableEntry copied_to_add = ft_util.copy_entry(to_add);
+        Struct FlowTableDelta ftd;
+
+        atomically
+        {
+            write_lock_switch();
+            ftd.inserted = True;
+            ftd.entry = copied_to_add;
+            ftd.index = wrapped_switch.ftable.size();
+            wrapped_delta.ft_deltas.append(ftd);
+
+            wrapped_switch.ftable.append(copied_to_add);
+        }
+    }
+
+    remove_entry(Number index_to_remove_from)
+    {
+        Struct FlowTableDelta ftd;
+
+        atomically
+        {
+            write_lock_switch();
+
+            ftd.index = index_to_remove_from;
+            ftd.inserted = False;
+            ftd.entry =
+                wrapped_switch.ftable.get(index_to_remove_from);
+            wrapped_switch.ftable.remove(index_to_remove_from);
+            
+            wrapped_delta.ft_deltas.append(ftd);
+        }
+    }
+
+    get_entry (Number index) returns Struct FlowTableEntry
+    {
+        Struct FlowTableEntry entry = wrapped_switch.ftable.get(index);
+        return ft_util.copy_entry(entry);
+    }
+}

@@ -54,16 +54,16 @@ Service WrappedSwitch
             ftd.inserted = True;
             ftd.entry = copied_to_add;
             ftd.index = wrapped_switch.ftable.size();
-            wrapped_switch.delta.ft_deltas.append(ftd);
-
             wrapped_switch.ftable.append(copied_to_add);
+            
+            // FIXME: should filter adds then removes or removes then adds
+            wrapped_switch.delta.ft_deltas.append(ftd);
         }
     }
 
     remove_entry(Number index_to_remove_from)
     {
         Struct FlowTableDelta ftd;
-
         atomically
         {
             write_lock_switch();
@@ -73,7 +73,8 @@ Service WrappedSwitch
             ftd.entry =
                 wrapped_switch.ftable.get(index_to_remove_from);
             wrapped_switch.ftable.remove(index_to_remove_from);
-            
+
+            // FIXME: should filter adds then removes or removes then adds
             wrapped_switch.delta.ft_deltas.append(ftd);
         }
     }

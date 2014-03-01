@@ -7,7 +7,7 @@ import net.floodlightcontroller.pronghornmodule.PronghornFlowTableEntry.Operatio
 public class FTableUpdate
 {
     public PronghornFlowTableEntry entry = null;
-    
+
     public static FTableUpdate create_insert_update(
         String entry_name, String src_ip, String dst_ip,
         String actions)
@@ -28,12 +28,17 @@ public class FTableUpdate
         return to_return;
     }
     
-    public static FTableUpdate create_remove_update(String _entry_name)
+    public static FTableUpdate create_remove_update(
+        String _entry_name,String src_ip, String dst_ip)
     {
         FTableUpdate to_return = new FTableUpdate();
         to_return.entry =
             new PronghornFlowTableEntry(Operation.REMOVE);
         to_return.entry.entry_name = _entry_name;
+        to_return.entry.ip_src = src_ip;
+        to_return.entry.ip_dst = dst_ip;
+        to_return.entry.actions = null;
+        
         return to_return;
     }
     

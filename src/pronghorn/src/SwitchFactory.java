@@ -3,6 +3,9 @@ package pronghorn;
 import pronghorn.FTable;
 import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.SwitchJava._InternalSwitch;
+import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
+import pronghorn.SwitchDeltaJava.SwitchDelta;
+
 import ralph.Variables.NonAtomicTextVariable;
 import ralph.Variables.AtomicNumberVariable;
 import ralph.Variables.AtomicListVariable;
@@ -95,51 +98,44 @@ public class SwitchFactory
         String new_switch_id =
             factory_switch_prefix + SWITCH_PREFIX_TO_ID_SEPARATOR +
             factory_local_unique_id.toString();
+
+        // Create the switch delta struct
+        _InternalSwitchDelta switch_delta =
+            new _InternalSwitchDelta(ralph_globals);
                 
-        PronghornInternalSwitch to_return =
-            new PronghornInternalSwitch(new_switch_id,ralph_globals);
+        // override switch_lock variable: switch_lock variable serves
+        // as a guard for both port_deltas and ft_deltas.
+        InternalPronghornSwitchGuard switch_guard_num_var =
+            new InternalPronghornSwitchGuard(
+                ralph_globals,switch_delta,new_switch_id,
+                to_handle_pushing_changes,hardware_pushing_service);
+        switch_delta.switch_lock = switch_guard_num_var;
 
-        // override internal flow table variable
-        InternalFlowTableList internal_ftable_list = null;
-        if (to_handle_pushing_changes == null)
-        {
-            internal_ftable_list =
-                new InternalFlowTableList(
-                    hardware_pushing_service,ralph_globals);
-        }
-        else
-        {
-            internal_ftable_list =
-                new InternalFlowTableList(
-                    to_handle_pushing_changes,hardware_pushing_service,
-                    ralph_globals);
-        }
-        
-        to_return.ftable =
-            new AtomicListVariable<_InternalFlowTableEntry,_InternalFlowTableEntry>(
-                false,internal_ftable_list,
-                FTable.STRUCT_LOCKED_MAP_WRAPPER__FlowTableEntry,
-                ralph_globals);
-        
-        // produce and overwrite a switch id associated with this switch
-        to_return.switch_id =
-            new NonAtomicTextVariable(false,new_switch_id,ralph_globals);
+        // Create the new switch and return it
+        PronghornInternalSwitch internal_switch =
+            new PronghornInternalSwitch(
+                ralph_globals,new_switch_id,available_capacity,switch_delta);
 
-        // set available capacity
-        to_return.available_capacity =
-            new AtomicNumberVariable(false,available_capacity,ralph_globals);
-        
-        return to_return;
+        return internal_switch;
     }
 
+    
     public class PronghornInternalSwitch extends _InternalSwitch
     {
         public String ralph_internal_switch_id;
         public PronghornInternalSwitch(
-            String _ralph_internal_switch_id,RalphGlobals ralph_globals)
+            RalphGlobals ralph_globals,String _ralph_internal_switch_id,
+            double _available_capacity,
+            _InternalSwitchDelta internal_switch_delta)
         {
             super(ralph_globals);
             ralph_internal_switch_id = _ralph_internal_switch_id;
+            delta = new SwitchDelta (
+                false,internal_switch_delta,ralph_globals);
+            switch_id = new NonAtomicTextVariable(
+                false,_ralph_internal_switch_id,ralph_globals);
+            available_capacity =
+                new AtomicNumberVariable(false,_available_capacity,ralph_globals);
         }
     }
 }

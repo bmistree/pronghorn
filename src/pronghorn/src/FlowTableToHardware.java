@@ -2,6 +2,8 @@ package pronghorn;
 
 import RalphDataWrappers.ListTypeDataWrapper;
 import pronghorn.FTable._InternalFlowTableEntry;
+import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
+
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.Condition;
@@ -14,14 +16,14 @@ import java.util.concurrent.TimeUnit;
  */
 public class FlowTableToHardware
 {
-    public boolean apply_changes_to_hardware(
+    protected boolean apply_changes_to_hardware(
         ListTypeDataWrapper<
-            _InternalFlowTableEntry,_InternalFlowTableEntry> dirty)
+            _InternalFlowTableDelta,_InternalFlowTableDelta> dirty)
     {
         return true;
     }
-    public void undo_dirty_changes_to_hardware(
-        ListTypeDataWrapper<_InternalFlowTableEntry,_InternalFlowTableEntry>
+    protected void undo_dirty_changes_to_hardware(
+        ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>
         to_undo)
     { }
 
@@ -32,12 +34,12 @@ public class FlowTableToHardware
             new ApplyToHardwareFuture();
         private FlowTableToHardware rtable_to_hardware = null;
         private
-            ListTypeDataWrapper<_InternalFlowTableEntry,_InternalFlowTableEntry>
+            ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>
             to_apply = null;
         
         public WrapApplyToHardware(
             FlowTableToHardware _rtable_to_hardware,
-            ListTypeDataWrapper<_InternalFlowTableEntry,_InternalFlowTableEntry> _to_apply)
+            ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta> _to_apply)
         {
             rtable_to_hardware = _rtable_to_hardware;
             to_apply = _to_apply;
@@ -125,8 +127,6 @@ public class FlowTableToHardware
             return to_return;
         }
     }
-    
-    
 }
 
 

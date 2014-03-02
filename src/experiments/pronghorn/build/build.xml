@@ -131,8 +131,8 @@
       depends="init,compile_libs,single_controller_latency,
                single_controller_throughput,
                single_controller_variable_contention_throughput,
-               read_only,multi_controller_latency,multi_controller_error,
-               multi_controller_throughput,ordering,fairness,error"
+               read_only,multi_controller_latency,
+               multi_controller_throughput,ordering,fairness"
       description="create jars for each type of experiment">
   </target>
 
@@ -291,35 +291,6 @@
   </target>
 
 
-  <!-- Ant for running multi controller error-->
-  <property
-      name="multi_controller_error_jar"
-      value="multi_controller_error.jar"/>
-  <target
-      name="multi_controller_error"
-      depends="compile_libs,compile_experiments"
-      description="Run multi controller error">
-    <jar destfile="${multi_controller_error_jar}" filesetmanifest="mergewithoutmain">
-      <manifest>
-        <attribute name="Main-Class" value="${experiments_package}.MultiControllerError"/>
-        <attribute name="Class-Path"
-                   value="${single_host_build_classes_dir}:
-                          ${lib_class_path}:
-                          ${proto_class_path}:
-                          ${pronghorn_libs_class_path}:
-                          ${experiments_build_classes_dir}:
-                          ${floodlight_class_path}"/>
-      </manifest>
-      <fileset dir="${single_host_build_classes_dir}"/>
-      <fileset dir="${lib_class_path}"/>
-      <fileset dir="${pronghorn_libs_class_path}"/>
-      <fileset dir="${experiments_build_classes_dir}"/>
-      <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
-      <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
-    </jar>
-  </target>
-
-
   <!--
       Ant for running test for throughput test with fine grained
       locking and no contention on multiple controllers
@@ -416,34 +387,6 @@
     </jar>
   </target>
 
-
-  <!-- Testing error on a single controller -->
-  <property
-      name="error_jar"
-      value="error.jar"/>
-  <target
-      name="error"
-      depends="compile_libs,compile_experiments"
-      description="">
-    <jar destfile="${error_jar}" filesetmanifest="mergewithoutmain">
-      <manifest>
-        <attribute name="Main-Class" value="${experiments_package}.SingleControllerError"/>
-        <attribute name="Class-Path"
-                   value="${single_host_build_classes_dir}:
-                          ${lib_class_path}:
-                          ${proto_class_path}:
-                          ${pronghorn_libs_class_path}:
-                          ${experiments_build_classes_dir}:
-                          ${floodlight_class_path}"/>
-      </manifest>
-      <fileset dir="${single_host_build_classes_dir}"/>
-      <fileset dir="${lib_class_path}"/>
-      <fileset dir="${pronghorn_libs_class_path}"/>
-      <fileset dir="${experiments_build_classes_dir}"/>
-      <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
-      <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
-    </jar>
-  </target>
 
 
   

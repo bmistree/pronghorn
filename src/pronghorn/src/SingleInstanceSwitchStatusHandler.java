@@ -186,7 +186,7 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
 
         pronghorn_to_floodlight_ids.remove(pronghorn_switch_id);
         try {
-            prong.switch_failure(pronghorn_switch_id);
+            prong.remove_switch(pronghorn_switch_id);
         } catch(Exception _ex)
         {
             _ex.printStackTrace();

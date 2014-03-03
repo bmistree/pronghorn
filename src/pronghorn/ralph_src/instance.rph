@@ -46,4 +46,11 @@ Service Instance
         app.init(self);
         app.run();
     }
+
+    process_port_updates(List(element: Struct Port) port_updates)
+    {
+        // FIXME: Should fill in stub
+        print ('Warn: stub method process port updates called on instance.');
+    }
+    
 }

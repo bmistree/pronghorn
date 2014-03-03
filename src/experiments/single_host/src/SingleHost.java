@@ -1,6 +1,6 @@
 package single_host;
 
-import single_host.JavaPronghornInstance.PronghornInstance;
+import pronghorn.InstanceJava.Instance;
 import RalphConnObj.SingleSideConnection;
 import pronghorn.FloodlightFlowTableToHardware;
 import ralph.RalphGlobals;
@@ -10,10 +10,10 @@ public class SingleHost
 {
     public static void main (String[] args)
     {
-        PronghornInstance prong = null;
+        Instance prong = null;
         try
         {
-            prong = new PronghornInstance(
+            prong = new Instance(
                 new RalphGlobals(),new SingleSideConnection());
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");

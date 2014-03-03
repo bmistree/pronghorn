@@ -4,7 +4,7 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import single_host.JavaPronghornInstance.PronghornInstance;
+import pronghorn.InstanceJava.Instance;
 import pronghorn.SwitchFactory;
 import pronghorn.ISwitchStatusHandler;
 import pronghorn.FlowTableToHardware;
@@ -33,7 +33,7 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
     protected static final Logger log =
         LoggerFactory.getLogger(SingleHostSwitchStatusHandler.class);
     
-    private PronghornInstance prong;
+    private Instance prong;
     private SwitchFactory switch_factory;
     private final static String UNIQUE_SWITCH_FACTORY_PREFIX =
         "something_unique";
@@ -54,7 +54,7 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
     
     public SingleHostSwitchStatusHandler(
         ShimInterface shim,
-        PronghornInstance prong,
+        Instance prong,
         FlowTableToHardwareFactory rtable_to_hardware_factory)
     {
         this.shim = shim;

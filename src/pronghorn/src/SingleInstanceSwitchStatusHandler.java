@@ -1,4 +1,4 @@
-package single_host;
+package pronghorn;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -28,10 +28,10 @@ import org.openflow.util.HexString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
+public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
 {
     protected static final Logger log =
-        LoggerFactory.getLogger(SingleHostSwitchStatusHandler.class);
+        LoggerFactory.getLogger(SingleInstanceSwitchStatusHandler.class);
     
     private Instance prong;
     private SwitchFactory switch_factory;
@@ -52,7 +52,7 @@ public class SingleHostSwitchStatusHandler implements ISwitchStatusHandler
     private ShimInterface shim = null;
     
     
-    public SingleHostSwitchStatusHandler(
+    public SingleInstanceSwitchStatusHandler(
         ShimInterface shim,
         Instance prong,
         FlowTableToHardwareFactory rtable_to_hardware_factory)

@@ -1,4 +1,4 @@
-package single_host;
+package pronghorn;
 
 import net.floodlightcontroller.pronghornmodule.IPronghornBarrierCallback;
 

@@ -1,4 +1,4 @@
-package single_host;
+package pronghorn;
 
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.Set;
@@ -24,11 +24,11 @@ import org.slf4j.LoggerFactory;
 /**
    Serves as intermediate layer between Ralph and Floodlight
  */
-public class SingleHostFloodlightShim
+public class SingleInstanceFloodlightShim
     implements ShimInterface
 {
     protected static final Logger log =
-        LoggerFactory.getLogger(SingleHostFloodlightShim.class);
+        LoggerFactory.getLogger(SingleInstanceFloodlightShim.class);
     
     private IPronghornService pronghorn_floodlight = null;
 
@@ -38,7 +38,7 @@ public class SingleHostFloodlightShim
      */
     private ReentrantLock handler_lock = new ReentrantLock();
     
-    public SingleHostFloodlightShim()
+    public SingleInstanceFloodlightShim()
     {
         try
         {

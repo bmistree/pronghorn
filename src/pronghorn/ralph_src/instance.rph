@@ -1,19 +1,13 @@
 #include 'wrapped_switch.rph'
 alias Service WrappedSwitch as 'pronghorn.WrappedSwitchJava.WrappedSwitch';
+alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
 
 #include 'switch.rph'
 alias Struct Switch as 'pronghorn.SwitchJava.Switch';
 
-#include 'flow_table_entry.rph'
 alias Service FlowTableUtil as 'pronghorn.FTable.FlowTableUtil';
-
-#include 'iapplication.rph'
 alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
 
-Struct StructWrappedSwitch
-{
-    Service WrappedSwitch wrapped_switch = null;
-}
 
 Service Instance
 {
@@ -44,7 +38,7 @@ Service Instance
 
     add_application(Interface IApplication app)
     {
-        app.init(self);
+        app.init(self,switch_map);
         app.run();
     }
 

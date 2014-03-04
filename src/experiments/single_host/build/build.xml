@@ -110,6 +110,16 @@
       <arg line="-c JavaPronghornConnection"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${single_host_ralph_src_dir}/off_on_application.rph"/>
+      <arg line="-o ${single_host_ralph_emitted_dir}/JavaOffOnApplication.java"/>
+      <arg line="-p ${single_host_package}"/>
+      <arg line="-c JavaOffOnApplication"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+
     
   </target>
 

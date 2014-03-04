@@ -1,10 +1,17 @@
 #include 'switch.rph'
+alias Struct Switch as 'pronghorn.SwitchJava.Switch';
 #include 'switch_delta.rph'
 #include 'flow_table_entry.rph'
-alias Struct Switch as 'pronghorn.SwitchJava.Switch';
 alias Struct FlowTableDelta as 'pronghorn.SwitchDeltaJava.FlowTableDelta';
 alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
+
 alias Service FlowTableUtil as 'pronghorn.FTable.FlowTableUtil';
+alias Service WrappedSwitch as 'pronghorn.WrappedSwitchJava.WrappedSwitch';
+
+Struct StructWrappedSwitch
+{
+    Service WrappedSwitch wrapped_switch = null;
+}
 
 
 Service WrappedSwitch

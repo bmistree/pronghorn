@@ -1,7 +1,11 @@
 alias Service Instance as 'pronghorn.InstanceJava.Instance';
 
+#include 'wrapped_switch.rph'
+alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
+
 Interface IApplication
 {
-    init(Service Instance inst_);
+    init(Service Instance inst_,
+        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map);
     run();
 }

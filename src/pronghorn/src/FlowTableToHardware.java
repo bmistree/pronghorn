@@ -14,48 +14,53 @@ import java.util.concurrent.TimeUnit;
    it is asked to push changes to hardware or undo pushed changes
    to hardware.
  */
-public class FlowTableToHardware
+public abstract class FlowTableToHardware
 {
-    protected boolean apply_changes_to_hardware(
+    protected abstract boolean apply_changes_to_hardware(
         ListTypeDataWrapper<
-            _InternalFlowTableDelta,_InternalFlowTableDelta> dirty)
-    {
-        return true;
-    }
-    protected void undo_dirty_changes_to_hardware(
+        _InternalFlowTableDelta,_InternalFlowTableDelta> dirty);
+    protected abstract void undo_dirty_changes_to_hardware(
         ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>
-        to_undo)
-    { }
+        to_undo);
 
 
     public static class WrapApplyToHardware implements Runnable
     {
-        public ApplyToHardwareFuture to_notify_when_complete =
+        public final ApplyToHardwareFuture to_notify_when_complete =
             new ApplyToHardwareFuture();
-        private FlowTableToHardware rtable_to_hardware = null;
+        private FlowTableToHardware ftable_to_hardware = null;
         private
             ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>
             to_apply = null;
+        private final boolean undo_changes;
         
         public WrapApplyToHardware(
-            FlowTableToHardware _rtable_to_hardware,
-            ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta> _to_apply)
+            FlowTableToHardware _ftable_to_hardware,
+            ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta> _to_apply,
+            boolean _undo_changes)
         {
-            rtable_to_hardware = _rtable_to_hardware;
+            ftable_to_hardware = _ftable_to_hardware;
             to_apply = _to_apply;
+            undo_changes = _undo_changes;
         }
 
         @Override
         public void run()
         {
-            boolean application_successful =
-                rtable_to_hardware.apply_changes_to_hardware(to_apply);
+            boolean application_successful = true;
+            if (undo_changes)
+                ftable_to_hardware.undo_dirty_changes_to_hardware(to_apply);
+            else
+            {
+                application_successful =
+                    ftable_to_hardware.apply_changes_to_hardware(to_apply);
+            }
             to_notify_when_complete.set(application_successful);
         }
     }
 
 
-    private static class ApplyToHardwareFuture implements Future<Boolean>
+    public static class ApplyToHardwareFuture implements Future<Boolean>
     {
         private final ReentrantLock rlock = new ReentrantLock();
         private final Condition cond = rlock.newCondition();

@@ -97,9 +97,7 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
             try
             {
                 flow_table_delta = (_InternalFlowTableDelta) (ro.get_val(null));
-                entry =
-                    (_InternalFlowTableEntry)
-                    (flow_table_delta.entry.get_val(null));
+                entry = flow_table_delta.entry.dirty_val.val;
             }
             catch (Exception ex)
             {
@@ -109,7 +107,8 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
                     ex.toString());
                 assert(false);
             }
-            
+
+            // non tvar, therefore has different val.val access pattern.
             boolean insertion =
                 flow_table_delta.inserted.val.val.booleanValue();
             String src_ip = entry.src_ip.dirty_val.val;

@@ -13,7 +13,6 @@ Service OffOnApplication implements Interface IApplication
 {
     Service Instance inst = null;
     TVar TrueFalse installed = False;
-    TVar TrueFalse blocking_all = False;
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
     
     // override from IApplication interface
@@ -30,23 +29,35 @@ Service OffOnApplication implements Interface IApplication
         installed = True;
     }
 
-    change_switches()
+    block_traffic_all_switches()
     {
         atomically
         {
-            if (blocking_all)
+            // insert a rule to block all traffic on all ports
+            for (Text switch_id in switch_map)
             {
-                for (Text switch_id in switch_map)
-                {
-                    Struct StructWrappedSwitch sws = switch_map.get(switch_id);
+                Struct FlowTableEntry to_add;
+                to_add.src_ip = '18.18.18.18';
+                to_add.dst_ip = '18.18.18.19';
+                // drop all packets
+                to_add.action = '';
 
-                    Number switch_ftab_size = sws.wrapped_switch.ftable_size();
-                    print ('\nSize of ftable: ');
-                    print (switch_ftab_size);
-                    print ('\n');
-                }
+                Struct StructWrappedSwitch sws = switch_map.get(switch_id);
+                sws.wrapped_switch.add_entry(to_add);
             }
-            blocking_all = not blocking_all;
+        }
+    }
+
+    remove_first_entry_all_switches()
+    {
+        atomically
+        {
+            // remove the rule to block traffic on all ports.
+            for (Text switch_id in switch_map)
+            {
+                Struct StructWrappedSwitch sws = switch_map.get(switch_id);
+                sws.wrapped_switch.remove_entry(0);
+            }
         }
     }
 }

@@ -46,7 +46,7 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
     {
         if (to_handle_pushing_changes == null)
             return super.internal_first_phase_commit(active_event);
-
+        
         // FIXME: How to reset changes on SwitchDelta to empty
         // list.
 
@@ -54,11 +54,9 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         // that will only receive changes on PronghornSwitchGuard
         // if no other event is writing to
         ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>
-            ltdw =
-            (ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>)
-            switch_delta.ft_deltas.dirty_val.val.dirty_val;
-
-
+            ltdw = (ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>)
+            switch_delta.ft_deltas.val.val.dirty_val;
+        
         WrapApplyToHardware to_apply_to_hardware =
             new WrapApplyToHardware(to_handle_pushing_changes, ltdw);
 

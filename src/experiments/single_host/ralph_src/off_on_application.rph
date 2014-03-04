@@ -56,7 +56,8 @@ Service OffOnApplication implements Interface IApplication
             for (Text switch_id in switch_map)
             {
                 Struct StructWrappedSwitch sws = switch_map.get(switch_id);
-                sws.wrapped_switch.remove_entry(0);
+                if (sws.wrapped_switch.ftable_size() != 0)
+                    sws.wrapped_switch.remove_entry(0);
             }
         }
     }

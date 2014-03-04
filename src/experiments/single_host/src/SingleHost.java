@@ -2,49 +2,83 @@ package single_host;
 
 import pronghorn.InstanceJava.Instance;
 import RalphConnObj.SingleSideConnection;
+import pronghorn.SingleInstanceFloodlightShim;
+import pronghorn.SingleInstanceSwitchStatusHandler;
 import pronghorn.FloodlightFlowTableToHardware;
 import ralph.RalphGlobals;
 import java.lang.Thread;
+import single_host.JavaOffOnApplication.OffOnApplication;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 
 public class SingleHost
 {
+    protected static final Logger log =
+        LoggerFactory.getLogger(SingleHost.class);
+
+    
     public static void main (String[] args)
     {
         Instance prong = null;
+        OffOnApplication app = null;
         try
         {
+            RalphGlobals ralph_globals = new RalphGlobals();
             prong = new Instance(
-                new RalphGlobals(),new SingleSideConnection());
-        } catch (Exception _ex) {
-            System.out.println("\n\nERROR CONNECTING\n\n");
-            return;
+                ralph_globals,new SingleSideConnection());
+
+            app = new OffOnApplication(
+                ralph_globals,new SingleSideConnection());
+        }
+        catch (Exception _ex)
+        {
+            log.error(
+                "\nUnexpected exception when connecting \n",
+                _ex.toString());
+            assert(false);
         }
 
-        SingleHostFloodlightShim shim = new SingleHostFloodlightShim();
-        SingleHostSwitchStatusHandler switch_status_handler =
-            new SingleHostSwitchStatusHandler(
+        SingleInstanceFloodlightShim shim = new SingleInstanceFloodlightShim();
+        SingleInstanceSwitchStatusHandler switch_status_handler =
+            new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);
         boolean block_traffic = true;
-        while (true)
+
+        try
         {
-            try{
+            prong.add_application(app);
+        }
+        catch (Exception ex)
+        {
+            log.error(
+                "\nUnexpected exception when adding application\n",
+                ex.toString());
+            assert(false);
+        }
+
+        
+        while (true)
+        {            
+            try
+            {
                 Thread.sleep(3000);
-            } catch(InterruptedException ex)
+            }
+            catch(InterruptedException ex)
             {
                 break;
             }
-            try {
-                Double num_switches = prong.num_switches();
-                System.out.println("Num switches: " + num_switches.toString());
-
+            try
+            {
                 // cycle between allowing traffic between 10.0.0.1 and 10.0.0.2
                 // for all switches in system and blocking it
                 if (block_traffic)
-                    prong.block_traffic_all_switches("10.0.0.1","10.0.0.2");
+                    app.block_traffic_all_switches();
                 else
-                    prong.remove_first_entry_all_switches();
+                    app.remove_first_entry_all_switches();
 
                 System.out.println("Blocking traffic: " + block_traffic + "\n");
                 block_traffic = ! block_traffic;

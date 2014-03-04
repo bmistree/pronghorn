@@ -7,7 +7,8 @@ alias Struct Switch as 'pronghorn.SwitchJava.Switch';
 #include 'flow_table_entry.rph'
 alias Service FlowTableUtil as 'pronghorn.FTable.FlowTableUtil';
 
-alias Service IApplication as 'pronghorn.IApplicationJava.IApplication';
+#include 'iapplication.rph'
+alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
 
 Struct StructWrappedSwitch
 {
@@ -41,7 +42,7 @@ Service Instance
         }
     }
 
-    add_application(Service IApplication app)
+    add_application(Interface IApplication app)
     {
         app.init(self);
         app.run();

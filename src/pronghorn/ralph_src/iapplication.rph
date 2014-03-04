@@ -1,11 +1,7 @@
-
 alias Service Instance as 'pronghorn.InstanceJava.Instance';
 
-Service IApplication
+Interface IApplication
 {
-    init(Service Instance inst_)
-    {}
-
-    run()
-    {}
+    init(Service Instance inst_);
+    run();
 }

@@ -2,7 +2,10 @@ package experiments;
 
 import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
-import experiments.JavaPronghornInstance.PronghornInstance;
+
+import pronghorn.InstanceJava.Instance;
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.OffOnApplicationJava.OffOnApplication;
 import experiments.JavaPronghornConnection.PronghornConnection;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
@@ -31,7 +34,9 @@ public class MultiControllerLatency
     public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
 
     
-    public static PronghornInstance prong = null;
+    public static Instance prong = null;
+    public static OffOnApplication off_on_app = null;
+    public static GetNumberSwitches num_switches_app = null;    
     
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -67,10 +72,20 @@ public class MultiControllerLatency
 
         
         /* Start up pronghorn */
-        try {
-            prong = new PronghornInstance(
+        try
+        {
+            prong = new Instance(
                 ralph_globals,new SingleSideConnection());
-        } catch (Exception _ex) {
+            off_on_app = new OffOnApplication(
+                ralph_globals,new SingleSideConnection());
+            num_switches_app = new GetNumberSwitches(
+                ralph_globals,new SingleSideConnection());
+            
+            prong.add_application(off_on_app);
+            prong.add_application(num_switches_app);
+        }
+        catch (Exception _ex)
+        {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
         }
@@ -99,20 +114,23 @@ public class MultiControllerLatency
                 System.out.println("\nConnecting to " + hpp.host + "  " + hpp.port);
                 connection = (PronghornConnection)Ralph.tcp_connect(
                     new DummyConnectionConstructor(), hpp.host, hpp.port,ralph_globals);
-                connection.set_service(prong);
-                prong.add_child_connection(connection);
+
+                // FIXME: When create a connection app, allow to add connection.
+                System.out.println("\n\nWARNING: should be adding connection\n\n");
+                assert(false);
+                // connection.set_service(prong);
+                // prong.add_child_connection(connection);
             } catch(Exception e) {
                 e.printStackTrace();
                 assert(false);
             }
         }
-
         
         // wait for first switch to connect
-        Util.wait_on_switches(prong);
+        Util.wait_on_switches(num_switches_app);
         // what's the first switch's id.
-        String switch_id = Util.first_connected_switch_id(prong);
-
+        String switch_id = Util.first_connected_switch_id(num_switches_app);
+        
         if (num_ops_to_run != 0)
         {
             List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
@@ -120,7 +138,7 @@ public class MultiControllerLatency
             {
                 all_threads.add(
                     new LatencyThread(
-                        prong,switch_id,num_ops_to_run,false,true));
+                        off_on_app,switch_id,num_ops_to_run,false,true));
             }
 
             for (LatencyThread lt : all_threads)
@@ -196,8 +214,12 @@ public class MultiControllerLatency
             System.out.println("\nBuilt a connection\n\n");
             try {
                 to_return = new PronghornConnection(ralph_globals,conn_obj);
-                to_return.set_service(prong);
-                // prong.add_child_connection(to_return);
+
+                // FIXME: actually set service for connection
+                System.out.println(
+                    "\n\nFIXME: Should actually set a connection for instance\n\n");
+                assert(false);
+                // to_return.set_service(prong);
             } catch (Exception _ex) {
                 _ex.printStackTrace();
                 assert(false);

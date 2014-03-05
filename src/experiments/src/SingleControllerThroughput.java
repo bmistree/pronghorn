@@ -2,7 +2,9 @@ package experiments;
 
 import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
-import experiments.JavaPronghornInstance.PronghornInstance;
+import pronghorn.InstanceJava.Instance;
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.OffOnApplicationJava.OffOnApplication;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -53,11 +55,23 @@ public class SingleControllerThroughput
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
         /* Start up pronghorn */
-        PronghornInstance prong = null;
+        Instance prong = null;
+        GetNumberSwitches num_switches_app = null;
+        OffOnApplication off_on_app = null;
+        try
+        {
+            RalphGlobals ralph_globals = new RalphGlobals();
+            prong = new Instance(
+                ralph_globals,new SingleSideConnection());
 
-        try {
-            prong = new PronghornInstance(
-                new RalphGlobals(),new SingleSideConnection());
+            num_switches_app = new GetNumberSwitches(
+                ralph_globals,new SingleSideConnection());
+            off_on_app = new OffOnApplication(
+                ralph_globals,new SingleSideConnection());
+            
+            prong.add_application(num_switches_app);
+            prong.add_application(off_on_app);
+            
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
@@ -82,9 +96,9 @@ public class SingleControllerThroughput
         }
 
         // wait until a few switches connect
-        Util.wait_on_switches(prong);
+        Util.wait_on_switches(num_switches_app);
         
-        List<String> switch_ids = Util.get_switch_id_list(prong);
+        List<String> switch_ids = Util.get_switch_id_list(num_switches_app);
         int num_switches = switch_ids.size();
         if (num_switches == 0)
         {
@@ -107,7 +121,7 @@ public class SingleControllerThroughput
             {
                 ThroughputThread t =
                     new ThroughputThread(
-                        switch_id, prong, num_ops_to_run, results,coarse_locking);
+                        switch_id, off_on_app, num_ops_to_run, results,coarse_locking);
                 
                 t.start();
                 threads.add(t);
@@ -183,18 +197,18 @@ public class SingleControllerThroughput
         
         String switch_id;
         int num_ops_to_run;
-        PronghornInstance prong;
+        OffOnApplication off_on_app;
         ConcurrentHashMap<String,List<Long>> results;
         boolean coarse_locking;
         String result_id = null;
         
         public ThroughputThread(
-            String switch_id, PronghornInstance prong, int num_ops_to_run,
+            String switch_id, OffOnApplication off_on_app, int num_ops_to_run,
             ConcurrentHashMap<String,List<Long>> results, boolean coarse_locking)
         {
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
-            this.prong = prong;
+            this.off_on_app = off_on_app;
             this.results = results;
             this.coarse_locking = coarse_locking;
             this.result_id = switch_id + atom_int.getAndIncrement();
@@ -204,12 +218,16 @@ public class SingleControllerThroughput
             ArrayList<Long> completion_times = new ArrayList<Long>();
             for (int i = 0; i < num_ops_to_run; ++i)
             {
-                try {
+                try
+                {
                     if (coarse_locking)
-                        prong.single_op_coarse(switch_id);
+                        off_on_app.single_op_coarse(switch_id);
                     else
-                        prong.single_op(switch_id);
-                } catch (Exception _ex) {
+                        off_on_app.single_op(switch_id);
+
+                }
+                catch (Exception _ex)
+                {
                     _ex.printStackTrace();
                     assert(false);
                 }

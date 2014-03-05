@@ -4,7 +4,6 @@ alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
 #include 'instance.rph'
 alias Service Instance as 'pronghorn.InstanceJava.Instance';
 
-
 #include 'wrapped_switch.rph'
 alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
 
@@ -14,6 +13,7 @@ Service OffOnApplication implements Interface IApplication
     Service Instance inst = null;
     TVar TrueFalse installed = False;
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+    TVar Number coarse_lock_simulator = 0;
     
     // override from IApplication interface
     init(Service Instance inst_,
@@ -29,6 +29,53 @@ Service OffOnApplication implements Interface IApplication
         installed = True;
     }
 
+    // For switch_id, either append an entry to the switch's flow table (if none
+    // exists) or remove an entry if there already is one.
+    single_op(Text switch_id)
+    {
+        atomically
+        {
+            Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
+            if (target_switch.wrapped_switch.ftable_size() == 0)
+                add_entry_switch(switch_id);
+            else
+                remove_entry_switch(switch_id);
+        }
+    }
+
+    remove_entry_switch(Text switch_id)
+    {
+        atomically
+        {
+            Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
+            target_switch.wrapped_switch.remove_entry(0);
+        }
+    }
+    
+    add_entry_switch(Text switch_id)
+    {
+        atomically
+        {
+            Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
+            Struct FlowTableEntry to_add;
+            to_add.src_ip = '18.18.18.18';
+            to_add.dst_ip = '18.18.18.19';
+            // drop all packets
+            to_add.action = '';
+            target_switch.wrapped_switch.add_entry(to_add);            
+        }
+    }
+    
+
+    single_op_coarse(Text switch_id) 
+    {
+        atomically
+        {
+            coarse_lock_simulator = 3;
+            single_op(switch_id);
+        }
+    }
+    
     block_traffic_all_switches()
     {
         atomically
@@ -60,5 +107,32 @@ Service OffOnApplication implements Interface IApplication
                     sws.wrapped_switch.remove_entry(0);
             }
         }
+    }
+    
+
+    read_first_instance_flow_table()
+    {
+        print ('\nStub method: must finish read_first_instance_flow_table \n');
+    }
+
+    single_op_and_partner()
+    {
+        print (
+            '\nStub method: must finish adding single_op_and_partner ... \n');
+    }
+    
+    single_op_and_ask_children_for_single_op()
+    {
+        print ('\nStub method: must finish adding single_op_and_ask ... \n');
+    }
+
+    single_op_and_ask_children_for_single_op_switch_id(Text switch_id)
+    {
+        print ('\nStub method: must finish  ... \n');
+    }
+    
+    logical_clear_switch_do_not_flush_clear_to_hardware()
+    {
+        print ('\nStub method: must finish adding logical_clear ... \n');
     }
 }

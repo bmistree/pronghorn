@@ -2,7 +2,9 @@ package experiments;
 
 import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
-import experiments.JavaPronghornInstance.PronghornInstance;
+import pronghorn.InstanceJava.Instance;
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.OffOnApplicationJava.OffOnApplication;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -69,12 +71,24 @@ public class Ordering
             "\nEnsure ordering " + Boolean.toString(ensure_ordering));
         
         /* Start up pronghorn */
-        PronghornInstance prong = null;
-
-        try {
-            prong = new PronghornInstance(
-                new RalphGlobals(),new SingleSideConnection());
-        } catch (Exception _ex) {
+        Instance prong = null;
+        GetNumberSwitches num_switches_app = null;
+        OffOnApplication off_on_app = null;
+        try
+        {
+            RalphGlobals ralph_globals = new RalphGlobals();
+            prong = new Instance(
+                ralph_globals,new SingleSideConnection());
+            num_switches_app = new GetNumberSwitches(
+                ralph_globals,new SingleSideConnection());
+            off_on_app = new OffOnApplication(
+                ralph_globals,new SingleSideConnection());
+            
+            prong.add_application(num_switches_app);
+            prong.add_application(off_on_app);
+        }
+        catch (Exception _ex)
+        {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
         }
@@ -101,7 +115,7 @@ public class Ordering
         String switch_id = null;
         try {
             NonAtomicInternalList<String,String> switch_list =
-                prong.list_switch_ids();
+                num_switches_app.switch_id_list();
 
             if (switch_list.get_len(null) == 0)
             {
@@ -123,7 +137,7 @@ public class Ordering
         List<Boolean> results = new ArrayList<Boolean>();
         for (int i =0; i < num_times_to_run; ++i)
         {
-            boolean result = run_once(prong,switch_id,shim,allow_reordering);
+            boolean result = run_once(off_on_app,switch_id,shim,allow_reordering);
             results.add(result);
         }
         
@@ -179,7 +193,7 @@ public class Ordering
        order).  False otherwise.
      */
     private static boolean run_once(
-        PronghornInstance prong, String switch_id,
+        OffOnApplication off_on_app, String switch_id,
         OrderingShim shim,boolean allow_reordering)
     {
         // Run operation a random number of times: the below should
@@ -189,7 +203,7 @@ public class Ordering
 
         shim.force_clear();
         try {
-            prong.logical_clear_switch_do_not_flush_clear_to_hardware();
+            off_on_app.logical_clear_switch_do_not_flush_clear_to_hardware();
         } catch (Exception _ex) {
             _ex.printStackTrace();
             assert(false);
@@ -201,10 +215,10 @@ public class Ordering
         } catch (Exception e) {
             e.printStackTrace();
         }
-        
+
         try{
             for (int i = 0; i < number_times_to_run; ++i)
-                prong.single_op(switch_id);
+                off_on_app.single_op(switch_id);
         }
         catch (Exception _ex)
         {

@@ -2,7 +2,11 @@ package experiments;
 
 import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
-import experiments.JavaPronghornInstance.PronghornInstance;
+import experiments.OffOnApplicationJava.OffOnApplication;
+import pronghorn.InstanceJava.Instance;
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.OffOnApplicationJava.OffOnApplication;
+
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -54,8 +58,10 @@ public class Fairness
     private static final String HOST_NAME = "127.0.0.1";
     
     // pronghorn controllers on either side
-    private static PronghornInstance side_a = null;
-    private static PronghornInstance side_b = null;
+    private static Instance side_a = null;
+    private static OffOnApplication off_on_app_a = null;
+    private static Instance side_b = null;
+    private static OffOnApplication off_on_app_b = null;
 
     // Each controller tries to dump this much work into system when
     // it starts.  (Note: one controller is given preference and
@@ -107,8 +113,6 @@ public class Fairness
 
         
         /* Start up pronghorn */
-        PronghornInstance prong_a = null;
-        PronghornInstance prong_b = null;
 
         // listen for connections to side b on port TCP_LISTENING_PORT
         Ralph.tcp_accept(
@@ -124,11 +128,15 @@ public class Fairness
         }
 
         // try to connect to other side
-        try {
-            side_a = (PronghornInstance)Ralph.tcp_connect(
+        try
+        {
+            RalphGlobals a_globals = new RalphGlobals();
+            side_a = (Instance)Ralph.tcp_connect(
                 side_a_constructor, HOST_NAME, TCP_LISTENING_PORT,
-                new RalphGlobals());
-        } catch (IOException e) {
+                a_globals);
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
             assert(false);
         }
@@ -148,7 +156,7 @@ public class Fairness
         }
 
         // actually run all operations 
-        run_operations(side_a,side_b);
+        run_operations(off_on_app_a,off_on_app_b);
 
         write_results(result_filename);
         
@@ -175,10 +183,11 @@ public class Fairness
        ensure that side_a registers all of them.  Then dump NUM_EXTERNAL_CALLS
        onto side_b.
      */
-    public static void run_operations(PronghornInstance side_a, PronghornInstance side_b)
+    public static void run_operations(
+        OffOnApplication app_a, OffOnApplication app_b)
     {
-        EndpointTask task_a = new EndpointTask(side_a,ENDPOINT_A_IDENTIFIER);
-        EndpointTask task_b = new EndpointTask(side_b,ENDPOINT_B_IDENTIFIER);
+        EndpointTask task_a = new EndpointTask(app_a,ENDPOINT_A_IDENTIFIER);
+        EndpointTask task_b = new EndpointTask(app_b,ENDPOINT_B_IDENTIFIER);
 
         ExecutorService executor_a = create_executor();
         ExecutorService executor_b = create_executor();
@@ -197,13 +206,11 @@ public class Fairness
             assert(false);
             return;
         }
-            
         
         // put a bunch of tasks rooted at B into system
         for (int i = 0; i < NUM_EXTERNAL_CALLS; ++i)
             executor_b.execute(task_b);
         
-
         // join on executor services
         executor_a.shutdown();
         executor_b.shutdown();
@@ -223,19 +230,19 @@ public class Fairness
     
     private static class EndpointTask implements Runnable
     {
-        private PronghornInstance endpt = null;
+        private final OffOnApplication app;
         private String endpoint_id = null;
 
-        public EndpointTask(PronghornInstance _endpt, String _endpoint_id)
+        public EndpointTask(OffOnApplication _app, String _endpoint_id)
         {
-            endpt = _endpt;
+            app = _app;
             endpoint_id = _endpoint_id;
         }
 
         public void run ()
         {
             try {
-                endpt.single_op_and_partner();
+                app.single_op_and_partner();
                 tsafe_queue.add(endpoint_id + "|" + System.nanoTime());
             } catch(Exception ex) {
                 ex.printStackTrace();
@@ -281,7 +288,7 @@ public class Fairness
         public Endpoint construct(
             RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj)
         {
-            PronghornInstance to_return = null;
+            Instance to_return = null;
 
             RalphGlobals globals_to_use = globals;
             if (use_wound_wait)
@@ -289,15 +296,27 @@ public class Fairness
                 globals_to_use =
                     new RalphGlobals(DeadlockAvoidanceAlgorithm.WOUND_WAIT);
             }
-            
-            try {
-                to_return =
-                    new PronghornInstance(globals_to_use,conn_obj);
+
+            try
+            {
+                to_return = new Instance(globals_to_use,conn_obj);
                 if (for_side_a)
+                {
                     side_a = to_return;
+                    off_on_app_a = new OffOnApplication(
+                        globals_to_use,new SingleSideConnection());
+                    side_a.add_application(off_on_app_a);
+                }
                 else
+                {
                     side_b = to_return;
-            } catch (Exception _ex) {
+                    off_on_app_b = new OffOnApplication(
+                        globals_to_use,new SingleSideConnection());
+                    side_b.add_application(off_on_app_b);
+                }
+            }
+            catch (Exception _ex)
+            {
                 _ex.printStackTrace();
                 assert(false);
             }
@@ -306,7 +325,7 @@ public class Fairness
     }
     
     private static SingleInstanceFloodlightShim create_started_shim(
-        PronghornInstance prong)
+        Instance prong)
     {
         SingleInstanceFloodlightShim shim =
             new SingleInstanceFloodlightShim();

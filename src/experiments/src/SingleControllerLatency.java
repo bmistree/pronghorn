@@ -2,7 +2,10 @@ package experiments;
 
 import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
-import experiments.JavaPronghornInstance.PronghornInstance;
+import pronghorn.InstanceJava.Instance;
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.OffOnApplicationJava.OffOnApplication;
+
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -45,11 +48,21 @@ public class SingleControllerLatency
 
         
         /* Start up pronghorn */
-        PronghornInstance prong = null;
-
-        try {
-            prong = new PronghornInstance(
+        Instance prong = null;
+        GetNumberSwitches num_switches_app = null;
+        OffOnApplication off_on_app = null;
+        try
+        {
+            RalphGlobals ralph_globals = new RalphGlobals();
+            prong = new Instance(
                 new RalphGlobals(),new SingleSideConnection());
+            num_switches_app = new GetNumberSwitches(
+                ralph_globals,new SingleSideConnection());
+            off_on_app = new OffOnApplication(
+                ralph_globals,new SingleSideConnection());
+            
+            prong.add_application(num_switches_app);
+            prong.add_application(off_on_app);
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
@@ -66,16 +79,16 @@ public class SingleControllerLatency
         shim.start();
         
         // wait for first switch to connect
-        Util.wait_on_switches(prong);
+        Util.wait_on_switches(num_switches_app);
         // what's the first switch's id.
-        String switch_id = Util.first_connected_switch_id(prong);
+        String switch_id = Util.first_connected_switch_id(num_switches_app);
 
 
         List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
         for (int i = 0; i < num_threads; ++i)
         {
             all_threads.add(
-                new LatencyThread(prong,switch_id,num_ops_to_run));
+                new LatencyThread(off_on_app,switch_id,num_ops_to_run));
         }
 
         for (LatencyThread lt : all_threads)

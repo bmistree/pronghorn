@@ -7,7 +7,7 @@ import pronghorn.SingleInstanceSwitchStatusHandler;
 import pronghorn.FloodlightFlowTableToHardware;
 import ralph.RalphGlobals;
 import java.lang.Thread;
-import experiments.JavaOffOnApplication.OffOnApplication;
+import experiments.OffOnApplicationJava.OffOnApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

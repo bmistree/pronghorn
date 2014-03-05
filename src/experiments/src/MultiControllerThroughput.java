@@ -2,7 +2,9 @@ package experiments;
 
 import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
-import experiments.JavaPronghornInstance.PronghornInstance;
+import pronghorn.InstanceJava.Instance;
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.OffOnApplicationJava.OffOnApplication;
 import experiments.JavaPronghornConnection.PronghornConnection;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
@@ -37,11 +39,11 @@ public class MultiControllerThroughput
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
 
-    private static PronghornInstance prong = null;
-    
-
+    private static Instance prong = null;
+    private static OffOnApplication off_on_app = null;
+    private static GetNumberSwitches num_switches_app = null;    
     private static final RalphGlobals ralph_globals = new RalphGlobals();
-    
+
     
     public static void main (String[] args)
     {
@@ -72,8 +74,16 @@ public class MultiControllerThroughput
         
         /* Start up pronghorn */
         try {
-            prong = new PronghornInstance(
+            prong = new Instance(
                 ralph_globals, new SingleSideConnection());
+
+            off_on_app = new OffOnApplication(
+                ralph_globals,new SingleSideConnection());
+            num_switches_app = new GetNumberSwitches(
+                ralph_globals,new SingleSideConnection());
+            
+            prong.add_application(off_on_app);
+            prong.add_application(num_switches_app);
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
@@ -102,8 +112,12 @@ public class MultiControllerThroughput
                 System.out.println("\nConnecting to " + hpp.host + "  " + hpp.port);
                 connection = (PronghornConnection)Ralph.tcp_connect(
                     new DummyConnectionConstructor(), hpp.host, hpp.port,ralph_globals);
-                connection.set_service(prong);
-                prong.add_child_connection(connection);
+
+                // FIXME:
+                System.out.println("\nFIXME: Should actually be connecting services here");
+                assert(false);
+                // connection.set_service(prong);
+                // prong.add_child_connection(connection);
             } catch(Exception e) {
                 e.printStackTrace();
                 assert(false);
@@ -111,7 +125,7 @@ public class MultiControllerThroughput
         }
 
         /* wait a while to ensure that all switches are connected */
-        Util.wait_on_switches(prong);
+        Util.wait_on_switches(num_switches_app);
 
         /* Spawn thread per switch to operate on it */
         ArrayList<Thread> threads = new ArrayList<Thread>();
@@ -120,7 +134,8 @@ public class MultiControllerThroughput
             new ConcurrentHashMap<String,List<Long>>();
 
         // list of all switches in the system
-        List<String> switch_id_list = Util.get_switch_id_list (prong);
+        List<String> switch_id_list =
+            Util.get_switch_id_list (num_switches_app);
         int num_switches = switch_id_list.size();
         
         // generate throughput tasks for each switch
@@ -129,7 +144,7 @@ public class MultiControllerThroughput
         {
             ThroughputThread t =
                 new ThroughputThread(
-                    switch_id, prong, num_ops_to_run, results);
+                    switch_id, off_on_app, num_ops_to_run, results);
             
             t.start();
             threads.add(t);
@@ -200,17 +215,17 @@ public class MultiControllerThroughput
         
         String switch_id;
         int num_ops_to_run;
-        PronghornInstance prong;
+        private final OffOnApplication off_on_app;
         ConcurrentHashMap<String,List<Long>> results;
         String result_id = null;
         
         public ThroughputThread(
-            String switch_id, PronghornInstance prong, int num_ops_to_run,
+            String switch_id, OffOnApplication off_on_app, int num_ops_to_run,
             ConcurrentHashMap<String,List<Long>> results)
         {
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
-            this.prong = prong;
+            this.off_on_app = off_on_app;
             this.results = results;
             this.result_id = switch_id + atom_int.getAndIncrement();
     	}
@@ -220,7 +235,7 @@ public class MultiControllerThroughput
             for (int i = 0; i < num_ops_to_run; ++i)
             {
                 try {
-                    prong.single_op_and_ask_children_for_single_op_switch_id(switch_id);
+                    off_on_app.single_op_and_ask_children_for_single_op_switch_id(switch_id);
                 } catch (Exception _ex) {
                     _ex.printStackTrace();
                     assert(false);
@@ -275,8 +290,10 @@ public class MultiControllerThroughput
             System.out.println("\nBuilt a connection\n\n");
             try {
                 to_return = new PronghornConnection(ralph_globals,conn_obj);
-                to_return.set_service(prong);
-                // prong.add_child_connection(to_return);
+                // FIXME: When create a connection app, allow to add connection.
+                System.out.println("\n\nWARNING: should be adding connection\n\n");
+                assert(false);
+                // to_return.set_service(prong);
             } catch (Exception _ex) {
                 _ex.printStackTrace();
                 assert(false);

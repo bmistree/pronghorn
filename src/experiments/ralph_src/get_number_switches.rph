@@ -1,0 +1,41 @@
+#include 'iapplication.rph'
+alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
+
+#include 'instance.rph'
+alias Service Instance as 'pronghorn.InstanceJava.Instance';
+
+#include 'wrapped_switch.rph'
+alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
+
+Service GetNumberSwitches implements Interface IApplication
+{
+    Service Instance inst = null;
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+
+    init(Service Instance inst_,
+        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    {
+        inst = inst_;
+        switch_map = switch_map_;
+    }
+
+    // do nothing when first installed
+    run(){}
+
+    switch_id_list() returns List(element: Text)
+    {
+        List(element: Text) to_return;
+        atomically
+        {
+            to_return.clear();
+            for (Text switch_id in switch_map)
+                to_return.append(switch_id);
+        }
+        return to_return;
+    }
+
+    num_switches() returns Number
+    {
+        return switch_map.size();
+    }
+}

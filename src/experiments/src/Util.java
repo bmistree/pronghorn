@@ -13,7 +13,8 @@ import java.util.ArrayList;
 
 import ralph.NonAtomicInternalList;
 import experiments.JavaPronghornInstance.PronghornInstance;
-
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.OffOnApplicationJava.OffOnApplication;
 
 public class Util
 {
@@ -90,14 +91,14 @@ public class Util
         }
     }
 
-    public static void wait_on_switches(PronghornInstance prong)
+    public static void wait_on_switches(GetNumberSwitches num_switches_app)
     {
         Double num_switches = null;
         while (true)
         {
             try
             {
-                num_switches = prong.num_switches();
+                num_switches = num_switches_app.num_switches();
             }
             catch (Exception ex)
             {
@@ -132,14 +133,13 @@ public class Util
         }
     }
 
-    public static List<String> get_switch_id_list (PronghornInstance prong)
+    public static List<String> get_switch_id_list (GetNumberSwitches num_switches_app)
     {
         List<String> to_return = new ArrayList<String>();
-        
         try
         {
             NonAtomicInternalList<String,String> switch_list =
-                prong.list_switch_ids();
+                num_switches_app.switch_id_list();
 
             int num_switches = switch_list.get_len(null);
             if (num_switches == 0)
@@ -148,7 +148,6 @@ public class Util
                     "No switches attached to pronghorn: error");
                 assert(false);
             }
-
 
             for (int i = 0; i < num_switches; ++i)
             {
@@ -167,38 +166,38 @@ public class Util
         return to_return;
     }
 
-    public static String first_connected_switch_id (PronghornInstance prong)
+    public static String first_connected_switch_id (
+        GetNumberSwitches num_switches_app)
     {
-        return get_switch_id_list(prong).get(0);
+        return get_switch_id_list(num_switches_app).get(0);
     }
 
     
     public static class LatencyThread extends Thread
     {
         public List <Long> all_times = new ArrayList<Long>();
-
         
-        private PronghornInstance prong = null;
+        private OffOnApplication off_on_app = null;
         private String switch_id = null;
         private int num_ops_to_run = -1;
         private boolean read_only = false;
         private boolean distributed = false;
         
         public LatencyThread(
-            PronghornInstance prong, String switch_id, int num_ops_to_run,
-            boolean read_only)
+            OffOnApplication off_on_app, String switch_id,
+            int num_ops_to_run,  boolean read_only)
         {
-            this.prong = prong;
+            this.off_on_app = off_on_app;
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
             this.read_only = read_only;
         }
 
         public LatencyThread(
-            PronghornInstance prong, String switch_id, int num_ops_to_run,
+            OffOnApplication off_on_app, String switch_id, int num_ops_to_run,
             boolean read_only, boolean distributed)
         {
-            this.prong = prong;
+            this.off_on_app = off_on_app;
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
             this.read_only = read_only;
@@ -207,9 +206,9 @@ public class Util
         
         
         public LatencyThread(
-            PronghornInstance prong, String switch_id, int num_ops_to_run)
+            OffOnApplication off_on_app, String switch_id, int num_ops_to_run)
         {
-            this.prong = prong;
+            this.off_on_app = off_on_app;
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
         }
@@ -223,11 +222,11 @@ public class Util
                 try
                 {
                     if (read_only)
-                        prong.read_first_instance_flow_table();
+                        off_on_app.read_first_instance_flow_table();
                     else if (distributed)
-                        prong.single_op_and_ask_children_for_single_op();
+                        off_on_app.single_op_and_ask_children_for_single_op();
                     else
-                        prong.single_op(switch_id);
+                        off_on_app.single_op(switch_id);
                 }
                 catch (Exception _ex)
                 {

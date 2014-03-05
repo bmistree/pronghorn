@@ -124,12 +124,20 @@
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/off_on_application.rph"/>
-      <arg line="-o ${experiments_ralph_emitted_dir}/JavaOffOnApplication.java"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/OffOnApplicationJava.java"/>
       <arg line="-p ${experiments_package}"/>
-      <arg line="-c JavaOffOnApplication"/>
+      <arg line="-c OffOnApplicationJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/get_number_switches.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/GetNumberSwitchesJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c GetNumberSwitchesJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
     
   </target>
 
@@ -225,14 +233,12 @@
       <manifest>
         <attribute name="Main-Class" value="${experiments_package}.SingleControllerLatency"/>
         <attribute name="Class-Path"
-                   value="${single_host_build_classes_dir}:
-                          ${lib_class_path}:
+                   value="${lib_class_path}:
                           ${proto_class_path}:
                           ${pronghorn_libs_class_path}:
                           ${experiments_build_classes_dir}:
                           ${floodlight_class_path}"/>
       </manifest>
-      <fileset dir="${single_host_build_classes_dir}"/>
       <fileset dir="${lib_class_path}"/>
       <fileset dir="${pronghorn_libs_class_path}"/>
       <fileset dir="${experiments_build_classes_dir}"/>
@@ -258,14 +264,12 @@
         <manifest>
           <attribute name="Main-Class" value="${experiments_package}.SingleControllerThroughput"/>
           <attribute name="Class-Path"
-                     value="${single_host_build_classes_dir}:
-                            ${lib_class_path}:
+                     value="${lib_class_path}:
                             ${proto_class_path}:
                             ${pronghorn_libs_class_path}:
                             ${experiments_build_classes_dir}:
                             ${floodlight_class_path}"/>
         </manifest>
-        <fileset dir="${single_host_build_classes_dir}"/>
         <fileset dir="${lib_class_path}"/>
         <fileset dir="${pronghorn_libs_class_path}"/>
         <fileset dir="${experiments_build_classes_dir}"/>
@@ -286,14 +290,12 @@
         <manifest>
           <attribute name="Main-Class" value="${experiments_package}.SingleControllerVariableContentionAllSwitches"/>
           <attribute name="Class-Path"
-                     value="${single_host_build_classes_dir}:
-                            ${lib_class_path}:
+                     value="${lib_class_path}:
                             ${proto_class_path}:
                             ${pronghorn_libs_class_path}:
                             ${experiments_build_classes_dir}:
                             ${floodlight_class_path}"/>
         </manifest>
-        <fileset dir="${single_host_build_classes_dir}"/>
         <fileset dir="${lib_class_path}"/>
         <fileset dir="${pronghorn_libs_class_path}"/>
         <fileset dir="${experiments_build_classes_dir}"/>
@@ -319,14 +321,12 @@
       <manifest>
         <attribute name="Main-Class" value="${experiments_package}.ReadOnlyLatency"/>
         <attribute name="Class-Path"
-                   value="${single_host_build_classes_dir}:
-                          ${lib_class_path}:
+                   value="${lib_class_path}:
                           ${proto_class_path}:
                           ${pronghorn_libs_class_path}:
                           ${experiments_build_classes_dir}:
                           ${floodlight_class_path}"/>
       </manifest>
-      <fileset dir="${single_host_build_classes_dir}"/>
       <fileset dir="${lib_class_path}"/>
       <fileset dir="${pronghorn_libs_class_path}"/>
       <fileset dir="${experiments_build_classes_dir}"/>
@@ -349,14 +349,12 @@
       <manifest>
         <attribute name="Main-Class" value="${experiments_package}.MultiControllerLatency"/>
         <attribute name="Class-Path"
-                   value="${single_host_build_classes_dir}:
-                          ${lib_class_path}:
+                   value="${lib_class_path}:
                           ${proto_class_path}:
                           ${pronghorn_libs_class_path}:
                           ${experiments_build_classes_dir}:
                           ${floodlight_class_path}"/>
       </manifest>
-      <fileset dir="${single_host_build_classes_dir}"/>
       <fileset dir="${lib_class_path}"/>
       <fileset dir="${pronghorn_libs_class_path}"/>
       <fileset dir="${experiments_build_classes_dir}"/>
@@ -382,14 +380,12 @@
       <manifest>
         <attribute name="Main-Class" value="${experiments_package}.MultiControllerThroughput"/>
         <attribute name="Class-Path"
-                   value="${single_host_build_classes_dir}:
-                          ${lib_class_path}:
+                   value="${lib_class_path}:
                           ${proto_class_path}:
                           ${pronghorn_libs_class_path}:
                           ${experiments_build_classes_dir}:
                           ${floodlight_class_path}"/>
       </manifest>
-      <fileset dir="${single_host_build_classes_dir}"/>
       <fileset dir="${lib_class_path}"/>
       <fileset dir="${pronghorn_libs_class_path}"/>
       <fileset dir="${experiments_build_classes_dir}"/>
@@ -414,14 +410,12 @@
       <manifest>
         <attribute name="Main-Class" value="${experiments_package}.Ordering"/>
         <attribute name="Class-Path"
-                   value="${single_host_build_classes_dir}:
-                          ${lib_class_path}:
+                   value="${lib_class_path}:
                           ${proto_class_path}:
                           ${pronghorn_libs_class_path}:
                           ${experiments_build_classes_dir}:
                           ${floodlight_class_path}"/>
       </manifest>
-      <fileset dir="${single_host_build_classes_dir}"/>
       <fileset dir="${lib_class_path}"/>
       <fileset dir="${pronghorn_libs_class_path}"/>
       <fileset dir="${experiments_build_classes_dir}"/>
@@ -446,14 +440,12 @@
       <manifest>
         <attribute name="Main-Class" value="${experiments_package}.Fairness"/>
         <attribute name="Class-Path"
-                   value="${single_host_build_classes_dir}:
-                          ${lib_class_path}:
+                   value="${lib_class_path}:
                           ${proto_class_path}:
                           ${pronghorn_libs_class_path}:
                           ${experiments_build_classes_dir}:
                           ${floodlight_class_path}"/>
       </manifest>
-      <fileset dir="${single_host_build_classes_dir}"/>
       <fileset dir="${lib_class_path}"/>
       <fileset dir="${pronghorn_libs_class_path}"/>
       <fileset dir="${experiments_build_classes_dir}"/>

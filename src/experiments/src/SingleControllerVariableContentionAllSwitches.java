@@ -2,7 +2,9 @@ package experiments;
 
 import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
-import experiments.JavaPronghornInstance.PronghornInstance;
+import pronghorn.InstanceJava.Instance;
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.OffOnApplicationJava.OffOnApplication;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -47,16 +49,29 @@ public class SingleControllerVariableContentionAllSwitches
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
         /* Start up pronghorn */
-        PronghornInstance prong = null;
-
-        try {
-            prong = new PronghornInstance(
-                new RalphGlobals(),new SingleSideConnection());
-        } catch (Exception _ex) {
+        Instance prong = null;
+        GetNumberSwitches num_switches_app = null;
+        OffOnApplication off_on_app = null;
+        try
+        {
+            RalphGlobals ralph_globals = new RalphGlobals();
+            prong = new Instance(
+                ralph_globals,new SingleSideConnection());
+            num_switches_app = new GetNumberSwitches(
+                ralph_globals,new SingleSideConnection());
+            off_on_app = new OffOnApplication(
+                ralph_globals,new SingleSideConnection());
+            
+            prong.add_application(num_switches_app);
+            prong.add_application(off_on_app);
+        }
+        catch (Exception _ex)
+        {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
         }
-
+        String first_switch_id = Util.first_connected_switch_id (num_switches_app);
+        
         SingleInstanceFloodlightShim shim = new SingleInstanceFloodlightShim();
 
         SingleInstanceSwitchStatusHandler switch_status_handler =
@@ -86,7 +101,7 @@ public class SingleControllerVariableContentionAllSwitches
         {
             ThroughputThread t =
                 new ThroughputThread(
-                    prong, num_ops_to_run, results);
+                    off_on_app, first_switch_id,num_ops_to_run, results);
             t.start();
             threads.add(t);
         }
@@ -153,17 +168,19 @@ public class SingleControllerVariableContentionAllSwitches
 
         private static final AtomicInteger atom_int = new AtomicInteger(0);
         
-        int num_ops_to_run;
-        PronghornInstance prong;
-        ConcurrentHashMap<String,List<Long>> results;
-        String result_id = null;
+        private final int num_ops_to_run;
+        private final OffOnApplication off_on_app;
+        private final String switch_id;
+        private final ConcurrentHashMap<String,List<Long>> results;
+        private final String result_id;
         
         public ThroughputThread(
-            PronghornInstance prong, int num_ops_to_run,
+            OffOnApplication off_on_app, String switch_id,int num_ops_to_run,
             ConcurrentHashMap<String,List<Long>> results)
         {
+            this.off_on_app = off_on_app;
+            this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
-            this.prong = prong;
             this.results = results;
             this.result_id = Integer.toString(atom_int.getAndIncrement());
     	}
@@ -174,9 +191,9 @@ public class SingleControllerVariableContentionAllSwitches
             {
                 try {
                     if ((i %2) == 0)
-                        prong.insert_entry_on_last_switch();
+                        off_on_app.remove_entry_switch(switch_id);
                     else
-                        prong.remove_entry_on_last_switch();
+                        off_on_app.add_entry_switch(switch_id);
                 } catch (Exception _ex) {
                     _ex.printStackTrace();
                     assert(false);

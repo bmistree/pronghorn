@@ -115,11 +115,8 @@ public class MultiControllerLatency
                 connection = (PronghornConnection)Ralph.tcp_connect(
                     new DummyConnectionConstructor(), hpp.host, hpp.port,ralph_globals);
 
-                // FIXME: When create a connection app, allow to add connection.
-                System.out.println("\n\nWARNING: should be adding connection\n\n");
-                assert(false);
-                // connection.set_service(prong);
-                // prong.add_child_connection(connection);
+                connection.set_off_on_app(off_on_app);
+                off_on_app.add_child_connection(connection);
             } catch(Exception e) {
                 e.printStackTrace();
                 assert(false);
@@ -214,12 +211,7 @@ public class MultiControllerLatency
             System.out.println("\nBuilt a connection\n\n");
             try {
                 to_return = new PronghornConnection(ralph_globals,conn_obj);
-
-                // FIXME: actually set service for connection
-                System.out.println(
-                    "\n\nFIXME: Should actually set a connection for instance\n\n");
-                assert(false);
-                // to_return.set_service(prong);
+                to_return.set_off_on_app(off_on_app);
             } catch (Exception _ex) {
                 _ex.printStackTrace();
                 assert(false);

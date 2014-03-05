@@ -1,8 +1,8 @@
 package experiments;
 
-import single_host.SingleHostFloodlightShim;
-import single_host.SingleHostSwitchStatusHandler;
-import single_host.JavaPronghornInstance.PronghornInstance;
+import pronghorn.SingleInstanceFloodlightShim;
+import pronghorn.SingleInstanceSwitchStatusHandler;
+import experiments.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -135,8 +135,8 @@ public class Fairness
 
         // now that both sides are connected, connect shims to them to
         // connect to floodlight.
-        SingleHostFloodlightShim shim_a = create_started_shim(side_a);
-        SingleHostFloodlightShim shim_b = create_started_shim(side_b);
+        SingleInstanceFloodlightShim shim_a = create_started_shim(side_a);
+        SingleInstanceFloodlightShim shim_b = create_started_shim(side_b);
 
         
         /* wait a while to ensure that all switches are connected,etc. */
@@ -305,13 +305,13 @@ public class Fairness
         }
     }
     
-    private static SingleHostFloodlightShim create_started_shim(
+    private static SingleInstanceFloodlightShim create_started_shim(
         PronghornInstance prong)
     {
-        SingleHostFloodlightShim shim =
-            new SingleHostFloodlightShim();
-        SingleHostSwitchStatusHandler switch_status_handler =
-            new SingleHostSwitchStatusHandler(
+        SingleInstanceFloodlightShim shim =
+            new SingleInstanceFloodlightShim();
+        SingleInstanceSwitchStatusHandler switch_status_handler =
+            new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);

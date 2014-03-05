@@ -1,8 +1,8 @@
 package experiments;
 
-import single_host.SingleHostFloodlightShim;
-import single_host.SingleHostSwitchStatusHandler;
-import single_host.JavaPronghornInstance.PronghornInstance;
+import pronghorn.SingleInstanceFloodlightShim;
+import pronghorn.SingleInstanceSwitchStatusHandler;
+import experiments.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -17,20 +17,20 @@ import experiments.Util;
 import experiments.Util.LatencyThread;
 
 
-public class SingleControllerLatency
+public class ReadOnlyLatency
 {
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
-    public static final int NUMBER_THREADS_ARG_INDEX = 1;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 1;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
     
-    public static void main (String[] args) 
+    public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 3)
+        if (args.length != 2)
         {
+            System.out.println("\nExpecting 2 arguments.\n");
             print_usage();
             return;
         }
@@ -38,8 +38,8 @@ public class SingleControllerLatency
         int num_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
 
-        int num_threads =
-            Integer.parseInt(args[NUMBER_THREADS_ARG_INDEX]);
+        int num_threads = 1;
+
 
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
@@ -55,28 +55,34 @@ public class SingleControllerLatency
             return;
         }
 
-        SingleHostFloodlightShim shim = new SingleHostFloodlightShim();
+        SingleInstanceFloodlightShim shim = new SingleInstanceFloodlightShim();
         
-        SingleHostSwitchStatusHandler switch_status_handler =
-            new SingleHostSwitchStatusHandler(
+        SingleInstanceSwitchStatusHandler switch_status_handler =
+            new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
-        
-        // wait for first switch to connect
-        Util.wait_on_switches(prong);
-        // what's the first switch's id.
-        String switch_id = Util.first_connected_switch_id(prong);
 
+        /* wait a while to ensure that all switches are connected */
+        try {
+            Thread.sleep(SETTLING_TIME_WAIT);
+        } catch (InterruptedException _ex) {
+            _ex.printStackTrace();
+            assert(false);
+        }
+            
+        try {
+            prong.insert_entry_on_last_switch();
+        } catch (Exception _ex) {
+            _ex.printStackTrace();
+            assert(false);
+        }
 
         List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
         for (int i = 0; i < num_threads; ++i)
-        {
-            all_threads.add(
-                new LatencyThread(prong,switch_id,num_ops_to_run));
-        }
+            all_threads.add(new LatencyThread(prong,"",num_ops_to_run,true));
 
         for (LatencyThread lt : all_threads)
             lt.start();
@@ -93,28 +99,25 @@ public class SingleControllerLatency
             }
         }
 
-        StringBuffer results_buffer = new StringBuffer();
+        StringBuffer string_buffer = new StringBuffer();
         for (LatencyThread lt : all_threads)
-            lt.write_times(results_buffer);
-        Util.write_results_to_file(output_filename,results_buffer.toString());
+            lt.write_times(string_buffer);
 
-        // stop and forst stop
+        Util.write_results_to_file(output_filename,string_buffer.toString());
+        
+        // actually tell shims to stop.
         shim.stop();
-        Util.force_shutdown();
+        Util.force_shutdown();        
     }
 
     private static void print_usage()
     {
         String usage_string = "";
 
-        // NUMBER_OPS_TO_RUN_ARG_INDEX
+        // NUMBER_TIMES_TO_RUN_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
 
-        // NUMBER_THREADS_ARG_INDEX
-        usage_string +=
-            "\n\t<int>: Number threads.\n";
-        
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
 

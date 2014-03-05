@@ -1,8 +1,8 @@
 package experiments;
 
-import single_host.SingleHostFloodlightShim;
-import single_host.SingleHostSwitchStatusHandler;
-import single_host.JavaPronghornInstance.PronghornInstance;
+import pronghorn.SingleInstanceFloodlightShim;
+import pronghorn.SingleInstanceSwitchStatusHandler;
+import experiments.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -81,8 +81,8 @@ public class Ordering
 
         boolean allow_reordering = ! ensure_ordering;
         OrderingShim shim = new OrderingShim(allow_reordering);
-        SingleHostSwitchStatusHandler switch_status_handler =
-            new SingleHostSwitchStatusHandler(
+        SingleInstanceSwitchStatusHandler switch_status_handler =
+            new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY);
         shim.subscribe_switch_status_handler(switch_status_handler);
@@ -246,7 +246,7 @@ public class Ordering
     /**
        Creating a private subclass of shim that allows reordering 
      */
-    private static class OrderingShim extends SingleHostFloodlightShim
+    private static class OrderingShim extends SingleInstanceFloodlightShim
     {
         private boolean allow_reordering;
         private int num_outstanding_before_push = -1;

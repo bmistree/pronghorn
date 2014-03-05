@@ -1,8 +1,8 @@
 package experiments;
 
-import single_host.SingleHostFloodlightShim;
-import single_host.SingleHostSwitchStatusHandler;
-import single_host.JavaPronghornInstance.PronghornInstance;
+import pronghorn.SingleInstanceFloodlightShim;
+import pronghorn.SingleInstanceSwitchStatusHandler;
+import experiments.JavaPronghornInstance.PronghornInstance;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -20,14 +20,11 @@ import experiments.Util.HostPortPair;
 import experiments.Util;
 
 
-
-
-public class SingleControllerThroughput
+public class SingleControllerVariableContentionAllSwitches
 {
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
-    public static final int COARSE_LOCKING_ARG_INDEX = 1;
-    public static final int THREADS_PER_SWITCH_ARG_INDEX = 2;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
+    public static final int THREADS_ARG_INDEX = 1;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -35,7 +32,7 @@ public class SingleControllerThroughput
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 3)
         {
             print_usage();
             return;
@@ -44,11 +41,8 @@ public class SingleControllerThroughput
         int num_ops_to_run = 
                 Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
 
-        boolean coarse_locking =
-            Boolean.parseBoolean(args[COARSE_LOCKING_ARG_INDEX]);
-
-        int threads_per_switch =
-            Integer.parseInt(args[THREADS_PER_SWITCH_ARG_INDEX]);
+        int num_threads =
+            Integer.parseInt(args[THREADS_ARG_INDEX]);
 
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
@@ -63,10 +57,10 @@ public class SingleControllerThroughput
             return;
         }
 
-        SingleHostFloodlightShim shim = new SingleHostFloodlightShim();
-        
-        SingleHostSwitchStatusHandler switch_status_handler =
-            new SingleHostSwitchStatusHandler(
+        SingleInstanceFloodlightShim shim = new SingleInstanceFloodlightShim();
+
+        SingleInstanceSwitchStatusHandler switch_status_handler =
+            new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY);
 
@@ -80,19 +74,6 @@ public class SingleControllerThroughput
             _ex.printStackTrace();
             assert(false);
         }
-
-        // wait until a few switches connect
-        Util.wait_on_switches(prong);
-        
-        List<String> switch_ids = Util.get_switch_id_list(prong);
-        int num_switches = switch_ids.size();
-        if (num_switches == 0)
-        {
-            System.out.println(
-                "No switches attached to pronghorn: error");
-            assert(false);
-        }        
-
         
         /* Spawn thread per switch to operate on it */
         ArrayList<Thread> threads = new ArrayList<Thread>();
@@ -101,19 +82,14 @@ public class SingleControllerThroughput
             new ConcurrentHashMap<String,List<Long>>();
 
         long start = System.nanoTime();
-        for (String switch_id : switch_ids)
+        for (int j = 0; j < num_threads; ++j)
         {
-            for (int j = 0; j < threads_per_switch; ++j)
-            {
-                ThroughputThread t =
-                    new ThroughputThread(
-                        switch_id, prong, num_ops_to_run, results,coarse_locking);
-                
-                t.start();
-                threads.add(t);
-            }
+            ThroughputThread t =
+                new ThroughputThread(
+                    prong, num_ops_to_run, results);
+            t.start();
+            threads.add(t);
         }
-
         for (Thread t : threads) {
             try {
                 t.join();
@@ -125,7 +101,6 @@ public class SingleControllerThroughput
         long end = System.nanoTime();
         long elapsedNano = end-start;
 
-        
         StringBuffer string_buffer = new StringBuffer();
         for (String switch_id : results.keySet())
         {
@@ -137,67 +112,60 @@ public class SingleControllerThroughput
                 // trim off trailing comma
                 line = line.substring(0, line.length() - 1);
             }
-            string_buffer.append(line).append("\n");
+
+            string_buffer.append(line);
+            string_buffer.append("\n");
         }
         Util.write_results_to_file(output_filename,string_buffer.toString());
-
-
+        
+        
         double throughputPerS =
-            ((double) (num_switches * threads_per_switch * num_ops_to_run)) /
+            ((double) (num_threads * num_ops_to_run)) /
             ((double)elapsedNano/1000000000);
-        System.out.println("Switches: " + num_switches + " Throughput(op/s): " + throughputPerS);
+        System.out.println("Switches: 1 Throughput(op/s): " + throughputPerS);
 
         // actually tell shims to stop.
         shim.stop();
-
+        
         Util.force_shutdown();
     }
 
-    private static void print_usage()
+    public static void print_usage()
     {
         String usage_string = "";
 
-        // NUMBER_TIMES_TO_RUN_ARG_INDEX
+        // NUMBER_OPS_TO_RUN_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
-
-        // COARSE_LOCKING_ARG_INDEX_ARG_INDEX
-        usage_string +=
-            "\n\t<boolean>: true if should use coarse locking; ";
-        usage_string += "false otherwise\n";
 
         // NUMBER_THREADS_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number threads.\n";
-
+        
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
 
         System.out.println(usage_string);
-        
+
     }
     
     public static class ThroughputThread extends Thread {
 
         private static final AtomicInteger atom_int = new AtomicInteger(0);
         
-        String switch_id;
         int num_ops_to_run;
         PronghornInstance prong;
         ConcurrentHashMap<String,List<Long>> results;
-        boolean coarse_locking;
         String result_id = null;
         
         public ThroughputThread(
-            String switch_id, PronghornInstance prong, int num_ops_to_run,
-            ConcurrentHashMap<String,List<Long>> results, boolean coarse_locking)
+            PronghornInstance prong, int num_ops_to_run,
+            ConcurrentHashMap<String,List<Long>> results)
         {
-            this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
             this.prong = prong;
             this.results = results;
-            this.coarse_locking = coarse_locking;
-            this.result_id = switch_id + atom_int.getAndIncrement();
+            this.result_id = Integer.toString(atom_int.getAndIncrement());
     	}
 
     	public void run() {
@@ -205,10 +173,10 @@ public class SingleControllerThroughput
             for (int i = 0; i < num_ops_to_run; ++i)
             {
                 try {
-                    if (coarse_locking)
-                        prong.single_op_coarse(switch_id);
+                    if ((i %2) == 0)
+                        prong.insert_entry_on_last_switch();
                     else
-                        prong.single_op(switch_id);
+                        prong.remove_entry_on_last_switch();
                 } catch (Exception _ex) {
                     _ex.printStackTrace();
                     assert(false);

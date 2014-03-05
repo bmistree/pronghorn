@@ -1,9 +1,9 @@
 package experiments;
 
-import single_host.SingleHostFloodlightShim;
-import single_host.SingleHostSwitchStatusHandler;
-import single_host.JavaPronghornInstance.PronghornInstance;
-import single_host.JavaPronghornConnection.PronghornConnection;
+import pronghorn.SingleInstanceFloodlightShim;
+import pronghorn.SingleInstanceSwitchStatusHandler;
+import experiments.JavaPronghornInstance.PronghornInstance;
+import experiments.JavaPronghornConnection.PronghornConnection;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -80,9 +80,9 @@ public class MultiControllerThroughput
         }
 
 
-        SingleHostFloodlightShim shim = new SingleHostFloodlightShim();
-        SingleHostSwitchStatusHandler switch_status_handler =
-            new SingleHostSwitchStatusHandler(
+        SingleInstanceFloodlightShim shim = new SingleInstanceFloodlightShim();
+        SingleInstanceSwitchStatusHandler switch_status_handler =
+            new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY);
 

@@ -6,7 +6,7 @@ import pronghorn.SingleInstanceSwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.OffOnApplicationJava.OffOnApplication;
-import experiments.JavaPronghornConnection.PronghornConnection;
+import experiments.PronghornConnectionJava.PronghornConnection;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;

@@ -5,7 +5,7 @@
 alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
 alias Struct Switch as 'pronghorn.SwitchJava.Switch';
 alias Struct Port as 'pronghorn.PortJava.Port';
-alias Endpoint PronghornConnection as 'experiments.JavaPronghornConnection.PronghornConnection';
+alias Endpoint PronghornConnection as 'experiments.PronghornConnectionJava.PronghornConnection';
 
 
 Struct ConnectionWrapper

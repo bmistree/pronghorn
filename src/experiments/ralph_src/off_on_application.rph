@@ -7,6 +7,13 @@ alias Service Instance as 'pronghorn.InstanceJava.Instance';
 #include 'wrapped_switch.rph'
 alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
 
+alias Endpoint PronghornConnection as 'experiments.PronghornConnectionJava.PronghornConnection';
+
+Struct ConnectionWrapper
+{
+    Endpoint PronghornConnection child;
+}
+
 
 Service OffOnApplication implements Interface IApplication
 {
@@ -14,6 +21,9 @@ Service OffOnApplication implements Interface IApplication
     TVar TrueFalse installed = False;
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
     TVar Number coarse_lock_simulator = 0;
+
+    TVar List(element : Struct ConnectionWrapper) children;
+
     
     // override from IApplication interface
     init(Service Instance inst_,
@@ -28,7 +38,7 @@ Service OffOnApplication implements Interface IApplication
     {
         installed = True;
     }
-
+    
     // For switch_id, either append an entry to the switch's flow table (if none
     // exists) or remove an entry if there already is one.
     single_op(Text switch_id)
@@ -43,6 +53,14 @@ Service OffOnApplication implements Interface IApplication
         }
     }
 
+    add_child_connection(Endpoint PronghornConnection new_child)
+    {
+        Struct ConnectionWrapper wrapper;
+        wrapper.child = new_child;
+        children.append(wrapper);
+    }
+
+    
     remove_entry_switch(Text switch_id)
     {
         atomically
@@ -67,6 +85,30 @@ Service OffOnApplication implements Interface IApplication
     }
     
 
+    insert_entry_on_all_switches_and_partners(Text ip_src)
+    {
+        atomically
+        {
+            insert_entry_on_all_switches(ip_src);
+            for (Struct ConnectionWrapper wrapper in children)
+            {
+                Endpoint PronghornConnection endpt = wrapper.child;
+                endpt.insert_entry_on_all_switches_and_partners(ip_src);
+            }
+        }
+    }
+
+    insert_entry_on_all_switches(Text ip_src)
+    {
+        atomically
+        {
+            for (Text switch_id in switch_map)
+                add_entry_switch(switch_id);
+        }
+    }
+
+    
+    
     single_op_coarse(Text switch_id) 
     {
         atomically
@@ -109,26 +151,55 @@ Service OffOnApplication implements Interface IApplication
         }
     }
     
-
     read_first_instance_flow_table()
     {
-        print ('\nStub method: must finish read_first_instance_flow_table \n');
+        atomically
+        {
+            for (Text switch_id in switch_map)
+            {
+                Struct StructWrappedSwitch sws = switch_map.get(switch_id);
+                sws.wrapped_switch.ftable_size();
+                break;
+            }
+        }
     }
 
     single_op_and_partner()
     {
-        print (
-            '\nStub method: must finish adding single_op_and_partner ... \n');
+        // Ask partner to perform action and
+        atomically
+        {
+            @partner.called_only_by_partner_single_op();
+            for (Text switch_id in switch_map)
+                single_op(switch_id);
+        }
     }
     
     single_op_and_ask_children_for_single_op()
     {
-        print ('\nStub method: must finish adding single_op_and_ask ... \n');
+        atomically {
+            for (Text switch_id in switch_map)
+                single_op(switch_id);
+
+            for (Struct ConnectionWrapper wrapper in children)
+            {
+                Endpoint PronghornConnection endpt = wrapper.child;
+                endpt.single_op_and_ask_children_for_single_op();
+            }
+        }
     }
 
     single_op_and_ask_children_for_single_op_switch_id(Text switch_id)
     {
-        print ('\nStub method: must finish  ... \n');
+        atomically {
+            single_op(switch_id);
+
+            for (Struct ConnectionWrapper wrapper in children)
+            {
+                Endpoint PronghornConnection endpt = wrapper.child;
+                endpt.single_op_and_ask_children_for_single_op_switch_id(switch_id);
+            }
+        }
     }
     
     logical_clear_switch_do_not_flush_clear_to_hardware()

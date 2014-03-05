@@ -5,7 +5,8 @@ import pronghorn.SingleInstanceSwitchStatusHandler;
 import experiments.OffOnApplicationJava.OffOnApplication;
 import pronghorn.InstanceJava.Instance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
-import experiments.OffOnApplicationJava.OffOnApplication;
+import experiments.MultiControllerOffOnJava.MultiControllerOffOn;
+
 
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
@@ -59,9 +60,9 @@ public class Fairness
     
     // pronghorn controllers on either side
     private static Instance side_a = null;
-    private static OffOnApplication off_on_app_a = null;
+    private static MultiControllerOffOn off_on_app_a = null;
     private static Instance side_b = null;
-    private static OffOnApplication off_on_app_b = null;
+    private static MultiControllerOffOn off_on_app_b = null;
 
     // Each controller tries to dump this much work into system when
     // it starts.  (Note: one controller is given preference and
@@ -184,7 +185,7 @@ public class Fairness
        onto side_b.
      */
     public static void run_operations(
-        OffOnApplication app_a, OffOnApplication app_b)
+        MultiControllerOffOn app_a, MultiControllerOffOn app_b)
     {
         EndpointTask task_a = new EndpointTask(app_a,ENDPOINT_A_IDENTIFIER);
         EndpointTask task_b = new EndpointTask(app_b,ENDPOINT_B_IDENTIFIER);
@@ -230,10 +231,10 @@ public class Fairness
     
     private static class EndpointTask implements Runnable
     {
-        private final OffOnApplication app;
+        private final MultiControllerOffOn app;
         private String endpoint_id = null;
 
-        public EndpointTask(OffOnApplication _app, String _endpoint_id)
+        public EndpointTask(MultiControllerOffOn _app, String _endpoint_id)
         {
             app = _app;
             endpoint_id = _endpoint_id;
@@ -303,14 +304,14 @@ public class Fairness
                 if (for_side_a)
                 {
                     side_a = to_return;
-                    off_on_app_a = new OffOnApplication(
+                    off_on_app_a = new MultiControllerOffOn(
                         globals_to_use,new SingleSideConnection());
                     side_a.add_application(off_on_app_a);
                 }
                 else
                 {
                     side_b = to_return;
-                    off_on_app_b = new OffOnApplication(
+                    off_on_app_b = new MultiControllerOffOn(
                         globals_to_use,new SingleSideConnection());
                     side_b.add_application(off_on_app_b);
                 }

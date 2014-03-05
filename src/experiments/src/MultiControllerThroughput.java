@@ -4,8 +4,8 @@ import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
-import experiments.OffOnApplicationJava.OffOnApplication;
 import experiments.PronghornConnectionJava.PronghornConnection;
+import experiments.MultiControllerOffOnJava.MultiControllerOffOn;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -40,7 +40,7 @@ public class MultiControllerThroughput
     public static final int SETTLING_TIME_WAIT = 5000;
 
     private static Instance prong = null;
-    private static OffOnApplication off_on_app = null;
+    private static MultiControllerOffOn mc_off_on_app = null;
     private static GetNumberSwitches num_switches_app = null;    
     private static final RalphGlobals ralph_globals = new RalphGlobals();
 
@@ -77,12 +77,12 @@ public class MultiControllerThroughput
             prong = new Instance(
                 ralph_globals, new SingleSideConnection());
 
-            off_on_app = new OffOnApplication(
+            mc_off_on_app = new MultiControllerOffOn(
                 ralph_globals,new SingleSideConnection());
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
             
-            prong.add_application(off_on_app);
+            prong.add_application(mc_off_on_app);
             prong.add_application(num_switches_app);
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
@@ -113,8 +113,8 @@ public class MultiControllerThroughput
                 connection = (PronghornConnection)Ralph.tcp_connect(
                     new DummyConnectionConstructor(), hpp.host, hpp.port,ralph_globals);
 
-                connection.set_off_on_app(off_on_app);
-                off_on_app.add_child_connection(connection);
+                connection.set_off_on_app(mc_off_on_app);
+                mc_off_on_app.add_child_connection(connection);
             } catch(Exception e) {
                 e.printStackTrace();
                 assert(false);
@@ -141,7 +141,7 @@ public class MultiControllerThroughput
         {
             ThroughputThread t =
                 new ThroughputThread(
-                    switch_id, off_on_app, num_ops_to_run, results);
+                    switch_id, mc_off_on_app, num_ops_to_run, results);
             
             t.start();
             threads.add(t);
@@ -212,17 +212,17 @@ public class MultiControllerThroughput
         
         String switch_id;
         int num_ops_to_run;
-        private final OffOnApplication off_on_app;
+        private final MultiControllerOffOn mc_off_on_app;
         ConcurrentHashMap<String,List<Long>> results;
         String result_id = null;
         
         public ThroughputThread(
-            String switch_id, OffOnApplication off_on_app, int num_ops_to_run,
+            String switch_id, MultiControllerOffOn mc_off_on_app, int num_ops_to_run,
             ConcurrentHashMap<String,List<Long>> results)
         {
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
-            this.off_on_app = off_on_app;
+            this.mc_off_on_app = mc_off_on_app;
             this.results = results;
             this.result_id = switch_id + atom_int.getAndIncrement();
     	}
@@ -232,7 +232,7 @@ public class MultiControllerThroughput
             for (int i = 0; i < num_ops_to_run; ++i)
             {
                 try {
-                    off_on_app.single_op_and_ask_children_for_single_op_switch_id(switch_id);
+                    mc_off_on_app.single_op_and_ask_children_for_single_op_switch_id(switch_id);
                 } catch (Exception _ex) {
                     _ex.printStackTrace();
                     assert(false);
@@ -287,7 +287,7 @@ public class MultiControllerThroughput
             System.out.println("\nBuilt a connection\n\n");
             try {
                 to_return = new PronghornConnection(ralph_globals,conn_obj);
-                to_return.set_off_on_app(off_on_app);
+                to_return.set_off_on_app(mc_off_on_app);
             } catch (Exception _ex) {
                 _ex.printStackTrace();
                 assert(false);

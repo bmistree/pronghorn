@@ -1,10 +1,10 @@
-alias Service OffOnApplication as 'experiments.OffOnApplicationJava.OffOnApplication';
+alias Service MultiControllerOffOn as 'experiments.MultiControllerOffOnJava.MultiControllerOffOn';
 
 Endpoint PronghornConnection
 {
-    Service OffOnApplication off_on_app;
+    Service MultiControllerOffOn off_on_app = null;
 
-    set_off_on_app(Service OffOnApplication to_set_to)
+    set_off_on_app(Service MultiControllerOffOn to_set_to)
     {
         off_on_app = to_set_to;
     }
@@ -21,8 +21,6 @@ Endpoint PronghornConnection
         off_on_app.single_op_and_ask_children_for_single_op();
     }
 
-
-
     // called from off_on_app
     single_op_and_ask_children_for_single_op_switch_id(Text switch_id)
     {
@@ -35,7 +33,6 @@ Endpoint PronghornConnection
         off_on_app.single_op_and_ask_children_for_single_op_switch_id(switch_id);
     }
 
-
     // called from off_on_app
     insert_entry_on_all_switches_and_partners(Text ip_src)
     {
@@ -47,5 +44,4 @@ Endpoint PronghornConnection
     {
         off_on_app.insert_entry_on_all_switches_and_partners(ip_src);
     }
-    
 }

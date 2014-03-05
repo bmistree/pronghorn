@@ -14,6 +14,8 @@ import java.util.ArrayList;
 import ralph.NonAtomicInternalList;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.OffOnApplicationJava.OffOnApplication;
+import experiments.MultiControllerOffOnJava.MultiControllerOffOn;
+import experiments.ReadOnlyJava.ReadOnly;
 
 public class Util
 {
@@ -177,33 +179,12 @@ public class Util
         public List <Long> all_times = new ArrayList<Long>();
         
         private OffOnApplication off_on_app = null;
+        private MultiControllerOffOn mc_off_on_app = null;
+        private ReadOnly read_only_app = null;
         private String switch_id = null;
         private int num_ops_to_run = -1;
-        private boolean read_only = false;
-        private boolean distributed = false;
-        
-        public LatencyThread(
-            OffOnApplication off_on_app, String switch_id,
-            int num_ops_to_run,  boolean read_only)
-        {
-            this.off_on_app = off_on_app;
-            this.switch_id = switch_id;
-            this.num_ops_to_run = num_ops_to_run;
-            this.read_only = read_only;
-        }
 
-        public LatencyThread(
-            OffOnApplication off_on_app, String switch_id, int num_ops_to_run,
-            boolean read_only, boolean distributed)
-        {
-            this.off_on_app = off_on_app;
-            this.switch_id = switch_id;
-            this.num_ops_to_run = num_ops_to_run;
-            this.read_only = read_only;
-            this.distributed = distributed;
-        }
-        
-        
+        // For locals
         public LatencyThread(
             OffOnApplication off_on_app, String switch_id, int num_ops_to_run)
         {
@@ -211,6 +192,27 @@ public class Util
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
         }
+
+        // For multiple controllers
+        public LatencyThread(
+            MultiControllerOffOn mc_off_on_app, String switch_id,
+            int num_ops_to_run)
+        {
+            this.mc_off_on_app = mc_off_on_app;
+            this.switch_id = switch_id;
+            this.num_ops_to_run = num_ops_to_run;
+        }
+        
+        // For read only
+        public LatencyThread(
+            ReadOnly read_only_app, String switch_id,
+            int num_ops_to_run)
+        {
+            this.read_only_app = read_only_app;
+            this.switch_id = switch_id;
+            this.num_ops_to_run = num_ops_to_run;
+        }
+        
 
         public void run()
         {
@@ -220,10 +222,10 @@ public class Util
                 long start_time = System.nanoTime();
                 try
                 {
-                    if (read_only)
-                        off_on_app.read_first_instance_flow_table();
-                    else if (distributed)
-                        off_on_app.single_op_and_ask_children_for_single_op();
+                    if (read_only_app != null)
+                        read_only_app.read_first_instance_flow_table();
+                    else if (mc_off_on_app != null)
+                        mc_off_on_app.single_op_and_ask_children_for_single_op();
                     else
                         off_on_app.single_op(switch_id);
                 }

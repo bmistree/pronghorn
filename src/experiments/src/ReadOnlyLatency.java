@@ -4,7 +4,7 @@ import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
-import experiments.OffOnApplicationJava.OffOnApplication;
+import experiments.ReadOnlyJava.ReadOnly;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
@@ -14,7 +14,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
-import experiments.Util.HostPortPair;
 import experiments.Util;
 import experiments.Util.LatencyThread;
 
@@ -49,7 +48,7 @@ public class ReadOnlyLatency
         /* Start up pronghorn */
         Instance prong = null;
         GetNumberSwitches num_switches_app = null;
-        OffOnApplication off_on_app = null;
+        ReadOnly read_only_app = null;
         try
         {
             RalphGlobals ralph_globals = new RalphGlobals();
@@ -57,11 +56,11 @@ public class ReadOnlyLatency
                 ralph_globals,new SingleSideConnection());
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
-            off_on_app = new OffOnApplication(
+            read_only_app = new ReadOnly(
                 ralph_globals,new SingleSideConnection());
             
             prong.add_application(num_switches_app);
-            prong.add_application(off_on_app);
+            prong.add_application(read_only_app);
             
         }
         catch (Exception _ex)
@@ -90,7 +89,7 @@ public class ReadOnlyLatency
             
         List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
         for (int i = 0; i < num_threads; ++i)
-            all_threads.add(new LatencyThread(off_on_app,"",num_ops_to_run,true));
+            all_threads.add(new LatencyThread(read_only_app,"",num_ops_to_run));
 
         for (LatencyThread lt : all_threads)
             lt.start();

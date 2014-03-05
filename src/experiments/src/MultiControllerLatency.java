@@ -5,7 +5,7 @@ import pronghorn.SingleInstanceSwitchStatusHandler;
 
 import pronghorn.InstanceJava.Instance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
-import experiments.OffOnApplicationJava.OffOnApplication;
+import experiments.MultiControllerOffOnJava.MultiControllerOffOn;
 import experiments.PronghornConnectionJava.PronghornConnection;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
@@ -35,7 +35,7 @@ public class MultiControllerLatency
 
     
     public static Instance prong = null;
-    public static OffOnApplication off_on_app = null;
+    public static MultiControllerOffOn mc_off_on_app = null;
     public static GetNumberSwitches num_switches_app = null;    
     
     // wait this long for pronghorn to add all switches
@@ -76,12 +76,12 @@ public class MultiControllerLatency
         {
             prong = new Instance(
                 ralph_globals,new SingleSideConnection());
-            off_on_app = new OffOnApplication(
+            mc_off_on_app = new MultiControllerOffOn(
                 ralph_globals,new SingleSideConnection());
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
             
-            prong.add_application(off_on_app);
+            prong.add_application(mc_off_on_app);
             prong.add_application(num_switches_app);
         }
         catch (Exception _ex)
@@ -115,8 +115,8 @@ public class MultiControllerLatency
                 connection = (PronghornConnection)Ralph.tcp_connect(
                     new DummyConnectionConstructor(), hpp.host, hpp.port,ralph_globals);
 
-                connection.set_off_on_app(off_on_app);
-                off_on_app.add_child_connection(connection);
+                connection.set_off_on_app(mc_off_on_app);
+                mc_off_on_app.add_child_connection(connection);
             } catch(Exception e) {
                 e.printStackTrace();
                 assert(false);
@@ -134,8 +134,7 @@ public class MultiControllerLatency
             for (int i = 0; i < num_threads; ++i)
             {
                 all_threads.add(
-                    new LatencyThread(
-                        off_on_app,switch_id,num_ops_to_run,false,true));
+                    new LatencyThread(mc_off_on_app,switch_id,num_ops_to_run));
             }
 
             for (LatencyThread lt : all_threads)
@@ -211,7 +210,7 @@ public class MultiControllerLatency
             System.out.println("\nBuilt a connection\n\n");
             try {
                 to_return = new PronghornConnection(ralph_globals,conn_obj);
-                to_return.set_off_on_app(off_on_app);
+                to_return.set_off_on_app(mc_off_on_app);
             } catch (Exception _ex) {
                 _ex.printStackTrace();
                 assert(false);

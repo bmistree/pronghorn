@@ -105,6 +105,24 @@
 
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/read_only.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/ReadOnlyJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c ReadOnlyJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/multi_controller_off_on.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/MultiControllerOffOnJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c MultiControllerOffOnJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+    
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection.rph"/>
       <arg line="-o ${experiments_ralph_emitted_dir}/PronghornConnectionJava.java"/>
       <arg line="-p ${experiments_package}"/>

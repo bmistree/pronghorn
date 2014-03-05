@@ -1,4 +1,4 @@
-package single_host;
+package experiments;
 
 import pronghorn.InstanceJava.Instance;
 import RalphConnObj.SingleSideConnection;
@@ -7,7 +7,7 @@ import pronghorn.SingleInstanceSwitchStatusHandler;
 import pronghorn.FloodlightFlowTableToHardware;
 import ralph.RalphGlobals;
 import java.lang.Thread;
-import single_host.JavaOffOnApplication.OffOnApplication;
+import experiments.JavaOffOnApplication.OffOnApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

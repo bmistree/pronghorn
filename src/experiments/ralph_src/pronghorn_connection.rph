@@ -1,4 +1,4 @@
-alias Endpoint PronghornInstance as 'single_host.JavaPronghornInstance.PronghornInstance';
+alias Endpoint PronghornInstance as 'experiments.JavaPronghornInstance.PronghornInstance';
 
 Endpoint PronghornConnection
 {

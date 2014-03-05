@@ -12,7 +12,6 @@ import java.util.List;
 import java.util.ArrayList;
 
 import ralph.NonAtomicInternalList;
-import experiments.JavaPronghornInstance.PronghornInstance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.OffOnApplicationJava.OffOnApplication;
 

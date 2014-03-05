@@ -105,15 +105,6 @@
 
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
-      <arg line="-i ${experiments_ralph_src_dir}/pronghorn_instance.rph"/>
-      <arg line="-o ${experiments_ralph_emitted_dir}/JavaPronghornInstance.java"/>
-      <arg line="-p ${experiments_package}"/>
-      <arg line="-c JavaPronghornInstance"/>
-      <arg line="-I ${pronghorn_ralph_src_path}"/>
-    </exec>
-
-    <exec executable="python" failonerror="true">
-      <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection.rph"/>
       <arg line="-o ${experiments_ralph_emitted_dir}/PronghornConnectionJava.java"/>
       <arg line="-p ${experiments_package}"/>

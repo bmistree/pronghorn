@@ -1,0 +1,102 @@
+#include 'iapplication.rph'
+alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
+
+#include 'wrapped_switch.rph'
+alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
+
+alias Service Instance as 'pronghorn.InstanceJava.Instance';
+
+// NOTE: Presupposes that two switches are connected.
+// Calling event1 performs a read on switch s1 and a write on switch s2.
+// Calling event2 does the opposite.  With speculation turned on, should be able
+// to run concurrently.  With speculation turned off, should not be able to run
+// concurrently.
+
+Service SingleHostSpeculation implements Interface IApplication
+{
+    Service Instance inst = null;
+
+    Struct StructWrappedSwitch s1 = null;
+    Struct StructWrappedSwitch s2 = null;
+    
+    // @Override --- from IApplication interface
+    init(Service Instance inst_,
+        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    {
+        inst = inst_;
+
+        atomically
+        {
+            Number counter = 0;
+            for (Text switch_id in switch_map_)
+            {
+                Struct StructWrappedSwitch tmp = switch_map_.get(switch_id);
+                if (s1 == null)
+                    s1 = tmp;
+                else
+                {
+                    s2 = tmp;
+                    break;
+                }
+            }
+        }
+        
+        if ((s1 == null) or (s2 == null))
+        {
+            print (
+                '\n\n\n\nMASSIVE ERROR: Must have at least two ' +
+                'switches to run speculation test.\n\n\n');
+        }
+    }
+
+    // @Override --- do nothing when first installed
+    run(){}
+    
+    // called from external code
+    event_1()
+    {
+        read_and_write(s1,s2);
+    }
+    // called from external code
+    event_2()
+    {
+        read_and_write(s2,s1);
+    }
+
+    // Note: private to service
+    read_and_write(
+        Struct StructWrappedSwitch to_read_on,
+        Struct StructWrappedSwitch to_write_to)
+    {
+        atomically
+        {
+            to_read_on.wrapped_switch.ftable_size();
+            if (to_write_to.wrapped_switch.ftable_size() == 0)
+                add_entry_switch(to_write_to);
+            else
+                remove_entry_switch(to_write_to);
+        }
+    }
+    // Note: private to service
+    add_entry_switch(Struct StructWrappedSwitch to_add_to)
+    {
+        Struct FlowTableEntry to_add;
+        to_add.src_ip = '18.18.18.18';
+        to_add.dst_ip = '18.18.18.19';
+        // drop all packets
+        to_add.action = '';
+        
+        atomically
+        {
+            to_add_to.wrapped_switch.add_entry(to_add);
+        }
+    }
+    // Note: private to service
+    remove_entry_switch(Struct StructWrappedSwitch to_remove_from)
+    {
+        atomically
+        {
+            to_remove_from.wrapped_switch.remove_entry(0);
+        }
+    }    
+}

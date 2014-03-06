@@ -9,6 +9,7 @@ import ralph.Variables.AtomicListVariable;
 import ralph.RalphGlobals;
 import ralph.ActiveEvent;
 import RalphDataWrappers.ListTypeDataWrapper;
+import RalphServiceActions.LinkFutureBooleans;
 
 import pronghorn.FlowTableToHardware.WrapApplyToHardware;
 import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
@@ -156,13 +157,11 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
     protected void internal_first_phase_commit_speculative(
         SpeculativeFuture sf)
     {
-        System.out.println("\nFIXME: Must check this logic\n");
-        
         // FIXME: check this logic
-        // ActiveEvent active_event = sf.event;
-        // Future<Boolean> bool = internal_first_phase_commit(active_event);
-        // ralph_globals.thread_pool.add_service_action(
-        //     new LinkFutureBooleans(bool,sf));
+        ActiveEvent active_event = sf.event;
+        Future<Boolean> bool = internal_first_phase_commit(active_event);
+        ralph_globals.thread_pool.add_service_action(
+            new LinkFutureBooleans(bool,sf));
     }
 
     // FIXME: must override acquire and release locks in case switch

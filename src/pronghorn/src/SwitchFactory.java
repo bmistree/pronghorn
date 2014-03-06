@@ -58,10 +58,12 @@ public class SwitchFactory
             });
 
     private RalphGlobals ralph_globals = null;
-
-    public SwitchFactory(RalphGlobals _ralph_globals)
+    private final boolean speculate;
+    
+    public SwitchFactory(RalphGlobals _ralph_globals,boolean _speculate)
     {
         ralph_globals = _ralph_globals;
+        speculate = _speculate;
     }
 
     /**
@@ -108,7 +110,8 @@ public class SwitchFactory
         InternalPronghornSwitchGuard switch_guard_num_var =
             new InternalPronghornSwitchGuard(
                 ralph_globals,switch_delta,new_switch_id,
-                to_handle_pushing_changes,hardware_pushing_service);
+                to_handle_pushing_changes,hardware_pushing_service,
+                speculate);
         switch_delta.switch_lock = switch_guard_num_var;
 
         // Create the new switch and return it

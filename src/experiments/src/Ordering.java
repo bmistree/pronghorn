@@ -98,7 +98,8 @@ public class Ordering
         SingleInstanceSwitchStatusHandler switch_status_handler =
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
-                FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY);
+                FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
+                false);
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
         

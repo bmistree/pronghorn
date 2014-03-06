@@ -50,18 +50,21 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
     private FlowTableToHardwareFactory rtable_to_hardware_factory = null;
 
     private ShimInterface shim = null;
-    
+    private final boolean speculate;
     
     public SingleInstanceSwitchStatusHandler(
         ShimInterface shim,
         Instance prong,
-        FlowTableToHardwareFactory rtable_to_hardware_factory)
+        FlowTableToHardwareFactory rtable_to_hardware_factory,
+        boolean speculate)
     {
         this.shim = shim;
         this.prong = prong;
-        switch_factory = new SwitchFactory(prong.ralph_globals);
-        switch_factory.init(UNIQUE_SWITCH_FACTORY_PREFIX);
         this.rtable_to_hardware_factory = rtable_to_hardware_factory;
+        this.speculate = speculate;
+
+        switch_factory = new SwitchFactory(prong.ralph_globals,speculate);
+        switch_factory.init(UNIQUE_SWITCH_FACTORY_PREFIX);
     }
 
     /** ILinkDiscoveryListener */

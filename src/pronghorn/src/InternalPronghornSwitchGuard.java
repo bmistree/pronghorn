@@ -20,6 +20,7 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
     private final _InternalSwitchDelta switch_delta;
     private final FlowTableToHardware to_handle_pushing_changes;
     private final ExecutorService hardware_push_service;
+    private final boolean should_speculate;
     
     private ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>
         dirty_op_tuples_on_hardware = null;
@@ -35,15 +36,20 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         RalphGlobals ralph_globals, _InternalSwitchDelta _switch_delta,
         String _ralph_internal_switch_id,
         FlowTableToHardware _to_handle_pushing_changes,
-        ExecutorService _hardware_push_service)
+        ExecutorService _hardware_push_service,
+        boolean _should_speculate)
     {
         super(false,new Double(0),ralph_globals);
         switch_delta = _switch_delta;
         ralph_internal_switch_id = _ralph_internal_switch_id;
         to_handle_pushing_changes = _to_handle_pushing_changes;
         hardware_push_service = _hardware_push_service;
+        should_speculate = _should_speculate;
     }
 
+    /**
+       Called from outside of lock.
+     */
     @Override
     protected Future<Boolean> internal_first_phase_commit(
         ActiveEvent active_event)
@@ -87,13 +93,22 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         internal_ft_deltas_list.dirty_val = 
             (ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>)
             internal_ft_deltas_list.data_wrapper_constructor.construct(
-                internal_ft_deltas_list.val.val,true);
-        // FIXME: probably do not actually need to log changes (above).
+                internal_ft_deltas_list.val.val,false);
 
         WrapApplyToHardware to_apply_to_hardware =
             new WrapApplyToHardware(
                 to_handle_pushing_changes, dirty_op_tuples_on_hardware,false);
 
+        if (should_speculate)
+        {
+            // start speculating on this lock guard
+            speculate(dirty_val.val);
+
+            // start speculating ft_deltas
+            internal_ft_deltas_list.speculate(
+                    internal_ft_deltas_list.dirty_val.val);
+        }
+        
         hardware_push_service.execute(to_apply_to_hardware);
         return to_apply_to_hardware.to_notify_when_complete;
     }
@@ -136,8 +151,20 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         return write_lock_holder_preempted;
     }
 
+
+    @Override
+    protected void internal_first_phase_commit_speculative(
+        SpeculativeFuture sf)
+    {
+        System.out.println("\nFIXME: Must check this logic\n");
+        
+        // FIXME: check this logic
+        // ActiveEvent active_event = sf.event;
+        // Future<Boolean> bool = internal_first_phase_commit(active_event);
+        // ralph_globals.thread_pool.add_service_action(
+        //     new LinkFutureBooleans(bool,sf));
+    }
+
     // FIXME: must override acquire and release locks in case switch
     // fails.
-
-    // FIXME: must override speculative
 }

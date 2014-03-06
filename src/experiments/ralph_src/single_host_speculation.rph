@@ -43,9 +43,8 @@ Service SingleHostSpeculation implements Interface IApplication
         
         if ((s1 == null) or (s2 == null))
         {
-            print (
-                '\n\n\n\nMASSIVE ERROR: Must have at least two ' +
-                'switches to run speculation test.\n\n\n');
+            print ('\n\n\n\nMASSIVE ERROR: Must have at least two ');
+            print ('switches to run speculation test.\n\n\n');
         }
     }
 

@@ -205,7 +205,7 @@
                single_controller_latency,single_controller_throughput,
                single_controller_variable_contention_throughput,
                read_only,multi_controller_latency,
-               multi_controller_throughput,ordering,fairness"
+               multi_controller_throughput,ordering,fairness,speculation"
       description="create jars for each type of experiment">
   </target>
 
@@ -472,6 +472,36 @@
     </jar>
   </target>
 
+
+  <!-- Testing speculation  -->
+  <property
+      name="speculation_jar"
+      value="speculation.jar"/>
+  <target
+      name="speculation"
+      depends="compile_libs,compile_experiments"
+      description="Compare latencies with and without speculation">
+
+    <jar destfile="${speculation_jar}" filesetmanifest="mergewithoutmain">
+      <manifest>
+        <attribute name="Main-Class"
+                   value="${experiments_package}.SingleControllerSpeculation"/>
+        <attribute name="Class-Path"
+                   value="${lib_class_path}:
+                          ${proto_class_path}:
+                          ${pronghorn_libs_class_path}:
+                          ${experiments_build_classes_dir}:
+                          ${floodlight_class_path}"/>
+      </manifest>
+      <fileset dir="${lib_class_path}"/>
+      <fileset dir="${pronghorn_libs_class_path}"/>
+      <fileset dir="${experiments_build_classes_dir}"/>
+      <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
+      <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
+    </jar>
+  </target>
+
+  
   
   <!-- Delete the build directories -->
   <target name="clean" description="get rid of build dir">
@@ -494,6 +524,7 @@
     <delete file="${fairness_jar}"/>
     <delete file="${error_jar}"/>
     <delete file="${single_controller_latency_jar}"/>
+    <delete file="${speculation_jar}"/>
     
   </target>
 

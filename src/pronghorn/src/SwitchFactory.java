@@ -104,21 +104,21 @@ public class SwitchFactory
         // Create the switch delta struct
         _InternalSwitchDelta switch_delta =
             new _InternalSwitchDelta(ralph_globals);
-                
-        // override switch_lock variable: switch_lock variable serves
-        // as a guard for both port_deltas and ft_deltas.
-        InternalPronghornSwitchGuard switch_guard_num_var =
-            new InternalPronghornSwitchGuard(
-                ralph_globals,switch_delta,new_switch_id,
-                to_handle_pushing_changes,hardware_pushing_service,
-                speculate);
-        switch_delta.switch_lock = switch_guard_num_var;
 
         // Create the new switch and return it
         PronghornInternalSwitch internal_switch =
             new PronghornInternalSwitch(
                 ralph_globals,new_switch_id,available_capacity,switch_delta);
 
+        // override switch_lock variable: switch_lock variable serves
+        // as a guard for both port_deltas and ft_deltas.
+        InternalPronghornSwitchGuard switch_guard_num_var =
+            new InternalPronghornSwitchGuard(
+                ralph_globals,switch_delta,internal_switch,
+                new_switch_id,
+                to_handle_pushing_changes,hardware_pushing_service,
+                speculate);
+        switch_delta.switch_lock = switch_guard_num_var;
         return internal_switch;
     }
 

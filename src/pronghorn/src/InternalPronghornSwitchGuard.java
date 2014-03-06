@@ -14,11 +14,14 @@ import RalphServiceActions.LinkFutureBooleans;
 import pronghorn.FlowTableToHardware.WrapApplyToHardware;
 import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
 import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
+import pronghorn.FTable._InternalFlowTableEntry;
+import pronghorn.SwitchJava._InternalSwitch;
 
 public class InternalPronghornSwitchGuard extends AtomicNumberVariable
 {
     public final String ralph_internal_switch_id;
     private final _InternalSwitchDelta switch_delta;
+    private final _InternalSwitch internal_switch;
     private final FlowTableToHardware to_handle_pushing_changes;
     private final ExecutorService hardware_push_service;
     private final boolean should_speculate;
@@ -35,13 +38,14 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
      */
     public InternalPronghornSwitchGuard(
         RalphGlobals ralph_globals, _InternalSwitchDelta _switch_delta,
-        String _ralph_internal_switch_id,
+        _InternalSwitch _internal_switch,String _ralph_internal_switch_id,
         FlowTableToHardware _to_handle_pushing_changes,
         ExecutorService _hardware_push_service,
         boolean _should_speculate)
     {
         super(false,new Double(0),ralph_globals);
         switch_delta = _switch_delta;
+        internal_switch = _internal_switch;
         ralph_internal_switch_id = _ralph_internal_switch_id;
         to_handle_pushing_changes = _to_handle_pushing_changes;
         hardware_push_service = _hardware_push_service;
@@ -72,14 +76,27 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         if (to_handle_pushing_changes == null)
             return super.internal_first_phase_commit(active_event);
         
-        // this access is safe, because we assume the invariant
+        // these accesses are safe, because we assume the invariant
         // that will only receive changes on PronghornSwitchGuard
-        // if no other event is writing to
+        // if no other event is writing to them.
+
+        // grabbing internal_ft_list in case we need to speculate on it.
+        AtomicListVariable<_InternalFlowTableEntry,_InternalFlowTableEntry>
+            ft_list = internal_switch.ftable;
+        AtomicInternalList<_InternalFlowTableEntry,_InternalFlowTableEntry>
+            internal_ft_list = null;
+
+        if (ft_list.dirty_val != null)
+            internal_ft_list = ft_list.dirty_val.val;
+        else
+            internal_ft_list = ft_list.val.val;
+
+        // grabbing ft_deltas to actually get changes made to hardware.
         AtomicListVariable<_InternalFlowTableDelta,_InternalFlowTableDelta>
             ft_deltas_list = switch_delta.ft_deltas;
         AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
             internal_ft_deltas_list = null;
-
+        
         if (ft_deltas_list.dirty_val != null)
             internal_ft_deltas_list = ft_deltas_list.dirty_val.val;
         else
@@ -108,6 +125,9 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
             // start speculating ft_deltas
             internal_ft_deltas_list.speculate(
                     internal_ft_deltas_list.dirty_val.val);
+
+            // start speculating on ftable itself
+            internal_ft_list.speculate(internal_ft_list.dirty_val.val);
         }
         
         hardware_push_service.execute(to_apply_to_hardware);

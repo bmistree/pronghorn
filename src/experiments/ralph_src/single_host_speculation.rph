@@ -18,6 +18,9 @@ Service SingleHostSpeculation implements Interface IApplication
 
     Struct StructWrappedSwitch s1 = null;
     Struct StructWrappedSwitch s2 = null;
+
+    TVar TrueFalse s1_last_added = False;
+    TVar TrueFalse s2_last_added = False;
     
     // @Override --- from IApplication interface
     init(Service Instance inst_,
@@ -50,27 +53,31 @@ Service SingleHostSpeculation implements Interface IApplication
 
     // @Override --- do nothing when first installed
     run(){}
+
     
     // called from external code
     event_1()
     {
-        read_and_write(s1,s2);
+        read_and_write(s1,s2,not s2_last_added);
+        s2_last_added = not s2_last_added;
     }
     // called from external code
     event_2()
     {
-        read_and_write(s2,s1);
+        read_and_write(s2,s1, not s1_last_added);
+        s1_last_added = not s1_last_added;
     }
 
     // Note: private to service
     read_and_write(
         Struct StructWrappedSwitch to_read_on,
-        Struct StructWrappedSwitch to_write_to)
+        Struct StructWrappedSwitch to_write_to,
+        TrueFalse add_entry)
     {
         atomically
         {
             to_read_on.wrapped_switch.ftable_size();
-            if (to_write_to.wrapped_switch.ftable_size() == 0)
+            if (add_entry)
                 add_entry_switch(to_write_to);
             else
                 remove_entry_switch(to_write_to);

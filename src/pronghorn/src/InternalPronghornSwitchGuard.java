@@ -2,6 +2,7 @@ package pronghorn;
 
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutorService;
+import java.util.ArrayList;
 
 import ralph.Variables.AtomicNumberVariable;
 import ralph.AtomicInternalList;
@@ -121,13 +122,14 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         {
             // start speculating on this lock guard
             speculate(dirty_val.val);
-
+            
             // start speculating ft_deltas
             internal_ft_deltas_list.speculate(
                     internal_ft_deltas_list.dirty_val.val);
 
             // start speculating on ftable itself
-            internal_ft_list.speculate(internal_ft_list.dirty_val.val);
+            internal_ft_list.speculate(
+                new ArrayList(internal_ft_list.dirty_val.val));
         }
         
         hardware_push_service.execute(to_apply_to_hardware);

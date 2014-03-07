@@ -54,6 +54,12 @@ Service SingleHostSpeculation implements Interface IApplication
     // @Override --- do nothing when first installed
     run(){}
 
+    load_entry_both_switches()
+    {
+        add_entry_switch(s1);
+        add_entry_switch(s2);
+    }
+    
     
     // called from external code
     event_1()

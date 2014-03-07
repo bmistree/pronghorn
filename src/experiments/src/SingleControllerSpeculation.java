@@ -19,12 +19,13 @@ public class SingleControllerSpeculation
 {
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
     public static final int SHOULD_SPECULATE_ARG_INDEX = 1;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
+    public static final int NUMBER_FTABLE_ENTRIES_TO_PRELOAD_ARG_INDEX = 2;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
 
     public static void main(String [] args)
     {
         /* Grab arguments */
-        if (args.length != 3)
+        if (args.length != 4)
         {
             print_usage();
             return;
@@ -36,6 +37,9 @@ public class SingleControllerSpeculation
         boolean speculate =
             Boolean.parseBoolean(args[SHOULD_SPECULATE_ARG_INDEX]);
 
+        int num_entries_to_preload =
+            Integer.parseInt(args[NUMBER_FTABLE_ENTRIES_TO_PRELOAD_ARG_INDEX]);
+        
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
         /* Start up pronghorn */
@@ -87,6 +91,20 @@ public class SingleControllerSpeculation
             return;
         }
 
+        for (int i = 0; i < num_entries_to_preload; ++i)
+        {
+            try
+            {
+                speculation_app.load_entry_both_switches();
+            }
+            catch (Exception ex)
+            {
+                System.out.println("\n\nERROR PRELOADING ENTRIES");
+                return;
+            }
+        }
+                
+        
         SpeculationThread spec_thread_1 =
             new SpeculationThread(true,num_ops_to_run,speculation_app);
         SpeculationThread spec_thread_2 =
@@ -177,6 +195,10 @@ public class SingleControllerSpeculation
         // Should speculate
         usage_string +=
             "\n\t<boolean>: Should speculate.\n";
+
+        // Number of flow table entries to preload
+        usage_string +=
+            "\n\t<int>: Number of flow table entries to preload.\n";
         
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";

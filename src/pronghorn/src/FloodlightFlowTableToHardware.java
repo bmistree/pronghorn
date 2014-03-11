@@ -84,13 +84,12 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
        the list.
      */
     private List<FTableUpdate> produce_ftable_updates(
-        ListTypeDataWrapper<
-            _InternalFlowTableDelta,_InternalFlowTableDelta> dirty,
+        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> dirty,
         boolean undo)
     {
         List<FTableUpdate> floodlight_updates = new ArrayList<FTableUpdate>();
         
-        for (RalphObject ro : dirty.val)
+        for (RalphObject ro : dirty)
         {
             _InternalFlowTableDelta flow_table_delta = null;
             _InternalFlowTableEntry entry = null;
@@ -138,8 +137,8 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
     
     @Override
     protected boolean apply_changes_to_hardware(
-        ListTypeDataWrapper<
-            _InternalFlowTableDelta,_InternalFlowTableDelta> dirty)
+        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
+        dirty)
     {
         List<FTableUpdate> floodlight_updates =
             produce_ftable_updates(dirty,false);
@@ -151,7 +150,7 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
     
     @Override
     protected void undo_dirty_changes_to_hardware(
-        ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>
+        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
         to_undo)
     {
         List<FTableUpdate> floodlight_updates =

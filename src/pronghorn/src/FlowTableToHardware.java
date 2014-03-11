@@ -8,6 +8,9 @@ import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.locks.Condition;
 import java.util.concurrent.TimeUnit;
+import java.util.List;
+
+import ralph.RalphObject;
 
 /**
    Subclass this object to override behavior of internal list when
@@ -17,26 +20,25 @@ import java.util.concurrent.TimeUnit;
 public abstract class FlowTableToHardware
 {
     protected abstract boolean apply_changes_to_hardware(
-        ListTypeDataWrapper<
-        _InternalFlowTableDelta,_InternalFlowTableDelta> dirty);
+        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
+        dirty);
+    
     protected abstract void undo_dirty_changes_to_hardware(
-        ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>
+        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
         to_undo);
-
 
     public static class WrapApplyToHardware implements Runnable
     {
         public final ApplyToHardwareFuture to_notify_when_complete =
             new ApplyToHardwareFuture();
         private FlowTableToHardware ftable_to_hardware = null;
-        private
-            ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>
+        private List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
             to_apply = null;
         private final boolean undo_changes;
         
         public WrapApplyToHardware(
             FlowTableToHardware _ftable_to_hardware,
-            ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta> _to_apply,
+            List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> _to_apply,
             boolean _undo_changes)
         {
             ftable_to_hardware = _ftable_to_hardware;

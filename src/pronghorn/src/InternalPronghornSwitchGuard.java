@@ -3,12 +3,14 @@ package pronghorn;
 import java.util.concurrent.Future;
 import java.util.concurrent.ExecutorService;
 import java.util.ArrayList;
+import java.util.List;
 
 import ralph.Variables.AtomicNumberVariable;
 import ralph.AtomicInternalList;
 import ralph.Variables.AtomicListVariable;
 import ralph.RalphGlobals;
 import ralph.ActiveEvent;
+import ralph.RalphObject;
 import RalphDataWrappers.ListTypeDataWrapper;
 import RalphServiceActions.LinkFutureBooleans;
 
@@ -27,8 +29,8 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
     private final ExecutorService hardware_push_service;
     private final boolean should_speculate;
     
-    private ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>
-        dirty_op_tuples_on_hardware = null;
+    private List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
+        dirty_on_hardware = null;
     
     
     /**
@@ -53,30 +55,31 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         should_speculate = _should_speculate;
     }
 
-    /**
-       Called from outside of lock.
-     */
-    @Override
-    protected Future<Boolean> internal_first_phase_commit(
-        ActiveEvent active_event)
-    {
-        // do not need to take locks here because know that this
-        // method will only be called from AtomicActiveEvent
-        // during first_phase_commit. Because AtomicActiveEvent is
-        // in midst of commit, know that these values cannot
-        // change.
-        if ((write_lock_holder == null) ||
-            (! active_event.uuid.equals(write_lock_holder.event.uuid)))
-        {
-            // never made a write to this variable: do not need to
-            // ensure that hardware is up (for now).  May want to
-            // add read checks as well.
-            return ALWAYS_TRUE_FUTURE;
-        }
 
-        if (to_handle_pushing_changes == null)
-            return super.internal_first_phase_commit(active_event);
+    private AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
+        get_internal_ft_deltas_list()
+    {
+        // these accesses are safe, because we assume the invariant
+        // that will only receive changes on PronghornSwitchGuard
+        // if no other event is writing to them.
         
+        // grabbing ft_deltas to actually get changes made to hardware.
+        AtomicListVariable<_InternalFlowTableDelta,_InternalFlowTableDelta>
+            ft_deltas_list = switch_delta.ft_deltas;
+        AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
+            internal_ft_deltas_list = null;
+        
+        if (ft_deltas_list.dirty_val != null)
+            internal_ft_deltas_list = ft_deltas_list.dirty_val.val;
+        else
+            internal_ft_deltas_list = ft_deltas_list.val.val;
+
+        return internal_ft_deltas_list;
+    }
+
+    private AtomicInternalList<_InternalFlowTableEntry,_InternalFlowTableEntry>
+        get_internal_ft_list()
+    {
         // these accesses are safe, because we assume the invariant
         // that will only receive changes on PronghornSwitchGuard
         // if no other event is writing to them.
@@ -92,49 +95,80 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         else
             internal_ft_list = ft_list.val.val;
 
-        // grabbing ft_deltas to actually get changes made to hardware.
-        AtomicListVariable<_InternalFlowTableDelta,_InternalFlowTableDelta>
-            ft_deltas_list = switch_delta.ft_deltas;
+        return internal_ft_list;
+    }
+    
+    
+    /**
+       Called from outside of lock.
+     */
+    @Override
+    protected Future<Boolean> internal_first_phase_commit(
+        ActiveEvent active_event)
+    {
+        // do not need to take locks here because know that this
+        // method will only be called from AtomicActiveEvent
+        // during first_phase_commit. Because AtomicActiveEvent is
+        // in midst of commit, know that these values cannot
+        // change.
+
+        // regardless of whether we are a reader or a writer, we need
+        // these values so that we can speculate on them.
+        AtomicInternalList<_InternalFlowTableEntry,_InternalFlowTableEntry>
+            internal_ft_list = get_internal_ft_list();
         AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
-            internal_ft_deltas_list = null;
+            internal_ft_deltas_list = get_internal_ft_deltas_list(); 
+
+        ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
+            to_push = null;
         
-        if (ft_deltas_list.dirty_val != null)
-            internal_ft_deltas_list = ft_deltas_list.dirty_val.val;
-        else
-            internal_ft_deltas_list = ft_deltas_list.val.val;
-
-        dirty_op_tuples_on_hardware = 
-            (ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>)
-            internal_ft_deltas_list.dirty_val;
-        
-        // reset dirty val for ft deltas: after each commit, pending
-        // flow table deltas (in ft_deltas) should be empty.
-        internal_ft_deltas_list.dirty_val = 
-            (ListTypeDataWrapper<_InternalFlowTableDelta,_InternalFlowTableDelta>)
-            internal_ft_deltas_list.data_wrapper_constructor.construct(
-                internal_ft_deltas_list.val.val,false);
-
-        WrapApplyToHardware to_apply_to_hardware =
-            new WrapApplyToHardware(
-                to_handle_pushing_changes, dirty_op_tuples_on_hardware,false);
-
         if (should_speculate)
         {
-            // start speculating on this lock guard
-            speculate(active_event,dirty_val.val);
+            internal_ft_list.speculate(active_event,null);
+            to_push = internal_ft_deltas_list.speculate(
+                active_event,
+                // so that resets delta list
+                new ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>());
             
-            // start speculating ft_deltas
-            internal_ft_deltas_list.speculate(
-                active_event,internal_ft_deltas_list.dirty_val.val);
-
-            // start speculating on ftable itself
-            internal_ft_list.speculate(
-                active_event,new ArrayList(internal_ft_list.dirty_val.val));
+            speculate(active_event,null);
         }
-        
-        hardware_push_service.execute(to_apply_to_hardware);
-        return to_apply_to_hardware.to_notify_when_complete;
-    }
+        else
+        {
+            if ((write_lock_holder != null) && 
+                (active_event.uuid.equals(write_lock_holder.event.uuid)))
+            {
+                to_push = internal_ft_deltas_list.dirty_val.val;
+            }
+        }
+
+
+        // FIXME: What if this is on top of a speculated value.
+        // Doesn't that mean that write_lock_holder might be
+        // incorrect/pointing to incorrect value?
+        if ((write_lock_holder != null) && 
+            (active_event.uuid.equals(write_lock_holder.event.uuid)))
+        {
+            // check if we're just supposed to be simulating changes.
+            if (to_handle_pushing_changes == null)
+                return super.internal_first_phase_commit(active_event);
+
+            dirty_on_hardware = to_push;
+
+            WrapApplyToHardware to_apply_to_hardware =
+                new WrapApplyToHardware(
+                    to_handle_pushing_changes, dirty_on_hardware,false);
+
+            hardware_push_service.execute(to_apply_to_hardware);
+            return to_apply_to_hardware.to_notify_when_complete;
+        }
+
+
+        // it's a read operation. never made a write to this variable:
+        // do not need to ensure that hardware is up (for now).  May
+        // want to add read checks as well.
+        return ALWAYS_TRUE_FUTURE;
+    }                
+
 
     @Override
     protected boolean internal_complete_commit(ActiveEvent active_event)
@@ -144,7 +178,7 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
             super.internal_complete_commit(active_event);
 
         if (write_lock_holder_completed)
-            dirty_op_tuples_on_hardware = null;
+            dirty_on_hardware = null;
         _unlock();
         return write_lock_holder_completed;
     }
@@ -159,16 +193,16 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         {
             // if there were dirty values that we had pushed to the
             // hardware, we need to undo them.
-            if (dirty_op_tuples_on_hardware != null)
+            if (dirty_on_hardware != null)
             {
                 WrapApplyToHardware to_undo_wrapper =
                     new WrapApplyToHardware(
-                        to_handle_pushing_changes,dirty_op_tuples_on_hardware,
+                        to_handle_pushing_changes,dirty_on_hardware,
                         true);
                 hardware_push_service.execute(to_undo_wrapper);
                 to_undo_wrapper.to_notify_when_complete.get();
             }
-            dirty_op_tuples_on_hardware = null;
+            dirty_on_hardware = null;
         }
         _unlock();
         return write_lock_holder_preempted;

@@ -32,6 +32,7 @@ Service WrappedSwitch
     
     ftable_size() returns Number
     {
+        read_lock_switch();
         return wrapped_switch.ftable.size();
     }
 
@@ -48,6 +49,14 @@ Service WrappedSwitch
         // write locks: one of them will win and all the others will be fully
         // rolled back.
         wrapped_switch.delta.switch_lock = 5;
+    }
+
+    // should only be called from within WrappedSwitch service.  Assumption is
+    // that it is being called from within an atomically statement.  Otherwise,
+    // read lock doesn't do anything.
+    read_lock_switch()
+    {
+        wrapped_switch.delta.switch_lock;
     }
     
     add_entry(Struct FlowTableEntry to_add)
@@ -88,6 +97,7 @@ Service WrappedSwitch
 
     get_entry (Number index) returns Struct FlowTableEntry
     {
+        read_lock_switch();
         Struct FlowTableEntry entry = wrapped_switch.ftable.get(index);
         return ft_util.copy_entry(entry);
     }

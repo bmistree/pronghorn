@@ -121,15 +121,15 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         if (should_speculate)
         {
             // start speculating on this lock guard
-            speculate(dirty_val.val);
+            speculate(active_event,dirty_val.val);
             
             // start speculating ft_deltas
             internal_ft_deltas_list.speculate(
-                    internal_ft_deltas_list.dirty_val.val);
+                active_event,internal_ft_deltas_list.dirty_val.val);
 
             // start speculating on ftable itself
             internal_ft_list.speculate(
-                new ArrayList(internal_ft_list.dirty_val.val));
+                active_event,new ArrayList(internal_ft_list.dirty_val.val));
         }
         
         hardware_push_service.execute(to_apply_to_hardware);

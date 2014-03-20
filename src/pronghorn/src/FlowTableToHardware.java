@@ -61,7 +61,6 @@ public abstract class FlowTableToHardware
         }
     }
 
-
     public static class ApplyToHardwareFuture implements Future<Boolean>
     {
         private final ReentrantLock rlock = new ReentrantLock();

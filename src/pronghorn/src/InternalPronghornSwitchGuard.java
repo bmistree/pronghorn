@@ -11,6 +11,8 @@ import ralph.Variables.AtomicListVariable;
 import ralph.RalphGlobals;
 import ralph.ActiveEvent;
 import ralph.RalphObject;
+import ralph.ICancellableFuture;
+import ralph.SpeculativeFuture;
 import RalphDataWrappers.ListTypeDataWrapper;
 import RalphServiceActions.LinkFutureBooleans;
 
@@ -97,15 +99,23 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
 
         return internal_ft_list;
     }
-    
-    
+
+
     /**
-       Called from outside of lock.
+       Called from within lock.
+
+       @returns --- Can be null, eg., if the object is not backed by
+       hardware.  Otherwise, call to get on future returns true if if
+       can commit in first phase, false otherwise.
      */
     @Override
-    protected Future<Boolean> internal_first_phase_commit(
+    protected ICancellableFuture hardware_first_phase_commit_hook(
         ActiveEvent active_event)
     {
+        // FIXME: Check next paragraphs now that updated method to be
+        // called from within lock.
+        
+        
         // do not need to take locks here because know that this
         // method will only be called from AtomicActiveEvent
         // during first_phase_commit. Because AtomicActiveEvent is
@@ -150,8 +160,8 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         {
             // check if we're just supposed to be simulating changes.
             if (to_handle_pushing_changes == null)
-                return super.internal_first_phase_commit(active_event);
-
+                return null;
+            
             dirty_on_hardware = to_push;
 
             WrapApplyToHardware to_apply_to_hardware =
@@ -159,8 +169,16 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
                     to_handle_pushing_changes, dirty_on_hardware,false);
 
             hardware_push_service.execute(to_apply_to_hardware);
-            return to_apply_to_hardware.to_notify_when_complete;
-        }
+
+            // FIXME: Previous version supposed that future returned
+            // would never be cancelled, but only set in switch
+            // guard/flowtabletohardware.  Need to update to handle
+            // case where can get backed out before all changes have
+            // been pushed to hardware.
+            
+            // return to_apply_to_hardware.to_notify_when_complete;
+            assert(false);
+         }
 
 
         // it's a read operation. never made a write to this variable:
@@ -169,27 +187,22 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         return ALWAYS_TRUE_FUTURE;
     }                
 
-
     @Override
-    protected boolean internal_complete_commit(ActiveEvent active_event)
+    protected void hardware_complete_commit_hook(ActiveEvent active_event)
     {
-        _lock();
-        boolean write_lock_holder_completed =
-            super.internal_complete_commit(active_event);
-
-        if (write_lock_holder_completed)
+        boolean write_lock_holder_being_completed = is_write_lock_holder(active_event);
+        if (write_lock_holder_being_completed)
             dirty_on_hardware = null;
-        _unlock();
-        return write_lock_holder_completed;
     }
 
+    /**
+       Called from within lock.
+     */
     @Override
-    protected boolean internal_backout (ActiveEvent active_event)
+    protected void hardware_backout_hook(ActiveEvent active_event)
     {
-        _lock();
-        boolean write_lock_holder_preempted = 
-            super.internal_backout(active_event);
-        if (write_lock_holder_preempted)
+        boolean write_lock_holder_being_preempted = is_write_lock_holder(active_event);
+        if (write_lock_holder_being_preempted)
         {
             // if there were dirty values that we had pushed to the
             // hardware, we need to undo them.
@@ -204,22 +217,30 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
             }
             dirty_on_hardware = null;
         }
-        _unlock();
-        return write_lock_holder_preempted;
     }
 
+    /**
+       Called from within lock.
 
+       When a derived object gets promoted to root object, we need
+       to deal with any events that began committing to the object
+       when it was a derived object.  In our case, we take the
+       changes associated with the speculative future and apply
+       them to hardware.  We link this speculative future with a
+       new future that pushes to hardware.
+     */
     @Override
-    protected void internal_first_phase_commit_speculative(
+    protected boolean hardware_first_phase_commit_speculative_hook(
         SpeculativeFuture sf)
     {
-        // FIXME: check this logic
         ActiveEvent active_event = sf.event;
-        Future<Boolean> bool = internal_first_phase_commit(active_event);
+        Future<Boolean> bool = hardware_first_phase_commit_hook(active_event);
         ralph_globals.thread_pool.add_service_action(
             new LinkFutureBooleans(bool,sf));
-    }
 
+        return true;
+    }
+    
     // FIXME: must override acquire and release locks in case switch
     // fails.
 }

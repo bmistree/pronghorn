@@ -45,9 +45,12 @@ import org.slf4j.LoggerFactory;
        after hardware_first_phase_commit_hook.
 
      hardware_backout_hook
+     
        Backout changes that may have been made to a hardware element.
        Only return after barrier response that changes have completely
-       been removed from hardware.
+       been removed from hardware.  Note: this may be called even when
+       no changes have been pushed to hardware (eg., if event has been
+       preempted on object).  In these cases, nothing to undo.
 
      hardware_first_phase_commit_speculative_hook
 
@@ -286,13 +289,25 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         if (write_lock_holder_being_preempted)
         {
             SwitchGuardState.State current_state = switch_guard_state.get_state_hold_lock();
+
+            // Get backout requests even when runtime has not
+            // requested changes to be staged on hardware (eg., if
+            // event has been preempted on object).  In these cases,
+            // nothing to undo.  Just stay in clean state.
+            if (current_state == SwitchGuardState.State.CLEAN)
+            {
+                switch_guard_state.release_lock();
+                return;
+            }
             
             //// DEBUG
             if ((current_state != SwitchGuardState.State.PUSHING_CHANGES) &&
                 (current_state != SwitchGuardState.State.STAGED_CHANGES))
             {
                 // FIXME: Handle failed state.
-                log.error("Unexpected state when requesting backout.");
+                log.error(
+                    "Unexpected state when requesting backout " +
+                    current_state);
                 assert(false);
             }
             //// END DEBUG

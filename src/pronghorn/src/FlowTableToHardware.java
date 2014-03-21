@@ -35,15 +35,22 @@ public abstract class FlowTableToHardware
         private List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
             to_apply = null;
         private final boolean undo_changes;
-        
+        private final SwitchGuardState switch_guard_state;
+
+        /**
+           Transition in switch_guard_state either to FAILED or
+           STAGED_CHANGES (if not undoing changes) or CLEAN (if
+           undoing changes)
+         */
         public WrapApplyToHardware(
             FlowTableToHardware _ftable_to_hardware,
             List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> _to_apply,
-            boolean _undo_changes)
+            boolean _undo_changes, SwitchGuardState _switch_guard_state)
         {
             ftable_to_hardware = _ftable_to_hardware;
             to_apply = _to_apply;
             undo_changes = _undo_changes;
+            switch_guard_state = _switch_guard_state;
         }
 
         @Override
@@ -57,6 +64,16 @@ public abstract class FlowTableToHardware
                 application_successful =
                     ftable_to_hardware.apply_changes_to_hardware(to_apply);
             }
+
+            switch_guard_state.get_state_hold_lock();
+            if (! application_successful)
+                switch_guard_state.move_state_failed();
+            else if (undo_changes) // undo succeeded
+                switch_guard_state.move_state_clean();
+            else // apply succeeded
+                switch_guard_state.move_state_staged_changes();
+            switch_guard_state.release_lock();
+            
             to_notify_when_complete.set(application_successful);
         }
     }

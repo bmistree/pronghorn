@@ -22,6 +22,9 @@ import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
 import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.SwitchJava._InternalSwitch;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 /**
    Interfaces to Ralph runtime:
 
@@ -47,76 +50,23 @@ import pronghorn.SwitchJava._InternalSwitch;
        been removed from hardware.
 
      hardware_first_phase_commit_speculative_hook
-       
 
-   Corresponding states:
-
-     CLEAN --- No outstanding changes on hardware.
-
-     PUSHING_CHANGES --- Transition into this state from a
-     hardwrae_first_phase_commit_hook. State means that we are in the
-     midst of pushing first phase commits to hardware and/or waiting
-     on barrier that they have completed.  If barrier times out or get
-     an error, transition into failed state.  Note: 1) If just got
-     errors on operations, could retry those operations with barriers.
-     Currently, do not and just go to failed.  2) Need to deal with
-     failed state, creating super priority that removes state.
-
-     STAGED_CHANGES --- Dirty state is on hardware and hardware has
-     acknowledged this with a barrier response and no intervening
-     error messages.  If commit succeeds (get
-     hardware_complete_commit_hook), go ahead and go back to clean.
-
-     REMOVING_CHANGES --- Enters when in STAGED_CHANGES state and
-     receive an event from hardware_backout_hook.  Can transition to
-     Failed if undos it issues error out or barrier times out.  (Same
-     FIXME-s as PUSHING_CHANGES state.)  Transitions to CLEAN if all
-     changes are removed.  Does not return until they are all removed.
-
-     FAILED --- Switch must be reset by an admin.
-
-
-
-   +--------------+        +---------------+
-   |              |        |               |
-   |              |        | PUSHING       |
-   |    CLEAN     | -----> |   CHANGES     |---------
-   |              |        |               |         |
-   +--------------+        +---------------+         |
-        ^     ^                        |             |
-        |     |                        |             |
-        |      ----------------        |             |
-        |                      |       v             |
-   +--------------+        +---------------+         |
-   |              |        |               |         |
-   |  REMOVING    | <----- | STAGED        |         |
-   |    CHANGES   |        |   CHANGES     |         |
-   |              |        |               |         |
-   +--------------+        +---------------+         |
-             |                                       |
-             |                                       |
-             v                                       |
-      +------------+                                 |
-      |            |                                 |
-      |  FAILED    | <--------------------------------
-      |            |
-      +------------+
+     See SwitchGuardState.java for more about state transitions.
  */
-
-
 public class InternalPronghornSwitchGuard extends AtomicNumberVariable
-{
+{    
     public final String ralph_internal_switch_id;
     private final _InternalSwitchDelta switch_delta;
     private final _InternalSwitch internal_switch;
     private final FlowTableToHardware to_handle_pushing_changes;
     private final ExecutorService hardware_push_service;
     private final boolean should_speculate;
+    private final SwitchGuardState switch_guard_state = new SwitchGuardState();
+    
+    protected static final Logger log =
+        LoggerFactory.getLogger(InternalPronghornSwitchGuard.class);
 
-    private List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
-        dirty_on_hardware = null;
-
-
+    
     /**
        @param to_handle_pushing_changes --- Can be null, in which
        case, will simulate pushing changes to hardware.  (Ie.,
@@ -197,77 +147,100 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
     {
         // FIXME: Check next paragraphs now that updated method to be
         // called from within lock.
-
-
-        // do not need to take locks here because know that this
-        // method will only be called from AtomicActiveEvent
-        // during first_phase_commit. Because AtomicActiveEvent is
-        // in midst of commit, know that these values cannot
-        // change.
-
-        // regardless of whether we are a reader or a writer, we need
-        // these values so that we can speculate on them.
-        AtomicInternalList<_InternalFlowTableEntry,_InternalFlowTableEntry>
-            internal_ft_list = get_internal_ft_list();
-        AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
-            internal_ft_deltas_list = get_internal_ft_deltas_list();
-
-        ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
-            to_push = null;
-
-        if (should_speculate)
+        try
         {
-            internal_ft_list.speculate(active_event,null);
-            to_push = internal_ft_deltas_list.speculate(
-                active_event,
-                // so that resets delta list
-                new ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>());
-
-            speculate(active_event,null);
-        }
-        else
-        {
-            if ((write_lock_holder != null) &&
-                (active_event.uuid.equals(write_lock_holder.event.uuid)))
+            SwitchGuardState.State current_state = switch_guard_state.get_state_hold_lock();
+            //// DEBUG
+            if (current_state != SwitchGuardState.State.CLEAN)
             {
-                to_push = internal_ft_deltas_list.dirty_val.val;
+                // FIXME: Maybe should also be able to get here from
+                // FAILED state, but should return false.
+                log.error(
+                    "Should only recieve first phase commit request when in clean state");
+                assert(false);
             }
+            //// END DEBUG
+
+            
+            // do not need to take locks here because know that this
+            // method will only be called from AtomicActiveEvent
+            // during first_phase_commit. Because AtomicActiveEvent is
+            // in midst of commit, know that these values cannot
+            // change.
+
+            // FIXME: may need to grab latest speculative value, rather
+            // than current pushing to hardware.  May be fixed by passing
+            // null in to speculate.  Should check.
+
+            // regardless of whether we are a reader or a writer, we need
+            // these values so that we can speculate on them.
+            AtomicInternalList<_InternalFlowTableEntry,_InternalFlowTableEntry>
+                internal_ft_list = get_internal_ft_list();
+            AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
+                internal_ft_deltas_list = get_internal_ft_deltas_list();
+
+            ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
+                to_push = null;
+
+            if (should_speculate)
+            {
+                internal_ft_list.speculate(active_event,null);
+                to_push = internal_ft_deltas_list.speculate(
+                    active_event,
+                    // so that resets delta list
+                    new ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>());
+
+                speculate(active_event,null);
+            }
+            else
+            {
+                if (is_write_lock_holder(active_event))
+                {
+                    to_push = internal_ft_deltas_list.dirty_val.val;
+                }
+            }
+
+
+            // FIXME: What if this is on top of a speculated value.
+            // Doesn't that mean that write_lock_holder might be
+            // incorrect/pointing to incorrect value?
+            if (is_write_lock_holder(active_event))
+            {
+                // check if we're just supposed to be simulating changes.
+                if (to_handle_pushing_changes == null)
+                    return null;
+
+                switch_guard_state.move_state_pushing_changes(to_push);
+                WrapApplyToHardware to_apply_to_hardware =
+                    new WrapApplyToHardware(
+                        to_handle_pushing_changes,
+                        switch_guard_state.get_dirty_on_hardware(),false,
+                        switch_guard_state);
+
+                hardware_push_service.execute(to_apply_to_hardware);
+
+                // note: do not need to move state transition here
+                // ourselves.  to_apply_to_hardware does that for us.
+                
+                // FIXME: Previous version supposed that future returned
+                // would never be cancelled, but only set in switch
+                // guard/flowtabletohardware.  Need to update to handle
+                // case where can get backed out before all changes have
+                // been pushed to hardware.
+                // return to_apply_to_hardware.to_notify_when_complete;
+                assert(false);
+             }
+
+
+            // it's a read operation. never made a write to this variable:
+            // do not need to ensure that hardware is up (for now).  May
+            // want to add read checks as well.
+            return ALWAYS_TRUE_FUTURE;
         }
-
-
-        // FIXME: What if this is on top of a speculated value.
-        // Doesn't that mean that write_lock_holder might be
-        // incorrect/pointing to incorrect value?
-        if ((write_lock_holder != null) &&
-            (active_event.uuid.equals(write_lock_holder.event.uuid)))
+        finally
         {
-            // check if we're just supposed to be simulating changes.
-            if (to_handle_pushing_changes == null)
-                return null;
-
-            dirty_on_hardware = to_push;
-
-            WrapApplyToHardware to_apply_to_hardware =
-                new WrapApplyToHardware(
-                    to_handle_pushing_changes, dirty_on_hardware,false);
-
-            hardware_push_service.execute(to_apply_to_hardware);
-
-            // FIXME: Previous version supposed that future returned
-            // would never be cancelled, but only set in switch
-            // guard/flowtabletohardware.  Need to update to handle
-            // case where can get backed out before all changes have
-            // been pushed to hardware.
-
-            // return to_apply_to_hardware.to_notify_when_complete;
-            assert(false);
-         }
-
-
-        // it's a read operation. never made a write to this variable:
-        // do not need to ensure that hardware is up (for now).  May
-        // want to add read checks as well.
-        return ALWAYS_TRUE_FUTURE;
+            switch_guard_state.release_lock();
+        }
     }
 
     @Override
@@ -275,7 +248,40 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
     {
         boolean write_lock_holder_being_completed = is_write_lock_holder(active_event);
         if (write_lock_holder_being_completed)
-            dirty_on_hardware = null;
+        {
+            try
+            {
+                SwitchGuardState.State current_state = switch_guard_state.get_state_hold_lock();
+                //// DEBUG
+                if ((current_state != SwitchGuardState.State.STAGED_CHANGES) &&
+                    (current_state != SwitchGuardState.State.PUSHING_CHANGES))
+                {
+                    // FIXME: handle failed state.                    
+                    log.error("Cannot complete from failed state or clean state.");
+                    assert(false);
+                }
+                //// END DEBUG
+
+                if (current_state == SwitchGuardState.State.PUSHING_CHANGES)
+                {
+                    current_state =
+                        switch_guard_state.wait_staged_or_failed_state_while_holding_lock_returns_holding_lock();
+                }
+                
+                if (current_state == SwitchGuardState.State.FAILED)
+                {
+                    // FIXME: Handle being in a failed state.
+                    log.error("Handle failed state");
+                    assert(false);
+                }
+
+                switch_guard_state.move_state_clean();
+            }
+            finally
+            {
+                switch_guard_state.release_lock();
+            }
+        }
     }
 
     /**
@@ -287,18 +293,49 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         boolean write_lock_holder_being_preempted = is_write_lock_holder(active_event);
         if (write_lock_holder_being_preempted)
         {
-            // if there were dirty values that we had pushed to the
-            // hardware, we need to undo them.
-            if (dirty_on_hardware != null)
+            SwitchGuardState.State current_state = switch_guard_state.get_state_hold_lock();
+            
+            //// DEBUG
+            if ((current_state != SwitchGuardState.State.PUSHING_CHANGES) &&
+                (current_state != SwitchGuardState.State.STAGED_CHANGES))
             {
-                WrapApplyToHardware to_undo_wrapper =
-                    new WrapApplyToHardware(
-                        to_handle_pushing_changes,dirty_on_hardware,
-                        true);
-                hardware_push_service.execute(to_undo_wrapper);
-                to_undo_wrapper.to_notify_when_complete.get();
+                // FIXME: Handle failed state.
+                log.error("Unexpected state when requesting backout.");
+                assert(false);
             }
-            dirty_on_hardware = null;
+            //// END DEBUG
+
+            if (current_state == SwitchGuardState.State.PUSHING_CHANGES)
+            {
+                current_state =
+                    switch_guard_state.wait_staged_or_failed_state_while_holding_lock_returns_holding_lock();
+            }
+
+            if (current_state == SwitchGuardState.State.FAILED)
+            {
+                // FIXME: Must handle being in a failed state.
+                log.error("Handle failed state");
+                assert(false);
+            }
+
+            WrapApplyToHardware to_undo_wrapper =
+                new WrapApplyToHardware(
+                    to_handle_pushing_changes,
+                    switch_guard_state.get_dirty_on_hardware(),
+                    true,switch_guard_state);
+            hardware_push_service.execute(to_undo_wrapper);
+                
+            // transitions synchronously from removing changes to clean.
+            switch_guard_state.move_state_removing_changes();
+            switch_guard_state.release_lock();
+                
+            to_undo_wrapper.to_notify_when_complete.get();
+                
+            // do not need to explicitly transition to clean here;
+            // apply to hardware should for us.;
+
+
+            // FIXME: should check what to do if failed though.
         }
     }
 

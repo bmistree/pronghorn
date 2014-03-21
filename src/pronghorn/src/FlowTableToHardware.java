@@ -11,6 +11,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.List;
 
 import ralph.RalphObject;
+import ralph.ICancellableFuture;
 
 /**
    Subclass this object to override behavior of internal list when
@@ -73,12 +74,16 @@ public abstract class FlowTableToHardware
             else // apply succeeded
                 switch_guard_state.move_state_staged_changes();
             switch_guard_state.release_lock();
-            
-            to_notify_when_complete.set(application_successful);
+
+            if (application_successful)
+                to_notify_when_complete.succeeded();
+            else
+                to_notify_when_complete.failed();
         }
     }
 
-    public static class ApplyToHardwareFuture implements Future<Boolean>
+    
+    public static class ApplyToHardwareFuture implements ICancellableFuture
     {
         private final ReentrantLock rlock = new ReentrantLock();
         private final Condition cond = rlock.newCondition();
@@ -86,10 +91,18 @@ public abstract class FlowTableToHardware
         private boolean result_is_set = false;
         private boolean result;
 
-        /**
-           Should only be called from WrapApply class.
-         */
-        public void set(boolean to_set_to)
+        @Override
+        public void succeeded()
+        {
+            set(true);
+        }
+        @Override
+        public void failed()
+        {
+            set(false);
+        }
+        
+        private void set(boolean to_set_to)
         {
             rlock.lock();
             result = to_set_to;

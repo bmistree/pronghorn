@@ -221,16 +221,8 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
 
                 // note: do not need to move state transition here
                 // ourselves.  to_apply_to_hardware does that for us.
-                
-                // FIXME: Previous version supposed that future returned
-                // would never be cancelled, but only set in switch
-                // guard/flowtabletohardware.  Need to update to handle
-                // case where can get backed out before all changes have
-                // been pushed to hardware.
-                // return to_apply_to_hardware.to_notify_when_complete;
-                assert(false);
+                return to_apply_to_hardware.to_notify_when_complete;
              }
-
 
             // it's a read operation. never made a write to this variable:
             // do not need to ensure that hardware is up (for now).  May

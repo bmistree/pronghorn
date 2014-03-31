@@ -15,6 +15,8 @@ import ralph.ICancellableFuture;
 import ralph.SpeculativeFuture;
 import RalphDataWrappers.ListTypeDataWrapper;
 import RalphServiceActions.LinkFutureBooleans;
+import static ralph.FutureAlwaysValue.ALWAYS_TRUE_FUTURE;
+import static ralph.FutureAlwaysValue.ALWAYS_FALSE_FUTURE;
 
 import pronghorn.FlowTableToHardware.WrapApplyToHardware;
 import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;

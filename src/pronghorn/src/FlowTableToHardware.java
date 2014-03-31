@@ -12,6 +12,7 @@ import java.util.List;
 
 import ralph.RalphObject;
 import ralph.ICancellableFuture;
+import RalphExtended.IHardwareChangeApplier;
 
 /**
    Subclass this object to override behavior of internal list when
@@ -19,12 +20,15 @@ import ralph.ICancellableFuture;
    to hardware.
  */
 public abstract class FlowTableToHardware
+    implements IHardwareChangeApplier<
+        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>
 {
-    protected abstract boolean apply_changes_to_hardware(
+    @Override
+    public abstract boolean apply(
         List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
         dirty);
-    
-    protected abstract void undo_dirty_changes_to_hardware(
+    @Override    
+    public abstract boolean undo(
         List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
         to_undo);
 
@@ -59,11 +63,11 @@ public abstract class FlowTableToHardware
         {
             boolean application_successful = true;
             if (undo_changes)
-                ftable_to_hardware.undo_dirty_changes_to_hardware(to_apply);
+                ftable_to_hardware.undo(to_apply);
             else
             {
                 application_successful =
-                    ftable_to_hardware.apply_changes_to_hardware(to_apply);
+                    ftable_to_hardware.apply(to_apply);
             }
 
             switch_guard_state.get_state_hold_lock();

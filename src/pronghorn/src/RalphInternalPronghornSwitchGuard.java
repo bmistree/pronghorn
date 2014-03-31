@@ -1,6 +1,6 @@
 package pronghorn;
 
-import java.util.ArrayList;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,6 @@ import ralph.ICancellableFuture;
 import ralph.SpeculativeFuture;
 
 import RalphExtended.WrapApplyToHardware;
-import RalphExtended.IHardwareChangeApplier;
 import RalphExtended.IHardwareStateSupplier;
 import RalphExtended.ISpeculateListener;
 import RalphExtended.ExtendedHardwareOverrides;
@@ -24,8 +23,8 @@ import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
 public class RalphInternalPronghornSwitchGuard extends AtomicNumberVariable
 {
     private final ExtendedHardwareOverrides<
-        ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>
-        extended_hardware_overrides;
+        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>
+    extended_hardware_overrides;
 
     public final String ralph_internal_switch_id;
     private final boolean should_speculate;
@@ -40,14 +39,12 @@ public class RalphInternalPronghornSwitchGuard extends AtomicNumberVariable
 
         // initializes extended_hardware_overrides.  used to actually
         // push changes to switches.
-        IHardwareChangeApplier<
-            ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>
-        hardware_applier,
+        FlowTableToHardware hardware_applier,
 
         // initializes extended_hardware_overrides.  used to get flow
         // table deltas on switches
         IHardwareStateSupplier<
-            ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>
+            List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>
         hardware_state_supplier,
 
         // initializes extended_hardware_overrides.  Using this call,
@@ -61,7 +58,7 @@ public class RalphInternalPronghornSwitchGuard extends AtomicNumberVariable
         should_speculate = _should_speculate;
         extended_hardware_overrides =
             new ExtendedHardwareOverrides<
-                ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>(
+                List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>(
                     hardware_applier,hardware_state_supplier,speculate_listener,
                     should_speculate,ralph_globals);
         extended_hardware_overrides.set_controlling_object(this);

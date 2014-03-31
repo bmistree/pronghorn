@@ -136,7 +136,7 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
     
     
     @Override
-    protected boolean apply_changes_to_hardware(
+    public boolean apply(
         List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
         dirty)
     {
@@ -149,14 +149,13 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
 
     
     @Override
-    protected void undo_dirty_changes_to_hardware(
+    public boolean undo(
         List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
         to_undo)
     {
         List<FTableUpdate> floodlight_updates =
             produce_ftable_updates(to_undo,true);
-        // FIXME: should actually return boolean;
-        shim.switch_rtable_updates(
+        return shim.switch_rtable_updates(
             floodlight_switch_id,floodlight_updates);
     }
 }

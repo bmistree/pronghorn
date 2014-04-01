@@ -96,7 +96,10 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
             try
             {
                 flow_table_delta = (_InternalFlowTableDelta) (ro.get_val(null));
-                entry = flow_table_delta.entry.dirty_val.val;
+                if (flow_table_delta.entry.dirty_val != null)
+                    entry = flow_table_delta.entry.dirty_val.val;
+                else
+                    entry = flow_table_delta.entry.val.val;
             }
             catch (Exception ex)
             {
@@ -110,9 +113,23 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
             // non tvar, therefore has different val.val access pattern.
             boolean insertion =
                 flow_table_delta.inserted.val.val.booleanValue();
-            String src_ip = entry.src_ip.dirty_val.val;
-            String dst_ip = entry.dst_ip.dirty_val.val;
-            String actions = entry.action.dirty_val.val;
+            String src_ip = null;
+            if (entry.src_ip.dirty_val != null)
+                src_ip = entry.src_ip.dirty_val.val;
+            else
+                src_ip = entry.src_ip.val.val;
+            
+            String dst_ip = null;
+            if (entry.dst_ip.dirty_val != null)
+                dst_ip = entry.dst_ip.dirty_val.val;
+            else
+                dst_ip = entry.dst_ip.val.val;
+            
+            String actions = null;
+            if (entry.action.dirty_val != null)
+                actions = entry.action.dirty_val.val;
+            else
+                actions = entry.action.val.val;
 
             FTableUpdate update_to_push =  null;
             // FIXME: get rid of entry names in PronghonrFlowTableEntry

@@ -110,15 +110,22 @@ public class SwitchFactory
             new PronghornInternalSwitch(
                 ralph_globals,new_switch_id,available_capacity,switch_delta);
 
+        SwitchSpeculateListener switch_speculate_listener =
+            new SwitchSpeculateListener();
+        
         // override switch_lock variable: switch_lock variable serves
         // as a guard for both port_deltas and ft_deltas.
-        InternalPronghornSwitchGuard switch_guard_num_var =
-            new InternalPronghornSwitchGuard(
-                ralph_globals,switch_delta,internal_switch,
-                new_switch_id,
-                to_handle_pushing_changes,hardware_pushing_service,
-                speculate);
+        RalphInternalPronghornSwitchGuard switch_guard_num_var =
+            new RalphInternalPronghornSwitchGuard(
+                ralph_globals,new_switch_id,speculate,
+                to_handle_pushing_changes,
+                new DeltaListStateSupplier(switch_delta),
+                switch_speculate_listener);
+
         switch_delta.switch_lock = switch_guard_num_var;
+        switch_speculate_listener.init(
+            switch_delta,internal_switch,switch_guard_num_var);
+        
         return internal_switch;
     }
 

@@ -115,8 +115,8 @@ public class SwitchFactory
         
         // override switch_lock variable: switch_lock variable serves
         // as a guard for both port_deltas and ft_deltas.
-        RalphInternalPronghornSwitchGuard switch_guard_num_var =
-            new RalphInternalPronghornSwitchGuard(
+        InternalPronghornSwitchGuard switch_guard_num_var =
+            new InternalPronghornSwitchGuard(
                 ralph_globals,new_switch_id,speculate,
                 to_handle_pushing_changes,
                 new DeltaListStateSupplier(switch_delta),

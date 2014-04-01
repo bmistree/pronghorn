@@ -23,14 +23,14 @@ public class SwitchSpeculateListener implements ISpeculateListener
 
     private _InternalSwitchDelta switch_delta;
     private _InternalSwitch internal_switch;
-    private RalphInternalPronghornSwitchGuard switch_guard;
+    private InternalPronghornSwitchGuard switch_guard;
     
     public SwitchSpeculateListener()
     {}
 
     public void init(
         _InternalSwitchDelta _switch_delta, _InternalSwitch _internal_switch,
-        RalphInternalPronghornSwitchGuard _switch_guard)
+        InternalPronghornSwitchGuard _switch_guard)
     {
         switch_delta = _switch_delta;
         internal_switch = _internal_switch;

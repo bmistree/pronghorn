@@ -12,8 +12,6 @@ import ralph.ActiveEvent;
 import ralph.ICancellableFuture;
 import ralph.SpeculativeFuture;
 
-import RalphExtended.WrapApplyToHardware;
-import RalphExtended.IHardwareStateSupplier;
 import RalphExtended.ISpeculateListener;
 import RalphExtended.ExtendedHardwareOverrides;
 
@@ -43,9 +41,7 @@ public class RalphInternalPronghornSwitchGuard extends AtomicNumberVariable
 
         // initializes extended_hardware_overrides.  used to get flow
         // table deltas on switches
-        IHardwareStateSupplier<
-            List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>
-        hardware_state_supplier,
+        DeltaListStateSupplier hardware_state_supplier,
 
         // initializes extended_hardware_overrides.  Using this call,
         // notifies switch guard, ftable_deltas, etc., that they can

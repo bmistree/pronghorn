@@ -46,7 +46,7 @@ public class RalphInternalPronghornSwitchGuard extends AtomicNumberVariable
         // initializes extended_hardware_overrides.  Using this call,
         // notifies switch guard, ftable_deltas, etc., that they can
         // speculate.
-        ISpeculateListener speculate_listener)
+        SwitchSpeculateListener speculate_listener)
     {
         super(false,new Double(0),ralph_globals);
         ralph_internal_switch_id = _ralph_internal_switch_id;

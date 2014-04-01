@@ -28,7 +28,6 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
 {
     protected static final Logger log =
         LoggerFactory.getLogger(FloodlightFlowTableToHardware.class);
-
     
     private static class FloodlightFlowTableToHardwareFactory
         implements FlowTableToHardwareFactory

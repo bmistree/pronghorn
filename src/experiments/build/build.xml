@@ -167,7 +167,7 @@
     <javac
         srcdir="${experiments_ralph_emitted_dir}"
         destdir="${experiments_build_classes_dir}"
-        classpath="${lib_class_path}:${pronghorn_libs_class_path}"
+        classpath="${lib_class_path}:${pronghorn_libs_class_path}:${proto_class_path}"
         debug="true"
         debuglevel="lines,vars,source"
         includeantruntime="false" />
@@ -192,7 +192,7 @@
         classpath="${experiments_build_classes_dir}:
                    ${lib_class_path}:
                    ${pronghorn_libs_class_path}:
-                   ${floodlight_class_path}"
+                   ${floodlight_class_path}:${proto_class_path}"
         debug="true"
         debuglevel="lines,vars,source"
         includeantruntime="false" />

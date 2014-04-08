@@ -1,6 +1,7 @@
 package pronghorn;
 
 import java.util.List;
+import java.util.ArrayList;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +42,24 @@ public class DeltaListStateSupplier
         // FIXME: ensure that this is a safe access.
         AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
             internal_ft_deltas_list = get_internal_ft_deltas_list();
-        return internal_ft_deltas_list.dirty_val.val;
+
+        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> to_return = 
+            internal_ft_deltas_list.dirty_val.val;
+        
+        // FIXME: REALLY, REALLY shouldn't have to do this here.  only
+        // require it because speculate is the only place where we
+        // reset deltas to be empty.  We will not reset it if
+        // speculation is turned off.  Need a way to ensure that we
+        // reset val.  See Issue #10 and comment in speculate of
+        // SwitchSpeculateListener.
+        internal_ft_deltas_list.force_speculate(
+            active_event,
+            // so that resets delta list
+            new ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>(),
+            // forces update on internal val
+            true);
+
+        return to_return;
     }
     
     private AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>

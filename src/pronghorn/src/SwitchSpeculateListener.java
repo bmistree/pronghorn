@@ -47,13 +47,11 @@ public class SwitchSpeculateListener implements ISpeculateListener
             internal_ft_deltas_list = get_internal_ft_deltas_list();
 
         internal_ft_list.speculate(active_event);
-        internal_ft_deltas_list.force_speculate(
-            active_event,
-            // so that resets delta list
-            new ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>(),
-            // forces update on internal val
-            true);
 
+        // NOTE: speculate for internal_ft_deltas_list called in
+        // DeltaListStateSupplier.  This is because when we speculate
+        // we overwrite dirty_val, which DeltaListStateSupplier
+        // actually needs.  See Issue #10.
         switch_guard.speculate(active_event);
     }
 

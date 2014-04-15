@@ -95,18 +95,18 @@ public class Fairness
         /* Grab arguments */
         if (args.length != 3)
         {
-            System.out.println("\nExpecting 3 arguments\n");
+            print_usage();
             return;
         }
+
+        boolean use_wound_wait =
+            Boolean.parseBoolean(args[USE_WOUND_WAIT_ARG_INDEX]);
+        
+        System.out.println(
+            "\nUsing wound wait: " + Boolean.toString(use_wound_wait) + "\n");
         
         NUM_EXTERNAL_CALLS =
             Integer.parseInt(args[NUM_EXTERNAL_CALLS_ARG_INDEX]);
-        
-        boolean use_wound_wait =
-            Boolean.parseBoolean(args[USE_WOUND_WAIT_ARG_INDEX]);
-
-        System.out.println(
-            "\nUsing wound wait: " + Boolean.toString(use_wound_wait) + "\n");
         
         String result_filename = args[OUTPUT_FILENAME_INDEX];
 
@@ -158,9 +158,12 @@ public class Fairness
 
         
         /* wait a while to ensure that all switches are connected,etc. */
-        try {
+        try
+        {
             Thread.sleep(STARTUP_SETTLING_TIME_WAIT);
-        } catch (InterruptedException _ex) {
+        }
+        catch (InterruptedException _ex)
+        {
             _ex.printStackTrace();
             assert(false);
         }
@@ -186,6 +189,25 @@ public class Fairness
             to_write += endpoint_id + ",";
 
         Util.write_results_to_file(result_filename,to_write);
+    }
+
+    private static void print_usage()
+    {
+        String usage_string = "";
+
+        // NUMBER_THREADS_ARG_INDEX
+        usage_string +=
+            "\n\t<boolean>: true if should run using wound-wait; " +
+            "false if should use ralph scheduler.\n";
+        
+        // NUMBER_OPS_TO_RUN_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to run per experiment\n";
+
+        // OUTPUT_FILENAME_ARG_INDEX
+        usage_string += "\n\t<String> : output filename\n";
+
+        System.out.println(usage_string);
     }
     
     /**

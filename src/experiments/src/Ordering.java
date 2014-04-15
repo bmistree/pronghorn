@@ -86,10 +86,13 @@ public class Ordering
             prong.add_application(num_switches_app);
             prong.add_application(off_on_app);
         }
-        catch (Exception _ex)
+        catch (Exception ex)
         {
+            ex.printStackTrace();
             System.out.println("\n\nERROR CONNECTING\n\n");
-            return;
+            assert(false);
+            // in case assertions are disabled, force shutdown.
+            Util.force_shutdown();
         }
 
         boolean allow_reordering = ! ensure_ordering;
@@ -107,6 +110,22 @@ public class Ordering
         
         // Discover the id of the first connected switch
         String switch_id = Util.first_connected_switch_id(num_switches_app);
+
+        int num_connected_switches = -1;
+        try
+        {
+            num_connected_switches =
+                num_switches_app.num_switches().intValue();
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            assert(false);
+            // in case assertions are disabled.
+            Util.force_shutdown();
+        }
+        shim.set_num_connected_switches(num_connected_switches);
+
         
         // get results from re-ordering
         List<Boolean> results = new ArrayList<Boolean>();
@@ -183,6 +202,7 @@ public class Ordering
         } catch (Exception _ex) {
             _ex.printStackTrace();
             assert(false);
+            Util.force_shutdown();
         }
             
         // sleep to ensure that all those changes have gone through
@@ -240,6 +260,8 @@ public class Ordering
     {
         private boolean allow_reordering;
         private int num_outstanding_before_push = -1;
+        private int num_connected_switches = -1;
+
         private HashMap<String,List<FTableUpdate>> outstanding_updates =
             new HashMap<String,List<FTableUpdate>>();
 
@@ -259,18 +281,24 @@ public class Ordering
         {
             num_outstanding_before_push = _num_outstanding_before_push;
         }
-        
 
+        public void set_num_connected_switches(int _num_connected_switches)
+        {
+            num_connected_switches = _num_connected_switches;
+        }
+        
+        
         /**
            Actually push command to clear flow table to all
            switches.  Definitely use a barrier here.
          */
         public void force_clear()
         {
-            /// FIXME: Must reimplement
-            System.out.println(
-                "FIXME: Must reimplement force_clear in ordering test.");
-            assert(false);
+            List<String> ovs_switch_names =
+                Util.produce_ovs_switch_names(num_connected_switches);
+
+            for (String ovs_switch_name : ovs_switch_names)
+                Util.ovs_clear_flows_hardware(ovs_switch_name);
         }
 
         /**
@@ -283,10 +311,13 @@ public class Ordering
 
         public boolean rules_exist()
         {
-            /// FIXME: Must reimplement
-            System.out.println(
-                "FIXME: Must reimplement rules_exist in ordering test.");
-            assert(false);
+            List<String> ovs_switch_names =
+                Util.produce_ovs_switch_names(num_connected_switches);
+            for (String ovs_switch_name : ovs_switch_names)
+            {
+                if (Util.ovs_hardware_flow_table_size(ovs_switch_name) != 0)
+                    return true;
+            }
             return false;
         }
         

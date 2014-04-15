@@ -46,7 +46,6 @@ public class Ordering
     private static final int RESULT_FILENAME_ARG_INDEX = 2;
     
     // wait this long for pronghorn to add all switches
-    private static final int STARTUP_SETTLING_TIME_WAIT = 5000;
     private static final int SETTLING_TIME_WAIT = 1000;
     
     public static void main (String[] args)
@@ -103,42 +102,18 @@ public class Ordering
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
         
-
-        /* wait a while to ensure that all switches are connected */
-        try {
-            Thread.sleep(STARTUP_SETTLING_TIME_WAIT);
-        } catch (InterruptedException _ex) {
-            _ex.printStackTrace();
-            assert(false);
-        }
-
-        /* Discover the id of the first connected switch */
-        String switch_id = null;
-        try {
-            NonAtomicInternalList<String,String> switch_list =
-                num_switches_app.switch_id_list();
-
-            if (switch_list.get_len(null) == 0)
-            {
-                System.out.println(
-                    "No switches attached to pronghorn: error");
-                assert(false);
-            }
-
-            // get first switch id from key.  (If used Double(1), would get
-            // second element from list)
-            Double index_to_get_from = new Double(0);
-            switch_id = switch_list.get_val_on_key(null,index_to_get_from);
-        } catch (Exception _ex) {
-            _ex.printStackTrace();
-            assert(false);
-        }
-
+        // wait for first switch to connect
+        Util.wait_on_switches(num_switches_app);
+        
+        // Discover the id of the first connected switch
+        String switch_id = Util.first_connected_switch_id(num_switches_app);
+        
         // get results from re-ordering
         List<Boolean> results = new ArrayList<Boolean>();
         for (int i =0; i < num_times_to_run; ++i)
         {
-            boolean result = run_once(off_on_app,switch_id,shim,allow_reordering);
+            boolean result =
+                run_once(off_on_app,switch_id,shim,allow_reordering);
             results.add(result);
         }
         
@@ -305,7 +280,7 @@ public class Ordering
         {
             allow_reordering = to_set_to;
         }
-        
+
         public boolean rules_exist()
         {
             /// FIXME: Must reimplement

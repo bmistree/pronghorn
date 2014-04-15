@@ -84,6 +84,10 @@ public class Fairness
     // This queue keeps track of all the work in the system
     final static ConcurrentLinkedQueue<String> tsafe_queue =
         new ConcurrentLinkedQueue<String>();
+
+    // exact numbers don't matter; they just need to be distinct
+    private static final int TCP_SERVICE_REFERENCE_PORT_A = 39318;
+    private static final int TCP_SERVICE_REFERENCE_PORT_B = 39319;
     
     
     public static void main (String[] args)
@@ -112,18 +116,24 @@ public class Fairness
         EndpointConstructor side_a_constructor =
             new EndpointConstructor(true,use_wound_wait);
 
+        RalphGlobals a_globals = side_a_constructor.ralph_globals;
+        RalphGlobals b_globals = side_b_constructor.ralph_globals;
+
         
         /* Start up pronghorn */
 
         // listen for connections to side b on port TCP_LISTENING_PORT
         Ralph.tcp_accept(
             side_b_constructor, HOST_NAME, TCP_LISTENING_PORT,
-            new RalphGlobals());
+            b_globals);
 
         // wait for things to settle down
-        try {        
+        try
+        {
             Thread.sleep(1000);
-        } catch (InterruptedException _ex) {
+        }
+        catch (InterruptedException _ex)
+        {
             _ex.printStackTrace();
             assert(false);
         }
@@ -131,7 +141,6 @@ public class Fairness
         // try to connect to other side
         try
         {
-            RalphGlobals a_globals = new RalphGlobals();
             side_a = (Instance)Ralph.tcp_connect(
                 side_a_constructor, HOST_NAME, TCP_LISTENING_PORT,
                 a_globals);
@@ -270,7 +279,6 @@ public class Fairness
     }
 
     
-    
     /**
        Constructs side_b pronghorn instance in response to a tcp
        connection.
@@ -278,47 +286,79 @@ public class Fairness
     private static class EndpointConstructor implements EndpointConstructorObj
     {
         private boolean for_side_a;
-        private boolean use_wound_wait;
+        public final RalphGlobals ralph_globals;
+        
         public EndpointConstructor(boolean for_side_a,boolean use_wound_wait)
         {
             this.for_side_a = for_side_a;
-            this.use_wound_wait = use_wound_wait;
+
+            if (use_wound_wait)
+            {
+                if (for_side_a)
+                {
+                    ralph_globals = new RalphGlobals(
+                        DeadlockAvoidanceAlgorithm.WOUND_WAIT,
+                        TCP_SERVICE_REFERENCE_PORT_A);
+                }
+                else
+                {
+                    ralph_globals = new RalphGlobals(
+                        DeadlockAvoidanceAlgorithm.WOUND_WAIT,
+                        TCP_SERVICE_REFERENCE_PORT_B);
+                }
+            }
+            else
+            {
+                if (for_side_a)
+                {
+                    ralph_globals =
+                        new RalphGlobals(TCP_SERVICE_REFERENCE_PORT_A);
+                }
+                else
+                {
+                    ralph_globals =
+                        new RalphGlobals(TCP_SERVICE_REFERENCE_PORT_B);
+                }
+            }
         }
         
         @Override
         public Endpoint construct(
             RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj)
         {
-            Instance to_return = null;
-
-            RalphGlobals globals_to_use = globals;
-            if (use_wound_wait)
+            //// DEBUG: Sanity check: globals passed in should be same
+            //// as ralph_globals registered locally.
+            if (globals != ralph_globals)
             {
-                globals_to_use =
-                    new RalphGlobals(DeadlockAvoidanceAlgorithm.WOUND_WAIT);
+                System.out.println(
+                    "\nPassed in unexpected ralph globals when " +
+                    "constructing.\n");
+                assert(false);
             }
-
+            //// END DEBUG
+            
+            Instance to_return = null;
             try
             {
-                to_return = new Instance(globals_to_use,conn_obj);
+                to_return = new Instance(globals,conn_obj);
                 if (for_side_a)
                 {
                     side_a = to_return;
                     off_on_app_a = new MultiControllerOffOn(
-                        globals_to_use,new SingleSideConnection());
+                        globals,new SingleSideConnection());
                     side_a.add_application(off_on_app_a);
                 }
                 else
                 {
                     side_b = to_return;
                     off_on_app_b = new MultiControllerOffOn(
-                        globals_to_use,new SingleSideConnection());
+                        globals,new SingleSideConnection());
                     side_b.add_application(off_on_app_b);
                 }
             }
-            catch (Exception _ex)
+            catch (Exception ex)
             {
-                _ex.printStackTrace();
+                ex.printStackTrace();
                 assert(false);
             }
             return to_return;

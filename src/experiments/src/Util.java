@@ -1,5 +1,8 @@
 package experiments;
 
+import java.lang.Process;
+import java.lang.Runtime;
+
 import java.util.HashSet;
 import java.util.Set;
 
@@ -7,6 +10,8 @@ import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
 import java.io.IOException;
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -250,7 +255,53 @@ public class Util
             if (! all_times.isEmpty())
                 buffer.append("\n");
         }
-        
+
+
+        /**
+           @param {String} switch_id --- The name of the switch to
+           query for its flow table entries. If using mininet, this is
+           likely something like: "system@s1" or "system@s2".
+
+           @returns {int} --- The number of flow table entries.
+         */
+        public int real_flow_table_entry_size(String switch_id)
+        {
+            try
+            {
+                Runtime r = Runtime.getRuntime();
+                Process p = r.exec("ovs-ofctl dump-flows " + switch_id);
+                p.waitFor();
+                BufferedReader b =
+                    new BufferedReader(new InputStreamReader(p.getInputStream()));
+
+                // command returns stdout like the following if it has
+                // two flow table entries:
+
+                // NXST_FLOW reply (xid=0x4):
+                // cookie=0x0, duration=116.601s, table=0, ...
+                // cookie=0x0, duration=4.777s, table=0, ...
+
+                //ie, should subtract 1 from number of distinct lines to
+                //get number of flow table entries.
+
+                String line = "";
+                int number_lines = 0;
+                while ((line = b.readLine()) != null)
+                    ++number_lines;
+                return number_lines - 1;
+            }
+            catch (IOException ex)
+            {
+                ex.printStackTrace();
+                assert(false);
+            }
+            catch (InterruptedException ex)
+            {
+                ex.printStackTrace();
+                assert(false);
+            }
+
+            return -1;
+        }
     }
-    
 }

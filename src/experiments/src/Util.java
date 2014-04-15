@@ -300,8 +300,31 @@ public class Util
                 ex.printStackTrace();
                 assert(false);
             }
-
             return -1;
+        }
+
+        /**
+           Sends a message down to switch to drop all its flow table
+           entries.
+         */
+        public void clear_flows_hardware (String switch_id)
+        {
+            try
+            {
+                Runtime r = Runtime.getRuntime();
+                Process p = r.exec("ovs-ofctl del-flows " + switch_id);
+                p.waitFor();
+            }
+            catch (IOException ex)
+            {
+                ex.printStackTrace();
+                assert(false);
+            }
+            catch (InterruptedException ex)
+            {
+                ex.printStackTrace();
+                assert(false);
+            }
         }
     }
 }

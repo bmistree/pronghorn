@@ -106,8 +106,12 @@ Service OffOnApplication implements Interface IApplication
         }
     }
     
-    logical_clear_switch_do_not_flush_clear_to_hardware()
+    logical_clear_switch_do_not_flush_clear_to_hardware(Text switch_id)
     {
-        print ('\nStub method: must finish adding logical_clear ... \n');
+        atomically
+        {
+            Struct StructWrappedSwitch sws = switch_map.get(switch_id);
+            sws.wrapped_switch.logical_clear_switch_do_not_flush_clear_to_hardware();
+        }
     }
 }

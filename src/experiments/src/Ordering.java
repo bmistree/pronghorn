@@ -197,9 +197,12 @@ public class Ordering
         shim.set_num_outstanding_before_push(number_times_to_run);
 
         shim.force_clear();
-        try {
-            off_on_app.logical_clear_switch_do_not_flush_clear_to_hardware();
-        } catch (Exception _ex) {
+        try
+        {
+            off_on_app.logical_clear_switch_do_not_flush_clear_to_hardware(switch_id);
+        }
+        catch (Exception _ex)
+        {
             _ex.printStackTrace();
             assert(false);
             Util.force_shutdown();

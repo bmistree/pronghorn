@@ -101,4 +101,18 @@ Service WrappedSwitch
         Struct FlowTableEntry entry = wrapped_switch.ftable.get(index);
         return ft_util.copy_entry(entry);
     }
+
+
+    /**
+       FIXME: Should eventually remove.  Only using this method as a simple hook
+       for ordering tests.  General idea is that test uses an out-of-band
+       mechanism to clear flow tables on switches and we need to also clear
+       logical flow tables (without pushing these clears to switches).  Use this
+       method to do so.
+     */
+    logical_clear_switch_do_not_flush_clear_to_hardware()
+    {
+        wrapped_switch.ftable.clear();
+        wrapped_switch.delta.ft_deltas.clear();
+    }
 }

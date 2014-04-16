@@ -55,7 +55,7 @@ public class SingleControllerLatency
         {
             RalphGlobals ralph_globals = new RalphGlobals();
             prong = new Instance(
-                new RalphGlobals(),new SingleSideConnection());
+                ralph_globals,new SingleSideConnection());
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
             off_on_app = new OffOnApplication(

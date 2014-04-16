@@ -15,14 +15,15 @@ import ralph.Variables.AtomicListVariable;
 
 import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
 import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
+import pronghorn.FTable._InternalFlowTableEntry;
+
 
 /**
    When InternalPronghornSwitchGuard is ready to commit, it uses this
    class to grab deltas that should be pushed to hardware.
  */
 public class DeltaListStateSupplier
-    implements IHardwareStateSupplier<
-        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>
+    implements IHardwareStateSupplier<List<FTableUpdate>>
 {
     protected static final Logger log =
         LoggerFactory.getLogger(DeltaListStateSupplier.class);
@@ -36,15 +37,18 @@ public class DeltaListStateSupplier
     }
 
     @Override
-    public List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
-        get_state_to_push(ActiveEvent active_event)
+    public List<FTableUpdate> get_state_to_push(ActiveEvent active_event)
     {
         // FIXME: ensure that this is a safe access.
         AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
             internal_ft_deltas_list = get_internal_ft_deltas_list();
 
-        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> to_return = 
+        // FIXME: Ensure that this is also a safe access.
+        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> internal_list = 
             internal_ft_deltas_list.dirty_val.val;
+
+        List<FTableUpdate> to_return = produce_ftable_updates(internal_list);
+
         
         // FIXME: REALLY, REALLY shouldn't have to do this here.  only
         // require it because speculate is the only place where we
@@ -82,6 +86,78 @@ public class DeltaListStateSupplier
 
         return internal_ft_deltas_list;
     }
+
+
+    /**
+       @param {boolean} undo --- true if should actually try to
+       undo the changes in dirty, rather than apply them.  Note: if
+       reverse is true, this means that we must go backwards through
+       the list.
+     */
+    private List<FTableUpdate> produce_ftable_updates(
+        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> dirty)
+    {
+        List<FTableUpdate> floodlight_updates =
+            new ArrayList<FTableUpdate>();
+        
+        for (RalphObject ro : dirty)
+        {
+            _InternalFlowTableDelta flow_table_delta = null;
+            _InternalFlowTableEntry entry = null;
+            try
+            {
+                flow_table_delta = (_InternalFlowTableDelta) (ro.get_val(null));
+                if (flow_table_delta.entry.dirty_val != null)
+                    entry = flow_table_delta.entry.dirty_val.val;
+                else
+                    entry = flow_table_delta.entry.val.val;
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+                log.error(
+                    "Should always be able to cast to InternalFlowTableDelta",
+                    ex.toString());
+                assert(false);
+            }
+
+            // non tvar, therefore has different val.val access pattern.
+            boolean insertion =
+                flow_table_delta.inserted.val.val.booleanValue();
+            String src_ip = null;
+            if (entry.src_ip.dirty_val != null)
+                src_ip = entry.src_ip.dirty_val.val;
+            else
+                src_ip = entry.src_ip.val.val;
+            
+            String dst_ip = null;
+            if (entry.dst_ip.dirty_val != null)
+                dst_ip = entry.dst_ip.dirty_val.val;
+            else
+                dst_ip = entry.dst_ip.val.val;
+            
+            String actions = null;
+            if (entry.action.dirty_val != null)
+                actions = entry.action.dirty_val.val;
+            else
+                actions = entry.action.val.val;
+
+            FTableUpdate update_to_push =  null;
+            // FIXME: get rid of entry names in PronghonrFlowTableEntry
+            String entry_name = "";
+            
+            if (insertion)
+            {
+                update_to_push = FTableUpdate.create_insert_update(
+                    entry_name, src_ip, dst_ip,actions);
+            }
+            else
+            {
+                update_to_push = FTableUpdate.create_remove_update(
+                    entry_name, src_ip, dst_ip,actions);
+            }
+            floodlight_updates.add(update_to_push);
+        }
+        return floodlight_updates;
+    }
 }
-    
-                                 

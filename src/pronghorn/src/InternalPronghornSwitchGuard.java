@@ -20,9 +20,8 @@ import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
 
 public class InternalPronghornSwitchGuard extends AtomicNumberVariable
 {
-    private final ExtendedHardwareOverrides<
-        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>
-    extended_hardware_overrides;
+    private final ExtendedHardwareOverrides<List<FTableUpdate>>
+        extended_hardware_overrides;
 
     public final String ralph_internal_switch_id;
     private final boolean should_speculate;
@@ -53,10 +52,9 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
 
         should_speculate = _should_speculate;
         extended_hardware_overrides =
-            new ExtendedHardwareOverrides<
-                List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>>(
-                    hardware_applier,hardware_state_supplier,speculate_listener,
-                    should_speculate,ralph_globals);
+            new ExtendedHardwareOverrides<List<FTableUpdate>>(
+                hardware_applier,hardware_state_supplier,speculate_listener,
+                should_speculate,ralph_globals);
         extended_hardware_overrides.set_controlling_object(this);
     }
 

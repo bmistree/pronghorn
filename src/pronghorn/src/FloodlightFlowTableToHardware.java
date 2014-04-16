@@ -15,10 +15,6 @@ import ralph.RalphObject;
 import RalphExceptions.BackoutException;
 import RalphDataWrappers.ListTypeDataWrapper;
 
-import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
-import pronghorn.FTable._InternalFlowTableEntry;
-
-
 /**
    Subclass this object to override behavior of internal list when
    it is asked to push changes to hardware or undo pushed changes
@@ -75,102 +71,26 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
         return floodlight_switch_id + ":_:" + Integer.toString(prev);
     }
 
-    
-    /**
-       @param {boolean} undo --- true if should actually try to
-       undo the changes in dirty, rather than apply them.  Note: if
-       reverse is true, this means that we must go backwards through
-       the list.
-     */
-    private List<FTableUpdate> produce_ftable_updates(
-        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> dirty,
-        boolean undo)
-    {
-        List<FTableUpdate> floodlight_updates = new ArrayList<FTableUpdate>();
         
-        for (RalphObject ro : dirty)
-        {
-            _InternalFlowTableDelta flow_table_delta = null;
-            _InternalFlowTableEntry entry = null;
-            try
-            {
-                flow_table_delta = (_InternalFlowTableDelta) (ro.get_val(null));
-                if (flow_table_delta.entry.dirty_val != null)
-                    entry = flow_table_delta.entry.dirty_val.val;
-                else
-                    entry = flow_table_delta.entry.val.val;
-            }
-            catch (Exception ex)
-            {
-                ex.printStackTrace();
-                log.error(
-                    "Should always be able to cast to InternalFlowTableDelta",
-                    ex.toString());
-                assert(false);
-            }
-
-            // non tvar, therefore has different val.val access pattern.
-            boolean insertion =
-                flow_table_delta.inserted.val.val.booleanValue();
-            String src_ip = null;
-            if (entry.src_ip.dirty_val != null)
-                src_ip = entry.src_ip.dirty_val.val;
-            else
-                src_ip = entry.src_ip.val.val;
-            
-            String dst_ip = null;
-            if (entry.dst_ip.dirty_val != null)
-                dst_ip = entry.dst_ip.dirty_val.val;
-            else
-                dst_ip = entry.dst_ip.val.val;
-            
-            String actions = null;
-            if (entry.action.dirty_val != null)
-                actions = entry.action.dirty_val.val;
-            else
-                actions = entry.action.val.val;
-
-            FTableUpdate update_to_push =  null;
-            // FIXME: get rid of entry names in PronghonrFlowTableEntry
-            String entry_name = "";
-            
-            if ((insertion && (! undo)) ||
-                (undo && (! insertion)))
-            {
-                update_to_push = FTableUpdate.create_insert_update(
-                    entry_name, src_ip, dst_ip,actions);
-            }
-            else
-            {
-                update_to_push = FTableUpdate.create_remove_update(
-                    entry_name, src_ip, dst_ip,actions);
-            }
-            floodlight_updates.add(update_to_push);
-        }
-        return floodlight_updates;
-    }
-    
-    
     @Override
-    public boolean apply(
-        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
-        dirty)
+    public boolean apply(List<FTableUpdate> to_apply)
     {
-        List<FTableUpdate> floodlight_updates =
-            produce_ftable_updates(dirty,false);
         // request shim to push the changes to swithces.
         return shim.switch_rtable_updates(
-            floodlight_switch_id,floodlight_updates);
+            floodlight_switch_id,to_apply);
     }
 
-    
+
+    /**
+       @param {List<FTableUpdate>} to_undo --- The original operations
+       that were pushed to the switch, which we must now undo.  (Ie.,
+       must reverse operations in to_undo before applying to switch.)
+     */
     @Override
-    public boolean undo(
-        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>
-        to_undo)
+    public boolean undo(List<FTableUpdate> to_undo)
     {
-        List<FTableUpdate> floodlight_updates =
-            produce_ftable_updates(to_undo,true);
+        List<FTableUpdate> floodlight_updates = 
+            transform_from_to_undo(to_undo);
         return shim.switch_rtable_updates(
             floodlight_switch_id,floodlight_updates);
     }

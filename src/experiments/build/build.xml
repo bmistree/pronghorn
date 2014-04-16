@@ -214,7 +214,8 @@
                single_controller_latency,single_controller_throughput,
                single_controller_variable_contention_throughput,
                read_only,multi_controller_latency,
-               multi_controller_throughput,ordering,fairness,speculation"
+               multi_controller_throughput,ordering,
+               multi_controller_fairness,speculation"
       description="create jars for each type of experiment">
   </target>
 
@@ -374,20 +375,20 @@
   </target>
 
 
-  <!-- Testing fairness properties   -->
+  <!-- Multi-controller fairness properties   -->
   <property
-      name="fairness_jar"
-      value="fairness.jar"/>
+      name="multi_controller_fairness_jar"
+      value="multi_controller_fairness.jar"/>
   <target
-      name="fairness"
+      name="multi_controller_fairness"
       depends="compile_libs,compile_experiments"
       description="Show that different deadlock
                    avoidance guarantees provide different
                    fairness guarantees.">
 
       <antcall target="make_jar">
-        <param name="main_class" value="Fairness"/>
-        <param name="dest_jar" value="${fairness_jar}"/>
+        <param name="main_class" value="MultiControllerFairness"/>
+        <param name="dest_jar" value="${multi_controller_fairness_jar}"/>
       </antcall>
   </target>
 
@@ -427,7 +428,7 @@
     <delete file="${multi_controller_error_jar}"/>
     <delete file="${multi_controller_throughput_jar}"/>
     <delete file="${ordering_jar}"/>
-    <delete file="${fairness_jar}"/>
+    <delete file="${multi_controller_fairness_jar}"/>
     <delete file="${error_jar}"/>
     <delete file="${single_controller_latency_jar}"/>
     <delete file="${speculation_jar}"/>

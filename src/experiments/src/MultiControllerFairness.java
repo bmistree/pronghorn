@@ -33,7 +33,7 @@ import experiments.FairnessUtil;
    that transactions can only run serially.  
  */
 
-public class Fairness
+public class MultiControllerFairness
 {
     public static final int USE_WOUND_WAIT_ARG_INDEX = 0;
     public static final int NUM_EXTERNAL_CALLS_ARG_INDEX = 1;

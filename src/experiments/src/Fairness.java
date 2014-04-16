@@ -2,12 +2,10 @@ package experiments;
 
 import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
-import experiments.OffOnApplicationJava.OffOnApplication;
-import experiments.IOffOnApplicationJava.IOffOnApplication;
 import pronghorn.InstanceJava.Instance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.MultiControllerOffOnJava.MultiControllerOffOn;
-
+import experiments.IOffOnApplicationJava.IOffOnApplication;
 
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
@@ -65,10 +63,6 @@ public class Fairness
     private static Instance side_b = null;
     private static MultiControllerOffOn off_on_app_b = null;
 
-    // Each controller tries to dump this much work into system when
-    // it starts.  (Note: one controller is given preference and
-    // begins dumping first)
-    static int NUM_EXTERNAL_CALLS = 1000;
     
     // how many ms to wait before requesting b to dump its tasks after a has
     // started its tasks
@@ -81,10 +75,7 @@ public class Fairness
 
     // extra debugging flag: something for us to watch out for in case we had an
     // exception.
-    final static AtomicBoolean had_exception = new AtomicBoolean(false);
-    // This queue keeps track of all the work in the system
-    final static ConcurrentLinkedQueue<String> tsafe_queue =
-        new ConcurrentLinkedQueue<String>();
+    final public static AtomicBoolean had_exception = new AtomicBoolean(false);
 
     // exact numbers don't matter; they just need to be distinct
     private static final int TCP_SERVICE_REFERENCE_PORT_A = 39318;
@@ -105,8 +96,11 @@ public class Fairness
         
         System.out.println(
             "\nUsing wound wait: " + Boolean.toString(use_wound_wait) + "\n");
-        
-        NUM_EXTERNAL_CALLS =
+
+        // Each controller tries to dump this much work into system
+        // when it starts.  (Note: one controller is given preference
+        // and begins dumping first)
+        int num_external_calls =
             Integer.parseInt(args[NUM_EXTERNAL_CALLS_ARG_INDEX]);
         
         String result_filename = args[OUTPUT_FILENAME_INDEX];
@@ -157,7 +151,6 @@ public class Fairness
         SingleInstanceFloodlightShim shim_a = create_started_shim(side_a);
         SingleInstanceFloodlightShim shim_b = create_started_shim(side_b);
 
-        
         /* wait a while to ensure that all switches are connected,etc. */
         try
         {
@@ -174,9 +167,15 @@ public class Fairness
         // operations across all switches, regardless of what's passed
         // in, so just passing in dummy switch id.
         String dummy_switch_id = "";
-        run_operations(off_on_app_a,off_on_app_b,dummy_switch_id);
+        // This queue keeps track of all the work in the system
+        ConcurrentLinkedQueue<String> tsafe_queue =
+            new ConcurrentLinkedQueue<String>();
 
-        write_results(result_filename);
+        run_operations(
+            off_on_app_a,off_on_app_b,dummy_switch_id,num_external_calls,
+            tsafe_queue);
+
+        write_results(result_filename,tsafe_queue);
         
         // actually tell shims to stop.
         shim_a.stop();
@@ -187,12 +186,15 @@ public class Fairness
     }
 
 
-    private static void write_results(String result_filename)
+    public static void write_results(
+        String result_filename,ConcurrentLinkedQueue<String> tsafe_queue)
     {
         String to_write = "";
         for (String endpoint_id : tsafe_queue)
             to_write += endpoint_id + ",";
 
+        if (had_exception.get())
+            to_write += " **** THERE WAS AN EXCEPTION *** \n";
         Util.write_results_to_file(result_filename,to_write);
     }
 
@@ -221,16 +223,21 @@ public class Fairness
        onto side_b.
      */
     public static void run_operations(
-        MultiControllerOffOn app_a, MultiControllerOffOn app_b,String switch_id)
+        IOffOnApplication app_a, IOffOnApplication app_b,String switch_id,
+        int num_external_calls,ConcurrentLinkedQueue<String> tsafe_queue)
     {
-        EndpointTask task_a = new EndpointTask(app_a,ENDPOINT_A_IDENTIFIER,switch_id);
-        EndpointTask task_b = new EndpointTask(app_b,ENDPOINT_B_IDENTIFIER,switch_id);
+        EndpointTask task_a =
+            new EndpointTask(
+                app_a,ENDPOINT_A_IDENTIFIER,switch_id,tsafe_queue);
+        EndpointTask task_b =
+            new EndpointTask(
+                app_b,ENDPOINT_B_IDENTIFIER,switch_id,tsafe_queue);
 
         ExecutorService executor_a = create_executor();
         ExecutorService executor_b = create_executor();
         
         // put a bunch of tasks rooted at A into system.
-        for (int i = 0; i < NUM_EXTERNAL_CALLS; ++i)
+        for (int i = 0; i < num_external_calls; ++i)
             executor_a.execute(task_a);
 
         // give those tasks a head start to get started before b can start its
@@ -245,7 +252,7 @@ public class Fairness
         }
         
         // put a bunch of tasks rooted at B into system
-        for (int i = 0; i < NUM_EXTERNAL_CALLS; ++i)
+        for (int i = 0; i < num_external_calls; ++i)
             executor_b.execute(task_b);
         
         // join on executor services
@@ -270,13 +277,16 @@ public class Fairness
         private final IOffOnApplication app;
         private final String principal_id;
         private final String switch_id;
+        private final ConcurrentLinkedQueue<String> tsafe_queue;
         
         public EndpointTask(
-            IOffOnApplication _app, String _principal_id, String _switch_id)
+            IOffOnApplication _app, String _principal_id, String _switch_id,
+            ConcurrentLinkedQueue<String> _tsafe_queue)
         {
             app = _app;
             principal_id = _principal_id;
             switch_id = _switch_id;
+            tsafe_queue = _tsafe_queue;
         }
 
         public void run ()

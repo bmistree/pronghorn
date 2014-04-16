@@ -143,7 +143,7 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
             else
             {
                 update_to_push = FTableUpdate.create_remove_update(
-                    entry_name, src_ip, dst_ip);
+                    entry_name, src_ip, dst_ip,actions);
             }
             floodlight_updates.add(update_to_push);
         }

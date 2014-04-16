@@ -55,7 +55,15 @@ public class SingleControllerFairness
         GetNumberSwitches num_switches_app = null;
         try
         {
-            RalphGlobals ralph_globals = new RalphGlobals();
+            RalphGlobals ralph_globals = null;
+            if (use_wound_wait)
+            {
+                ralph_globals = new RalphGlobals(
+                    DeadlockAvoidanceAlgorithm.WOUND_WAIT);
+            }
+            else
+                ralph_globals = new RalphGlobals();
+
             prong = new Instance(
                 ralph_globals,new SingleSideConnection());
             num_switches_app = new GetNumberSwitches(
@@ -68,11 +76,13 @@ public class SingleControllerFairness
             prong.add_application(num_switches_app);
             prong.add_application(off_on_app_a);
             prong.add_application(off_on_app_b);
-        } catch (Exception _ex) {
+        }
+        catch (Exception _ex)
+        {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
         }
-        
+
         SingleInstanceFloodlightShim shim = new SingleInstanceFloodlightShim();
         
         SingleInstanceSwitchStatusHandler switch_status_handler =

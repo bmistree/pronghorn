@@ -101,6 +101,24 @@ public class FairnessUtil
         Util.write_results_to_file(result_filename,to_write);
     }
 
+    public static void print_usage()
+    {
+        String usage_string = "";
+
+        // NUMBER_THREADS_ARG_INDEX
+        usage_string +=
+            "\n\t<boolean>: true if should run using wound-wait; " +
+            "false if should use ralph scheduler.\n";
+        
+        // NUMBER_OPS_TO_RUN_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to run per experiment\n";
+
+        // OUTPUT_FILENAME_ARG_INDEX
+        usage_string += "\n\t<String> : output filename\n";
+
+        System.out.println(usage_string);
+    }
 
     
     private static class PrincipalTask implements Runnable
@@ -150,5 +168,5 @@ public class FairnessUtil
                 }
             });
         return executor;
-    }
+    }    
 }

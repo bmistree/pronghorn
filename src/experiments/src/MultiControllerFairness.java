@@ -22,7 +22,6 @@ import pronghorn.InstanceJava.Instance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.MultiControllerOffOnJava.MultiControllerOffOn;
 import experiments.Util;
-import experiments.FairnessUtil;
 
 /**
    Experiment, start a number of transactions on one controller, then,
@@ -62,7 +61,7 @@ public class MultiControllerFairness
         /* Grab arguments */
         if (args.length != 3)
         {
-            print_usage();
+            FairnessUtil.print_usage();
             return;
         }
 
@@ -160,26 +159,6 @@ public class MultiControllerFairness
         Util.force_shutdown();
     }
 
-
-    private static void print_usage()
-    {
-        String usage_string = "";
-
-        // NUMBER_THREADS_ARG_INDEX
-        usage_string +=
-            "\n\t<boolean>: true if should run using wound-wait; " +
-            "false if should use ralph scheduler.\n";
-        
-        // NUMBER_OPS_TO_RUN_ARG_INDEX
-        usage_string +=
-            "\n\t<int>: Number ops to run per experiment\n";
-
-        // OUTPUT_FILENAME_ARG_INDEX
-        usage_string += "\n\t<String> : output filename\n";
-
-        System.out.println(usage_string);
-    }
-    
     /**
        Constructs side_b pronghorn instance in response to a tcp
        connection.

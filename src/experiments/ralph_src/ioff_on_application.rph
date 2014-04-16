@@ -1,0 +1,6 @@
+
+Interface IOffOnApplication
+{
+    // perform a single operation of this application.  
+    single_op(Text switch_id);
+}

@@ -3,6 +3,7 @@ package experiments;
 import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
 import experiments.OffOnApplicationJava.OffOnApplication;
+import experiments.IOffOnApplicationJava.IOffOnApplication;
 import pronghorn.InstanceJava.Instance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.MultiControllerOffOnJava.MultiControllerOffOn;
@@ -168,8 +169,12 @@ public class Fairness
             assert(false);
         }
 
-        // actually run all operations 
-        run_operations(off_on_app_a,off_on_app_b);
+        /*actually run all operations*/
+        // in multi-controller case, know that will just perform
+        // operations across all switches, regardless of what's passed
+        // in, so just passing in dummy switch id.
+        String dummy_switch_id = "";
+        run_operations(off_on_app_a,off_on_app_b,dummy_switch_id);
 
         write_results(result_filename);
         
@@ -216,10 +221,10 @@ public class Fairness
        onto side_b.
      */
     public static void run_operations(
-        MultiControllerOffOn app_a, MultiControllerOffOn app_b)
+        MultiControllerOffOn app_a, MultiControllerOffOn app_b,String switch_id)
     {
-        EndpointTask task_a = new EndpointTask(app_a,ENDPOINT_A_IDENTIFIER);
-        EndpointTask task_b = new EndpointTask(app_b,ENDPOINT_B_IDENTIFIER);
+        EndpointTask task_a = new EndpointTask(app_a,ENDPOINT_A_IDENTIFIER,switch_id);
+        EndpointTask task_b = new EndpointTask(app_b,ENDPOINT_B_IDENTIFIER,switch_id);
 
         ExecutorService executor_a = create_executor();
         ExecutorService executor_b = create_executor();
@@ -262,21 +267,27 @@ public class Fairness
     
     private static class EndpointTask implements Runnable
     {
-        private final MultiControllerOffOn app;
-        private String endpoint_id = null;
-
-        public EndpointTask(MultiControllerOffOn _app, String _endpoint_id)
+        private final IOffOnApplication app;
+        private final String principal_id;
+        private final String switch_id;
+        
+        public EndpointTask(
+            IOffOnApplication _app, String _principal_id, String _switch_id)
         {
             app = _app;
-            endpoint_id = _endpoint_id;
+            principal_id = _principal_id;
+            switch_id = _switch_id;
         }
 
         public void run ()
         {
-            try {
-                app.single_op_and_partner();
-                tsafe_queue.add(endpoint_id + "|" + System.nanoTime());
-            } catch(Exception ex) {
+            try
+            {
+                app.single_op(switch_id);
+                tsafe_queue.add(principal_id + "|" + System.nanoTime());
+            }
+            catch(Exception ex)
+            {
                 ex.printStackTrace();
                 had_exception.set(true);
             }

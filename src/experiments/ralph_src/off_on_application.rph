@@ -7,8 +7,11 @@ alias Service Instance as 'pronghorn.InstanceJava.Instance';
 #include 'wrapped_switch.rph'
 alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
 
+alias Interface IOffOnApplication as 'experiments.IOffOnApplicationJava.IOffOnApplication';
 
-Service OffOnApplication implements Interface IApplication
+
+Service OffOnApplication
+    implements Interface IApplication, Interface IOffOnApplication
 {
     Service Instance inst = null;
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
@@ -23,11 +26,14 @@ Service OffOnApplication implements Interface IApplication
         switch_map = switch_map_;
     }
 
-    // @Override --- do nothing when first installed
+    // @Override --- from IApplication interface; do nothing when
+    // first installed
     run()
     {}
-    
-    // For switch_id, either append an entry to the switch's flow table (if none
+
+
+    // @Override --- from IOffOnApplication interface; For switch_id,
+    // either append an entry to the switch's flow table (if none
     // exists) or remove an entry if there already is one.
     single_op(Text switch_id)
     {

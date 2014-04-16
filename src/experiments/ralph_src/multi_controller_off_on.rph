@@ -4,13 +4,16 @@ alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
 alias Service Instance as 'pronghorn.InstanceJava.Instance';
 alias Endpoint PronghornConnection as 'experiments.PronghornConnectionJava.PronghornConnection';
 alias Service OffOnApplication as 'experiments.OffOnApplicationJava.OffOnApplication';
+alias Interface IOffOnApplication as 'experiments.IOffOnApplicationJava.IOffOnApplication';
+
 
 Struct ConnectionWrapper
 {
     Endpoint PronghornConnection child;
 }
 
-Service MultiControllerOffOn implements Interface IApplication
+Service MultiControllerOffOn
+    implements Interface IApplication, Interface IOffOnApplication
 {
     Service Instance inst = null;
     Service OffOnApplication off_on_app;
@@ -18,7 +21,7 @@ Service MultiControllerOffOn implements Interface IApplication
 
     TVar List(element : Struct ConnectionWrapper) children;
 
-    // override: from IApplication interface
+    // @Override: from IApplication interface
     init(Service Instance inst_,
         TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
     {
@@ -27,12 +30,25 @@ Service MultiControllerOffOn implements Interface IApplication
         off_on_app.init(inst,switch_map);
     }
 
-    // override
+    // @Override: from IApplication interface
     run()
     {
         off_on_app.run();
     }
 
+    // @Override: from IOffOnApplication interface
+    single_op(Text dummy_switch_id)
+    {
+        // Ask partner to perform action and perform action locally.
+        atomically
+        {
+            @partner.called_only_by_partner_single_op();
+            for (Text switch_id in switch_map)
+                off_on_app.single_op(switch_id);
+        }
+    }
+
+    
     add_child_connection(Endpoint PronghornConnection new_child)
     {
         Struct ConnectionWrapper wrapper;
@@ -58,17 +74,6 @@ Service MultiControllerOffOn implements Interface IApplication
         {
             for (Text switch_id in switch_map)
                 off_on_app.add_entry_switch(switch_id);
-        }
-    }
-
-    single_op_and_partner()
-    {
-        // Ask partner to perform action and
-        atomically
-        {
-            @partner.called_only_by_partner_single_op();
-            for (Text switch_id in switch_map)
-                off_on_app.single_op(switch_id);
         }
     }
     

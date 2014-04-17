@@ -19,7 +19,7 @@ Struct ConnectionWrapper
     Endpoint PronghornConnectionFairness child = null;
 }
 
-Service MultiControllerFairness
+Service MultiControllerFairnessApp
     implements Interface IApplication, Interface IOffOnApplication
 {
     Service Instance inst = null;

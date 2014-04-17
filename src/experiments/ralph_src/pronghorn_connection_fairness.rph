@@ -1,10 +1,10 @@
-alias Service MultiControllerFairness as 'experiments.MultiControllerFairnessJava.MultiControllerFairness';
+alias Service MultiControllerFairnessApp as 'experiments.MultiControllerFairnessJava.MultiControllerFairnessApp';
 
 Endpoint PronghornConnectionFairness
 {
-    Service MultiControllerFairness fairness_app = null;
+    Service MultiControllerFairnessApp fairness_app = null;
 
-    set_fairness_app(Service MultiControllerFairness to_set_to)
+    set_fairness_app(Service MultiControllerFairnessApp to_set_to)
     {
         fairness_app = to_set_to;
     }

@@ -165,6 +165,25 @@
       <arg line="-c SingleHostSpeculationJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/multi_controller_fairness.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/MultiControllerFairnessJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c MultiControllerFairnessJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_fairness.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/PronghornConnectionFairnessJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c PronghornConnectionFairnessJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+
     
   </target>
 

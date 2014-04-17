@@ -1,0 +1,25 @@
+alias Service MultiControllerFairness as 'experiments.MultiControllerFairnessJava.MultiControllerFairness';
+
+Endpoint PronghornConnectionFairness
+{
+    Service MultiControllerFairness fairness_app = null;
+
+    set_fairness_app(Service MultiControllerFairness to_set_to)
+    {
+        fairness_app = to_set_to;
+    }
+
+    // called locally 
+    single_op()
+    {
+        @partner.receive_single_op();
+    }
+
+    receive_single_op()
+    {
+        // Note: using "" as switch id, because, in practice, performs single op
+        // over all switches.
+        fairness_app.single_op("");
+    }
+    
+}

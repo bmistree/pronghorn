@@ -1,0 +1,81 @@
+#include 'iapplication.rph'
+alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
+
+alias Service Instance as 'pronghorn.InstanceJava.Instance';
+alias Endpoint PronghornConnectionFairness as 'experiments.PronghornConnectionFairnessJava.PronghornConnectionFairness';
+alias Service OffOnApplication as 'experiments.OffOnApplicationJava.OffOnApplication';
+alias Interface IOffOnApplication as 'experiments.IOffOnApplicationJava.IOffOnApplication';
+
+
+/**
+   This test is supposed to run on multiple controllers.
+
+   The head controller sends an event into the system, which performs a read on
+   a local switch, and fowrards the request on to all children.  If a child has
+   should_write set to true, then the child performs a write on its switch.
+ */
+
+Struct ConnectionWrapper
+{
+    Endpoint PronghornConnectionFairness child;
+}
+
+Service MultiControllerFairness
+    implements Interface IApplication, Interface IOffOnApplication
+{
+    Service Instance inst = null;
+    Service OffOnApplication off_on_app;
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+
+    // Other controllers connected to.  Connections are directional.  Eg.,
+    // A -> B
+    // where A only requests single ops on B (B cannot request single ops on A).
+    TVar List(element : Struct ConnectionWrapper) children;
+
+    // When receive a single_op request, most nodes do not write to their local
+    // switches: they only perform reads.  This flag tells us whether we should
+    // write or read.
+    TrueFalse should_write = False;
+    set_should_write(TrueFalse should_write_)
+    {
+        should_write = should_write;
+    }
+    
+    // @Override: from IApplication interface
+    init(Service Instance inst_,
+        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    {
+        inst = inst_;
+        switch_map = switch_map_;
+        off_on_app.init(inst,switch_map);
+    }
+
+    // @Override: from IApplication interface
+    run()
+    {
+        off_on_app.run();
+    }
+
+    // @Override: from IOffOnApplication interface
+    single_op(Text dummy_switch_id)
+    {
+        // Ask partner to perform action and perform action locally.
+        atomically
+        {
+            // perform action locally
+            for (Text switch_id in switch_map)
+            {
+                if (should_write)                
+                    off_on_app.single_op(switch_id);
+                else
+                {
+                    Struct StructWrappedSwitch sws = switch_map.get(switch_id);
+                    sws.wrapped_switch.ftable_size();
+                }
+            }
+            // tell children to perform their reads/writes
+            for (Struct ConnectionWrapper conn_wrap in children)
+                conn_wrap.child.single_op();
+        }
+    }
+}

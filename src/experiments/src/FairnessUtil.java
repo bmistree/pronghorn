@@ -105,7 +105,7 @@ public class FairnessUtil
     {
         String usage_string = "";
 
-        // NUMBER_THREADS_ARG_INDEX
+        // USE_WOUND_WAIT_ARG_INDEX
         usage_string +=
             "\n\t<boolean>: true if should run using wound-wait; " +
             "false if should use ralph scheduler.\n";

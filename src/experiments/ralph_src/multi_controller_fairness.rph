@@ -14,10 +14,9 @@ alias Interface IOffOnApplication as 'experiments.IOffOnApplicationJava.IOffOnAp
    a local switch, and fowrards the request on to all children.  If a child has
    should_write set to true, then the child performs a write on its switch.
  */
-
 Struct ConnectionWrapper
 {
-    Endpoint PronghornConnectionFairness child;
+    Endpoint PronghornConnectionFairness child = null;
 }
 
 Service MultiControllerFairness
@@ -77,5 +76,12 @@ Service MultiControllerFairness
             for (Struct ConnectionWrapper conn_wrap in children)
                 conn_wrap.child.single_op();
         }
+    }
+
+    add_child_connection(Endpoint PronghornConnectionFairness connection)
+    {
+        Struct ConnectionWrapper connection_wrapper;
+        connection_wrapper.child = connection;
+        children.append(connection_wrapper);
     }
 }

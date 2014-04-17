@@ -116,11 +116,15 @@ public class MultiControllerFairness
 
         if (use_wound_wait)
         {
+            System.out.println("\nUsing wound-wait\n");
             ralph_globals = new RalphGlobals(
                 DeadlockAvoidanceAlgorithm.WOUND_WAIT);
         }
         else
+        {
+            System.out.println("\nRalph-scheduling\n");
             ralph_globals = new RalphGlobals();
+        }
         
         /* Start up pronghorn */
         try

@@ -37,7 +37,7 @@ Service MultiControllerFairnessApp
     TrueFalse should_write = False;
     set_should_write(TrueFalse should_write_)
     {
-        should_write = should_write;
+        should_write = should_write_;
     }
     
     // @Override: from IApplication interface
@@ -64,7 +64,7 @@ Service MultiControllerFairnessApp
             // perform action locally
             for (Text switch_id in switch_map)
             {
-                if (should_write)                
+                if (should_write)
                     off_on_app.single_op(switch_id);
                 else
                 {

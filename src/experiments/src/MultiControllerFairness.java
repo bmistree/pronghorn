@@ -219,21 +219,23 @@ public class MultiControllerFairness
             // write results out.
             FairnessUtil.write_results(output_filename,tsafe_queue);
         }
-        
-        // run indefinitely
-        while (true)
+        else
         {
-            try
+            // run indefinitely
+            while (true)
             {
-                Thread.sleep(1000);
-            }
-            catch (InterruptedException _ex)
-            {
-                _ex.printStackTrace();
-                break;
+                try
+                {
+                    Thread.sleep(1000);
+                }
+                catch (InterruptedException _ex)
+                {
+                    _ex.printStackTrace();
+                    break;
+                }
             }
         }
-
+        
         // actually tell shims to stop.
         shim.stop();
         Util.force_shutdown();

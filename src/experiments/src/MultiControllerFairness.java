@@ -125,7 +125,7 @@ public class MultiControllerFairness
             System.out.println("\nRalph-scheduling\n");
             ralph_globals = new RalphGlobals();
         }
-        
+
         /* Start up pronghorn */
         try
         {
@@ -133,6 +133,7 @@ public class MultiControllerFairness
                 ralph_globals,new SingleSideConnection());
             mc_fairness_app_principal_a = new MultiControllerFairnessApp(
                 ralph_globals,new SingleSideConnection());
+            mc_fairness_app_principal_a.set_should_write(should_write);
             prong.add_application(mc_fairness_app_principal_a);
             
             if (is_head)
@@ -142,6 +143,7 @@ public class MultiControllerFairness
                 mc_fairness_app_principal_b = new MultiControllerFairnessApp(
                     ralph_globals,new SingleSideConnection());
                 prong.add_application(mc_fairness_app_principal_b);
+                mc_fairness_app_principal_b.set_should_write(should_write);
             }
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
@@ -184,16 +186,13 @@ public class MultiControllerFairness
                     ralph_globals);
 
                 connection.set_fairness_app(mc_fairness_app_principal_a);
-
                 mc_fairness_app_principal_a.add_child_connection(connection);
-                mc_fairness_app_principal_a.set_should_write(should_write);
 
                 if (is_head)
                 {
                     // head node shares its connections between both
                     // principals.
                     mc_fairness_app_principal_b.add_child_connection(connection);
-                    mc_fairness_app_principal_b.set_should_write(should_write);
                 }
             }
             catch(Exception e)

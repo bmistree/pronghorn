@@ -169,10 +169,15 @@ public class SingleControllerError
             logical_clear_switches(off_on_app,switch_id_list);
         }
 
-
-        // FIXME: Still need to output results_list to file
-        // StringBuffer results_buffer = new StringBuffer();
-        // Util.write_results_to_file(output_filename,results_buffer.toString());
+        StringBuffer results_buffer = new StringBuffer();
+        for (Boolean trial_result : results_list)
+        {
+            if (trial_result.booleanValue())
+                results_buffer.append("1,");
+            else
+                results_buffer.append("0,");
+        }
+        Util.write_results_to_file(output_filename,results_buffer.toString());
 
         // stop and forst stop
         shim.stop();

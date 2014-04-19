@@ -46,6 +46,17 @@ Service OffOnApplication
                 remove_entry_switch(switch_id);
         }
     }
+
+    num_flow_table_entries(Text switch_id) returns Number
+    {
+        Number to_return;
+        atomically
+        {
+            Struct StructWrappedSwitch sws = switch_map.get(switch_id);
+            to_return = sws.wrapped_switch.ftable_size();
+        }
+        return to_return;
+    }
     
     remove_entry_switch(Text switch_id)
     {

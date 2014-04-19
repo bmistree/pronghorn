@@ -428,7 +428,23 @@
       </antcall>
   </target>
 
+  <!-- single-controller fairness properties   -->
+  <property
+      name="single_controller_error_jar"
+      value="single_controller_error.jar"/>
+  <target
+      name="single_controller_error"
+      depends="compile_libs,compile_experiments"
+      description="Handle random errors on a single controller">
 
+      <antcall target="make_jar">
+        <param name="main_class" value="SingleControllerError"/>
+        <param name="dest_jar" value="${single_controller_error_jar}"/>
+      </antcall>
+  </target>
+
+
+  
   <!-- Testing speculation  -->
   <property
       name="speculation_jar"
@@ -466,7 +482,7 @@
     <delete file="${ordering_jar}"/>
     <delete file="${multi_controller_fairness_jar}"/>
     <delete file="${single_controller_fairness_jar}"/>
-    <delete file="${error_jar}"/>
+    <delete file="${single_controller_error_jar}"/>
     <delete file="${single_controller_latency_jar}"/>
     <delete file="${speculation_jar}"/>
     

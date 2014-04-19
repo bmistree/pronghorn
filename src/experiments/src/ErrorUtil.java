@@ -27,7 +27,7 @@ public class ErrorUtil
         new AtomicBoolean(false);
 
 
-    static _InternalSwitch create_faulty_hardware_applier(
+    static _InternalSwitch create_faulty_switch(
         RalphGlobals ralph_globals,String new_switch_id, boolean speculate,
         float error_probability)
     {

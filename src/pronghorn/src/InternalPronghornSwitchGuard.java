@@ -20,7 +20,7 @@ import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
 
 public class InternalPronghornSwitchGuard extends AtomicNumberVariable
 {
-    private final ExtendedHardwareOverrides<List<FTableUpdate>>
+    public final ExtendedHardwareOverrides<List<FTableUpdate>>
         extended_hardware_overrides;
 
     public final String ralph_internal_switch_id;

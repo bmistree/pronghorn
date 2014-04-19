@@ -4,10 +4,18 @@ import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ralph.RalphGlobals;
+
 import RalphExtended.ExtendedHardwareOverrides;
 import RalphExtended.IHardwareChangeApplier;
 
 import pronghorn.FTableUpdate;
+import pronghorn.FlowTableToHardware;
+import pronghorn.DeltaListStateSupplier;
+import pronghorn.InternalPronghornSwitchGuard;
+import pronghorn.SwitchSpeculateListener;
+import pronghorn.SwitchJava._InternalSwitch;
+
 
 public class ErrorUtil
 {
@@ -19,10 +27,37 @@ public class ErrorUtil
         new AtomicBoolean(false);
 
 
-    public static class FaultyHardwareChangeApplier
-        implements IHardwareChangeApplier<List<FTableUpdate>>, Runnable
+    static _InternalSwitch create_faulty_hardware_applier(
+        RalphGlobals ralph_globals,String new_switch_id, boolean speculate,
+        float error_probability)
     {
-        private final ExtendedHardwareOverrides<List<FTableUpdate>> hardware_overrides;
+        _InternalSwitch internal_switch = new _InternalSwitch(ralph_globals);
+        FaultyHardwareChangeApplier to_handle_pushing_changes =
+            new FaultyHardwareChangeApplier(error_probability);
+        SwitchSpeculateListener switch_speculate_listener =
+            new SwitchSpeculateListener();
+
+        // override switch_lock variable: switch_lock variable serves
+        // as a guard for both port_deltas and ft_deltas.
+        InternalPronghornSwitchGuard faulty_switch_guard_num_var =
+            new InternalPronghornSwitchGuard(
+                ralph_globals,new_switch_id,speculate,
+                to_handle_pushing_changes,
+                // gets internal switch delta.  note this is safe, but
+                // ugly.
+                new DeltaListStateSupplier(internal_switch.delta.val.val),
+                switch_speculate_listener);
+        to_handle_pushing_changes.set_hardware_overrides(
+            faulty_switch_guard_num_var.extended_hardware_overrides);
+        internal_switch.delta.val.val.switch_lock = faulty_switch_guard_num_var;
+        return internal_switch;
+    }
+    
+
+    private static class FaultyHardwareChangeApplier
+        extends FlowTableToHardware implements Runnable
+    {
+        private ExtendedHardwareOverrides<List<FTableUpdate>> hardware_overrides = null;
         private final float error_probability;
 
         private final static Random rand = new Random();
@@ -32,12 +67,15 @@ public class ErrorUtil
          */
         private final static int RESET_SLEEP_WAIT_MS = 50;
         
-        public FaultyHardwareChangeApplier(
-            ExtendedHardwareOverrides<List<FTableUpdate>> _hardware_overrides,
-            float _error_probability)
+        public FaultyHardwareChangeApplier(float _error_probability)
+        {
+            error_probability = _error_probability;
+        }
+
+        public void set_hardware_overrides(
+            ExtendedHardwareOverrides<List<FTableUpdate>> _hardware_overrides)
         {
             hardware_overrides = _hardware_overrides;
-            error_probability = _error_probability;
         }
 
         /** Runnable interface overrides*/
@@ -88,4 +126,5 @@ public class ErrorUtil
             return true;
         }
     }
+
 }

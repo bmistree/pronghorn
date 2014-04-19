@@ -15,6 +15,8 @@ import pronghorn.DeltaListStateSupplier;
 import pronghorn.InternalPronghornSwitchGuard;
 import pronghorn.SwitchSpeculateListener;
 import pronghorn.SwitchJava._InternalSwitch;
+import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
+import pronghorn.SwitchDeltaJava.SwitchDelta;
 
 
 public class ErrorUtil
@@ -37,6 +39,12 @@ public class ErrorUtil
         SwitchSpeculateListener switch_speculate_listener =
             new SwitchSpeculateListener();
 
+        _InternalSwitchDelta internal_switch_delta =
+            new _InternalSwitchDelta(ralph_globals);
+        SwitchDelta switch_delta =
+            new SwitchDelta (
+                false,internal_switch_delta,ralph_globals);
+        
         // override switch_lock variable: switch_lock variable serves
         // as a guard for both port_deltas and ft_deltas.
         InternalPronghornSwitchGuard faulty_switch_guard_num_var =
@@ -45,11 +53,13 @@ public class ErrorUtil
                 to_handle_pushing_changes,
                 // gets internal switch delta.  note this is safe, but
                 // ugly.
-                new DeltaListStateSupplier(internal_switch.delta.val.val),
+                new DeltaListStateSupplier(internal_switch_delta),
                 switch_speculate_listener);
         to_handle_pushing_changes.set_hardware_overrides(
             faulty_switch_guard_num_var.extended_hardware_overrides);
-        internal_switch.delta.val.val.switch_lock = faulty_switch_guard_num_var;
+
+        internal_switch_delta.switch_lock = faulty_switch_guard_num_var;
+        internal_switch.delta = switch_delta;
         return internal_switch;
     }
     

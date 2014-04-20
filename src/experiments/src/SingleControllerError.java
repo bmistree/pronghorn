@@ -4,7 +4,7 @@ import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
-import experiments.OffOnApplicationJava.OffOnApplication;
+import experiments.ErrorApplicationJava.ErrorApplication;
 
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
@@ -56,7 +56,7 @@ public class SingleControllerError
         /* Start up pronghorn */
         Instance prong = null;
         GetNumberSwitches num_switches_app = null;
-        OffOnApplication off_on_app = null;
+        ErrorApplication error_app = null;
         RalphGlobals ralph_globals = new RalphGlobals();
         try
         {
@@ -64,10 +64,10 @@ public class SingleControllerError
                 ralph_globals,new SingleSideConnection());
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
-            off_on_app = new OffOnApplication(
+            error_app = new ErrorApplication(
                 ralph_globals,new SingleSideConnection());
             prong.add_application(num_switches_app);
-            prong.add_application(off_on_app);
+            prong.add_application(error_app);
                         
         }
         catch (Exception ex)
@@ -150,9 +150,9 @@ public class SingleControllerError
                 try
                 {
                     if ((j % 2) == 0)
-                        off_on_app.block_traffic_all_switches();
+                        error_app.block_traffic_all_switches();
                     else
-                        off_on_app.remove_first_entry_all_switches();
+                        error_app.remove_first_entry_all_switches();
                 }
                 catch (Exception ex)
                 {
@@ -163,7 +163,7 @@ public class SingleControllerError
 
             boolean logical_correct =
                 check_logical_state(
-                    switch_id_list,off_on_app,num_ops_to_perform,
+                    switch_id_list,error_app,num_ops_to_perform,
                     faulty_switch_id);
             boolean physical_correct =
                 check_physical_state(
@@ -180,7 +180,7 @@ public class SingleControllerError
             clear_hardware(num_switches -1);
 
             // logical clear switches
-            logical_clear_switches(off_on_app,switch_id_list);
+            logical_clear_switches(error_app,switch_id_list);
         }
 
         StringBuffer results_buffer = new StringBuffer();
@@ -200,13 +200,13 @@ public class SingleControllerError
 
     
     private static void logical_clear_switches(
-        OffOnApplication off_on_app,List<String> switch_list)
+        ErrorApplication error_app,List<String> switch_list)
     {
         for (String switch_id : switch_list)
         {
             try
             {
-                off_on_app.logical_clear_switch_do_not_flush_clear_to_hardware(switch_id);
+                error_app.logical_clear_switch_do_not_flush_clear_to_hardware(switch_id);
             }
             catch(Exception ex)
             {
@@ -272,7 +272,7 @@ public class SingleControllerError
     }
 
     private static boolean check_logical_state(
-        List<String> switch_id_list,OffOnApplication off_on_app,
+        List<String> switch_id_list,ErrorApplication error_app,
         int num_ops_to_perform, String faulty_switch_to_skip)
     {
         // now, check that all the switches have the correct
@@ -291,7 +291,7 @@ public class SingleControllerError
             try
             {
                 int num_flow_table_entries =
-                    off_on_app.num_flow_table_entries(pronghorn_switch_id).intValue();
+                    error_app.num_flow_table_entries(pronghorn_switch_id).intValue();
                 if (expected_number_rules_zero)
                 {
                     if (num_flow_table_entries != 0)

@@ -60,6 +60,9 @@ public class ErrorUtil
 
         internal_switch_delta.switch_lock = faulty_switch_guard_num_var;
         internal_switch.delta = switch_delta;
+
+        switch_speculate_listener.init(
+            internal_switch_delta,internal_switch,faulty_switch_guard_num_var);
         return internal_switch;
     }
     

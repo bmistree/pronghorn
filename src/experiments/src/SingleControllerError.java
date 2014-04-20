@@ -87,19 +87,30 @@ public class SingleControllerError
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
+
+        try
+        {
+            Thread.sleep(1000);
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+            assert(false);
+        }
         
-        // wait for first switch to connect
+        // // wait for first switch to connect
         Util.wait_on_switches(num_switches_app);
 
         // Contains trues if test succeeded, false if test failed.
         List<Boolean> results_list = new ArrayList<Boolean>();
         
         List<String> switch_id_list = null;
+        String faulty_switch_id = "some_switch";
         try
         {
             _InternalSwitch internal_switch =
                 ErrorUtil.create_faulty_switch(
-                    ralph_globals,"some_switch",SHOULD_SPECULATE,
+                    ralph_globals,faulty_switch_id,SHOULD_SPECULATE,
                     failure_probability);
             prong.add_switch(internal_switch);
 
@@ -150,7 +161,9 @@ public class SingleControllerError
             }
 
             boolean logical_correct =
-                check_logical_state(switch_id_list,off_on_app,num_ops_to_perform);
+                check_logical_state(
+                    switch_id_list,off_on_app,num_ops_to_perform,
+                    faulty_switch_id);
             boolean physical_correct =
                 check_physical_state(
                     num_ops_to_perform,
@@ -259,7 +272,7 @@ public class SingleControllerError
 
     private static boolean check_logical_state(
         List<String> switch_id_list,OffOnApplication off_on_app,
-        int num_ops_to_perform)
+        int num_ops_to_perform, String faulty_switch_to_skip)
     {
         // now, check that all the switches have the correct
         // number of rules on them, flush hardware, and flush
@@ -269,6 +282,11 @@ public class SingleControllerError
         boolean all_expected = true;
         for (String pronghorn_switch_id : switch_id_list)
         {
+            // ignore faulty switch id, because we aren't cleaning it
+            // up after it fails.  Here, we're more concerned that the
+            // other switches stay in sync, despite error.
+            if (pronghorn_switch_id.equals(faulty_switch_to_skip))
+                continue;
             try
             {
                 int num_flow_table_entries =
@@ -276,12 +294,16 @@ public class SingleControllerError
                 if (expected_number_rules_zero)
                 {
                     if (num_flow_table_entries != 0)
+                    {
                         all_expected = false;
+                    }
                 }
                 else
                 {
                     if (num_flow_table_entries != 1)
+                    {
                         all_expected = false;
+                    }
                 }
             }
             catch (Exception ex)

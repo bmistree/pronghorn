@@ -5,6 +5,7 @@ import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import ralph.RalphGlobals;
+import ralph.Variables.NonAtomicTextVariable;
 
 import RalphExtended.ExtendedHardwareOverrides;
 import RalphExtended.IHardwareChangeApplier;
@@ -38,7 +39,7 @@ public class ErrorUtil
             new FaultyHardwareChangeApplier(error_probability);
         SwitchSpeculateListener switch_speculate_listener =
             new SwitchSpeculateListener();
-
+        
         _InternalSwitchDelta internal_switch_delta =
             new _InternalSwitchDelta(ralph_globals);
         SwitchDelta switch_delta =
@@ -61,6 +62,19 @@ public class ErrorUtil
         internal_switch_delta.switch_lock = faulty_switch_guard_num_var;
         internal_switch.delta = switch_delta;
 
+        try
+        {
+            internal_switch.switch_id = 
+                new NonAtomicTextVariable(false,new_switch_id,ralph_globals);
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            assert(false);
+        }
+                
+
+        
         switch_speculate_listener.init(
             internal_switch_delta,internal_switch,faulty_switch_guard_num_var);
         return internal_switch;
@@ -139,5 +153,4 @@ public class ErrorUtil
             return true;
         }
     }
-
 }

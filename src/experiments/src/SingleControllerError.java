@@ -143,7 +143,8 @@ public class SingleControllerError
             
             // perform random number of operations
             int num_ops_to_perform =
-                1 + (rand.nextInt() % MAX_NUM_OPS_BEFORE_CHECK);
+                rand.nextInt(MAX_NUM_OPS_BEFORE_CHECK) + 1;
+            
             for (int j = 0; j < num_ops_to_perform; ++j)
             {
                 try
@@ -294,16 +295,12 @@ public class SingleControllerError
                 if (expected_number_rules_zero)
                 {
                     if (num_flow_table_entries != 0)
-                    {
                         all_expected = false;
-                    }
                 }
                 else
                 {
                     if (num_flow_table_entries != 1)
-                    {
                         all_expected = false;
-                    }
                 }
             }
             catch (Exception ex)

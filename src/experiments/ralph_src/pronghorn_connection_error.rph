@@ -18,4 +18,14 @@ Endpoint PronghornConnectionError
     {
         @partner.receive_remove_first_entry_all_switches();
     }
+
+    receive_block_traffic_all_switches()
+    {
+        error_app.block_traffic_all_switches();
+    }
+    
+    receive_remove_first_entry_all_switches()
+    {
+        error_app.remove_first_entry_all_switches();
+    }
 }

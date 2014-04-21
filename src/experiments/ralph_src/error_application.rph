@@ -30,7 +30,7 @@ Service ErrorApplication
     run()
     {}
 
-
+    // @Override --- from IErrorApplication
     num_flow_table_entries(Text switch_id) returns Number
     {
         Number to_return;
@@ -75,6 +75,7 @@ Service ErrorApplication
         }
     }
 
+    // @Override --- from IErrorApplication
     logical_clear_switch_do_not_flush_clear_to_hardware(Text switch_id)
     {
         atomically

@@ -2,4 +2,6 @@ Interface IErrorApplication
 {
     block_traffic_all_switches();
     remove_first_entry_all_switches();
+    logical_clear_switch_do_not_flush_clear_to_hardware(Text switch_id);
+    num_flow_table_entries(Text switch_id) returns Number;
 }

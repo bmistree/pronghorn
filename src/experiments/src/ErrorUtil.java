@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
-
+import pronghorn.InstanceJava.Instance;
 import ralph.RalphGlobals;
 import ralph.Variables.NonAtomicTextVariable;
 
@@ -103,6 +103,28 @@ public class ErrorUtil
         }
         return results_list;
     }
+
+    public static void add_faulty_switch(
+        RalphGlobals ralph_globals,String faulty_switch_id, boolean should_speculate,
+        float failure_probability, Instance prong)
+    {
+        try
+        {
+            _InternalSwitch internal_switch =
+                create_faulty_switch(
+                    ralph_globals,faulty_switch_id,should_speculate,
+                    failure_probability);
+            prong.add_switch(internal_switch);
+        }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+            assert(false);
+        }
+    }
+        
+
+    
 
     /**
        Translate true-s to 1-s and false-s to 0-s.

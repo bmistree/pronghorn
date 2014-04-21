@@ -480,6 +480,22 @@
   </target>
 
 
+  <!-- single-controller fairness properties   -->
+  <property
+      name="multi_controller_error_jar"
+      value="multi_controller_error.jar"/>
+  <target
+      name="multi_controller_error"
+      depends="compile_libs,compile_experiments"
+      description="Handle random errors on multiple controllers">
+
+      <antcall target="make_jar">
+        <param name="main_class" value="MultiControllerError"/>
+        <param name="dest_jar" value="${multi_controller_error_jar}"/>
+      </antcall>
+  </target>
+
+  
   
   <!-- Testing speculation  -->
   <property

@@ -95,24 +95,14 @@ public class SingleControllerError
         
         // // wait for first switch to connect
         Util.wait_on_switches(num_switches_app);
-        
-        List<String> switch_id_list = null;
         String faulty_switch_id = "some_switch";
-        try
-        {
-            _InternalSwitch internal_switch =
-                ErrorUtil.create_faulty_switch(
-                    ralph_globals,faulty_switch_id,SHOULD_SPECULATE,
-                    failure_probability);
-            prong.add_switch(internal_switch);
+        ErrorUtil.add_faulty_switch(
+            ralph_globals,faulty_switch_id, SHOULD_SPECULATE,
+            failure_probability,prong);
+        
+        List<String> switch_id_list =
+            Util.get_switch_id_list (num_switches_app);
 
-            switch_id_list = Util.get_switch_id_list (num_switches_app);
-        }
-        catch(Exception ex)
-        {
-            ex.printStackTrace();
-            return;
-        }
         
         // Contains trues if test succeeded, false if test failed.
         List<Boolean> results_list =

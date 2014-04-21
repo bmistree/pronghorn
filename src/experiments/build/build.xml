@@ -270,9 +270,11 @@
                single_controller_variable_contention_throughput,
                read_only,multi_controller_latency,
                multi_controller_throughput,ordering,
-               multi_controller_fairness,speculation"
+               multi_controller_fairness,speculation, single_controller_error,
+               multi_controller_error,ordering"
       description="create jars for each type of experiment">
   </target>
+
 
   <!-- Run pronghorn connected to floodlight -->
   <target

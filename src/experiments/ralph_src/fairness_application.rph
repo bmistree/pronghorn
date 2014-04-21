@@ -1,0 +1,54 @@
+#include 'iapplication.rph'
+alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
+
+#include 'instance.rph'
+alias Service Instance as 'pronghorn.InstanceJava.Instance';
+
+#include 'wrapped_switch.rph'
+alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
+
+alias Interface IFairnessApplication as 'experiments.IFairnessApplicationJava.IFairnessApplication';
+
+
+Service FairnessApplication
+    implements Interface IApplication, Interface IFairnessApplication
+{
+    Service Instance inst = null;
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+    TVar Number coarse_lock_simulator = 0;
+
+    
+    // @Override --- from IApplication interface
+    init(Service Instance inst_,
+        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    {
+        inst = inst_;
+        switch_map = switch_map_;
+    }
+
+    // @Override --- from IApplication interface; do nothing when
+    // first installed
+    run()
+    {}
+
+
+    // @Override --- from IFairnessApplication interface; Add a rule with the
+    // given ip_src to all switches.
+    single_add(Text ip_src)
+    {
+        Struct FlowTableEntry to_add;
+        to_add.src_ip = ip_src;
+        to_add.dst_ip = '18.18.18.19';
+        // drop all packets
+        to_add.action = '';
+
+        atomically
+        {
+            for (Text switch_id in switch_map)
+            {
+                Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
+                target_switch.wrapped_switch.add_entry(to_add);
+            }
+        }
+    }
+}

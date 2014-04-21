@@ -3,8 +3,8 @@ alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
 
 alias Service Instance as 'pronghorn.InstanceJava.Instance';
 alias Endpoint PronghornConnectionFairness as 'experiments.PronghornConnectionFairnessJava.PronghornConnectionFairness';
-alias Service OffOnApplication as 'experiments.OffOnApplicationJava.OffOnApplication';
-alias Interface IOffOnApplication as 'experiments.IOffOnApplicationJava.IOffOnApplication';
+alias Service FairnessApplication as 'experiments.FairnessApplicationJava.FairnessApplication';
+alias Interface IFairnessApplication as 'experiments.IFairnessApplicationJava.IFairnessApplication';
 
 
 /**
@@ -20,10 +20,10 @@ Struct ConnectionWrapper
 }
 
 Service MultiControllerFairnessApp
-    implements Interface IApplication, Interface IOffOnApplication
+    implements Interface IApplication, Interface IFairnessApplication
 {
     Service Instance inst = null;
-    Service OffOnApplication off_on_app;
+    Service FairnessApplication fairness_app;
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
 
     // Other controllers connected to.  Connections are directional.  Eg.,
@@ -46,17 +46,17 @@ Service MultiControllerFairnessApp
     {
         inst = inst_;
         switch_map = switch_map_;
-        off_on_app.init(inst,switch_map);
+        fairness_app.init(inst,switch_map);
     }
 
     // @Override: from IApplication interface
     run()
     {
-        off_on_app.run();
+        fairness_app.run();
     }
 
-    // @Override: from IOffOnApplication interface
-    single_op(Text dummy_switch_id)
+    // @Override: from IFairnessApplication interface
+    single_add(Text ip_src)
     {
         // Ask partner to perform action and perform action locally.
         atomically
@@ -65,7 +65,7 @@ Service MultiControllerFairnessApp
             for (Text switch_id in switch_map)
             {
                 if (should_write)
-                    off_on_app.single_op(switch_id);
+                    fairness_app.single_add(ip_src);
                 else
                 {
                     Struct StructWrappedSwitch sws = switch_map.get(switch_id);
@@ -74,7 +74,7 @@ Service MultiControllerFairnessApp
             }
             // tell children to perform their reads/writes
             for (Struct ConnectionWrapper conn_wrap in children)
-                conn_wrap.child.single_op();
+                conn_wrap.child.single_add(ip_src);
         }
     }
 

@@ -168,6 +168,24 @@
 
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/ifairness_application.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/IFairnessApplicationJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c IFairnessApplicationJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/fairness_application.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/FairnessApplicationJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c FairnessApplicationJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+    
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/multi_controller_fairness.rph"/>
       <arg line="-o ${experiments_ralph_emitted_dir}/MultiControllerFairnessJava.java"/>
       <arg line="-p ${experiments_package}"/>

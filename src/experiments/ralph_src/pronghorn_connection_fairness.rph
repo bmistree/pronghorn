@@ -10,15 +10,13 @@ Endpoint PronghornConnectionFairness
     }
 
     // called locally 
-    single_op()
+    single_add(Text ip_src)
     {
-        @partner.receive_single_op();
+        @partner.receive_single_add(ip_src);
     }
 
-    receive_single_op()
+    receive_single_add(Text ip_src)
     {
-        // Note: using "" as switch id, because, in practice, performs single op
-        // over all switches.
-        fairness_app.single_op("");
+        fairness_app.single_add(ip_src);
     }
 }

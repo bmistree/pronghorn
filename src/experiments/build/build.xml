@@ -186,6 +186,15 @@
 
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/ierror_application.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/IErrorApplicationJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c IErrorApplicationJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+    
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/error_application.rph"/>
       <arg line="-o ${experiments_ralph_emitted_dir}/ErrorApplicationJava.java"/>
       <arg line="-p ${experiments_package}"/>
@@ -193,6 +202,25 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/multi_controller_error.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/MultiControllerErrorJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c MultiControllerErrorJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+
+    
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_error.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/PronghornConnectionErrorJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c PronghornConnectionErrorJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+    
   </target>
 
   

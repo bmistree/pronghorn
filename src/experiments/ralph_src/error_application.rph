@@ -7,11 +7,10 @@ alias Service Instance as 'pronghorn.InstanceJava.Instance';
 #include 'wrapped_switch.rph'
 alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
 
-alias Interface IOffOnApplication as 'experiments.IOffOnApplicationJava.IOffOnApplication';
-
+alias Interface IErrorApplication as 'experiments.IErrorApplicationJava.IErrorApplication';
 
 Service ErrorApplication
-    implements Interface IApplication
+    implements Interface IApplication, Interface IErrorApplication
 {
     Service Instance inst = null;
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
@@ -31,6 +30,7 @@ Service ErrorApplication
     run()
     {}
 
+
     num_flow_table_entries(Text switch_id) returns Number
     {
         Number to_return;
@@ -41,7 +41,7 @@ Service ErrorApplication
         }
         return to_return;
     }
-    
+    // @Override --- from IErrorApplication
     block_traffic_all_switches()
     {
         atomically
@@ -60,7 +60,7 @@ Service ErrorApplication
             }
         }
     }
-
+    // @Override --- from IErrorApplication
     remove_first_entry_all_switches()
     {
         atomically
@@ -74,7 +74,7 @@ Service ErrorApplication
             }
         }
     }
-    
+
     logical_clear_switch_do_not_flush_clear_to_hardware(Text switch_id)
     {
         atomically

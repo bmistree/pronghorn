@@ -1,0 +1,75 @@
+#include 'iapplication.rph'
+alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
+
+alias Service Instance as 'pronghorn.InstanceJava.Instance';
+alias Endpoint PronghornConnectionError as 'experiments.PronghornConnectionErrorJava.PronghornConnectionError';
+alias Service ErrorApplication as 'experiments.ErrorApplicationJava.ErrorApplication';
+alias Interface IErrorApplication as 'experiments.IErrorApplicationJava.IErrorApplication';
+
+
+Struct ConnectionWrapper
+{
+    Endpoint PronghornConnectionError child = null;
+}
+
+Service MultiControllerErrorApp
+    implements Interface IApplication, Interface IErrorApplication
+{
+    Service Instance inst = null;
+    Service ErrorApplication error_app;
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+
+    // Other controllers connected to.  Connections are directional.  Eg.,
+    // A -> B
+    // where A only requests single ops on B (B cannot request single ops on A).
+    TVar List(element : Struct ConnectionWrapper) children;
+
+    // @Override: from IApplication interface
+    init(Service Instance inst_,
+        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    {
+        inst = inst_;
+        switch_map = switch_map_;
+        error_app.init(inst,switch_map);
+    }
+
+    // @Override: from IApplication interface
+    run()
+    {
+        error_app.run();
+    }
+
+    // @Override --- from IErrorApplication
+    block_traffic_all_switches()
+    {
+        atomically
+        {
+            // perform locally
+            error_app.block_traffic_all_switches();
+
+            // tell children to perform their reads/writes
+            for (Struct ConnectionWrapper conn_wrap in children)
+                conn_wrap.child.block_traffic_all_switches();
+        }
+    }
+    // @Override --- from IErrorApplication
+    remove_first_entry_all_switches()
+    {
+        atomically
+        {
+            // perform locally
+            error_app.remove_first_entry_all_switches();
+
+            // tell children to perform their reads/writes
+            for (Struct ConnectionWrapper conn_wrap in children)
+                conn_wrap.child.remove_first_entry_all_switches();
+        }
+    }
+    
+    add_child_connection(Endpoint PronghornConnectionError connection)
+    {
+        Struct ConnectionWrapper connection_wrapper;
+        connection_wrapper.child = connection;
+        children.append(connection_wrapper);
+    }
+}

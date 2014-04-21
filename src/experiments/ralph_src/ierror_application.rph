@@ -1,0 +1,5 @@
+Interface IErrorApplication
+{
+    block_traffic_all_switches();
+    remove_first_entry_all_switches();
+}

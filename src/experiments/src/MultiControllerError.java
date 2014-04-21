@@ -198,15 +198,9 @@ public class MultiControllerError
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
 
-        // SHOULD_WRITE_ARG_INDEX
+        // FAILURE_PROBABILITY_ARG_INDEX
         usage_string +=
-            "\n\t<boolean> : true if controller should perform " +
-            "writes to switch; false if controller should perform reads\n";
-
-        // USE_WOUND_WAIT_ARG_INDEX
-        usage_string +=
-            "\n\t<boolean>: true if should run using wound-wait; " +
-            "false if should use ralph scheduler.\n";
+            "\n\t<float>: failure probability.\n";
 
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";

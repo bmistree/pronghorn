@@ -11,7 +11,7 @@ import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
-import experiments.OffOnApplicationJava.OffOnApplication;
+import experiments.FairnessApplicationJava.FairnessApplication;
 
 
 public class SingleControllerFairness
@@ -27,8 +27,8 @@ public class SingleControllerFairness
 
     // extra debugging flag: something for us to watch out for in case we had an
     // exception.
-    public static OffOnApplication off_on_app_a = null;
-    public static OffOnApplication off_on_app_b = null;
+    public static FairnessApplication fairness_app_a = null;
+    public static FairnessApplication fairness_app_b = null;
 
     public static void main (String[] args)
     {
@@ -68,14 +68,14 @@ public class SingleControllerFairness
                 ralph_globals,new SingleSideConnection());
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
-            off_on_app_a = new OffOnApplication(
+            fairness_app_a = new FairnessApplication(
                 ralph_globals,new SingleSideConnection());
-            off_on_app_b = new OffOnApplication(
+            fairness_app_b = new FairnessApplication(
                 ralph_globals,new SingleSideConnection());
             
             prong.add_application(num_switches_app);
-            prong.add_application(off_on_app_a);
-            prong.add_application(off_on_app_b);
+            prong.add_application(fairness_app_a);
+            prong.add_application(fairness_app_b);
         }
         catch (Exception _ex)
         {
@@ -103,7 +103,7 @@ public class SingleControllerFairness
         ConcurrentLinkedQueue<String> tsafe_queue =
             new ConcurrentLinkedQueue<String>();
         FairnessUtil.run_operations(
-            off_on_app_a,off_on_app_b,switch_id,num_external_calls,
+            fairness_app_a,fairness_app_b,switch_id,num_external_calls,
             tsafe_queue);
 
         FairnessUtil.write_results(result_filename,tsafe_queue);

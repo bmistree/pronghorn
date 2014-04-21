@@ -1,5 +1,6 @@
 package experiments;
 
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -7,7 +8,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadFactory;
 import java.io.IOException;
 
-import experiments.IOffOnApplicationJava.IOffOnApplication;
+import experiments.IFairnessApplicationJava.IFairnessApplication;
 
 public class FairnessUtil
 {
@@ -38,7 +39,7 @@ public class FairnessUtil
        num_external_calls into system using app_b.
      */
     public static void run_operations(
-        IOffOnApplication app_a, IOffOnApplication app_b,String switch_id,
+        IFairnessApplication app_a, IFairnessApplication app_b,String switch_id,
         int num_external_calls,ConcurrentLinkedQueue<String> tsafe_queue)
     {
         PrincipalTask task_a =
@@ -123,13 +124,16 @@ public class FairnessUtil
     
     private static class PrincipalTask implements Runnable
     {
-        private final IOffOnApplication app;
+        private final IFairnessApplication app;
         private final String principal_id;
         private final String switch_id;
         private final ConcurrentLinkedQueue<String> tsafe_queue;
+
+        private final static AtomicInteger unique_subnet_int =
+            new AtomicInteger(0);
         
         public PrincipalTask(
-            IOffOnApplication _app, String _principal_id, String _switch_id,
+            IFairnessApplication _app, String _principal_id, String _switch_id,
             ConcurrentLinkedQueue<String> _tsafe_queue)
         {
             app = _app;
@@ -140,9 +144,13 @@ public class FairnessUtil
 
         public void run ()
         {
+            Integer unique_subnet = unique_subnet_int.getAndDecrement();
+            int c_subnet = unique_subnet /256;
+            int d_subnet = unique_subnet % 256;
+            String ip_addr = "18.18." + c_subnet + "." + d_subnet;
             try
             {
-                app.single_op(switch_id);
+                app.single_add(ip_addr);
                 tsafe_queue.add(principal_id + "|" + System.nanoTime());
             }
             catch(Exception ex)

@@ -18,3 +18,17 @@ software defined network.  To this end, Pronghorn
      between software and hardware state
 
 
+Install
+---------
+After cloning repo, in base directory, update submodules:
+
+    cd pronghorn
+    git submodule update --init --recursive
+
+Enter floodlight externals directory and rebuild floodlight:
+
+    cd pronghorn/externals/floodligh
+    ant dist
+
+Following this, you should be able to build all experiments and
+sources.

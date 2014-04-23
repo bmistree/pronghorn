@@ -289,7 +289,8 @@
                read_only,multi_controller_latency,
                multi_controller_throughput,ordering,
                multi_controller_fairness,speculation, single_controller_error,
-               multi_controller_error,ordering"
+               multi_controller_error,ordering,
+               single_controller_fairness"
       description="create jars for each type of experiment">
   </target>
 

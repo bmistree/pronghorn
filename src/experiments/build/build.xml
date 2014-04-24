@@ -290,7 +290,7 @@
                multi_controller_throughput,ordering,
                multi_controller_fairness,speculation, single_controller_error,
                multi_controller_error,ordering,
-               single_controller_fairness"
+               single_controller_fairness,read_only"
       description="create jars for each type of experiment">
   </target>
 

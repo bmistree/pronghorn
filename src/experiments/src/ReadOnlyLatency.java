@@ -80,13 +80,8 @@ public class ReadOnlyLatency
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
 
-        /* wait a while to ensure that all switches are connected */
-        try {
-            Thread.sleep(SETTLING_TIME_WAIT);
-        } catch (InterruptedException _ex) {
-            _ex.printStackTrace();
-            assert(false);
-        }
+        // wait for first switch to connect
+        Util.wait_on_switches(num_switches_app);
             
         List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
         for (int i = 0; i < num_threads; ++i)

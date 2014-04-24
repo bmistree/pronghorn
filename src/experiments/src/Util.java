@@ -280,13 +280,17 @@ public class Util
         private String switch_id = null;
         private int num_ops_to_run = -1;
 
+        private boolean no_read_first = false;
+        
         // For locals
         public LatencyThread(
-            OffOnApplication off_on_app, String switch_id, int num_ops_to_run)
+            OffOnApplication off_on_app, String switch_id, int num_ops_to_run,
+            boolean no_read_first)
         {
             this.off_on_app = off_on_app;
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
+            this.no_read_first = no_read_first;
         }
 
         // For multiple controllers
@@ -323,7 +327,19 @@ public class Util
                     else if (mc_off_on_app != null)
                         mc_off_on_app.single_op_and_ask_children_for_single_op();
                     else
-                        off_on_app.single_op(switch_id);
+                    {
+                        if (no_read_first)
+                        {
+                            // alternate adding and removing switches
+                            // without reading first
+                            if ((i % 2) == 0)
+                                off_on_app.add_entry_switch(switch_id);
+                            else
+                                off_on_app.remove_entry_switch(switch_id);
+                        }
+                        else
+                            off_on_app.single_op(switch_id);
+                    }
                 }
                 catch (Exception _ex)
                 {

@@ -89,7 +89,7 @@ public class SingleControllerLatency
         for (int i = 0; i < num_threads; ++i)
         {
             all_threads.add(
-                new LatencyThread(off_on_app,switch_id,num_ops_to_run));
+                new LatencyThread(off_on_app,switch_id,num_ops_to_run,true));
         }
 
         for (LatencyThread lt : all_threads)

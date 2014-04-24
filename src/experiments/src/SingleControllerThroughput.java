@@ -224,7 +224,12 @@ public class SingleControllerThroughput
                     if (coarse_locking)
                         off_on_app.single_op_coarse(switch_id);
                     else
-                        off_on_app.single_op(switch_id);
+                    {
+                        if ((i%2) == 0)
+                            off_on_app.add_entry_switch(switch_id);
+                        else
+                            off_on_app.remove_entry_switch(switch_id);
+                    }
 
                 }
                 catch (Exception _ex)

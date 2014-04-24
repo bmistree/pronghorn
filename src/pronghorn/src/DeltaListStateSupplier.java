@@ -43,9 +43,23 @@ public class DeltaListStateSupplier
         AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
             internal_ft_deltas_list = get_internal_ft_deltas_list();
 
-        // FIXME: Ensure that this is also a safe access.
-        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> internal_list = 
-            internal_ft_deltas_list.dirty_val.val;
+        // We can get null here if the transaction has been backed
+        // out.  In this case, it's okay to set internal_list to an
+        // empty list, because we will undo/not apply its changes
+        // anyways.
+
+        // FIXME: ensure that this is a safe access.  May have to lock
+        // internal_ft_deltas_list object first.
+        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> internal_list =
+            null;
+        if (internal_ft_deltas_list.dirty_val != null)
+            internal_list = internal_ft_deltas_list.dirty_val.val;
+        else
+        {
+            internal_list =
+                new ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>();
+        }
+            
 
         List<FTableUpdate> to_return = produce_ftable_updates(internal_list);
 

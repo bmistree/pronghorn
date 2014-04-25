@@ -1,0 +1,24 @@
+Struct PortStats
+{
+    Number port_number;
+    
+    Number rx_packets;
+    Number tx_packets;
+    Number rx_bytes;
+    Number tx_bytes;
+    Number rx_dropped;
+    Number tx_dropped;
+    Number rx_errors;
+    Number tx_errors;
+    Number rx_frame_err;
+
+    Number delta_rx_packets;
+    Number delta_tx_packets;
+    Number delta_rx_bytes;
+    Number delta_tx_bytes;
+    Number delta_rx_dropped;
+    Number delta_tx_dropped;
+    Number delta_rx_errors;
+    Number delta_tx_errors;
+    Number delta_rx_frame_err;
+}

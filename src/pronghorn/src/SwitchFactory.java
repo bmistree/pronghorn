@@ -65,15 +65,19 @@ public class SwitchFactory
 
     private RalphGlobals ralph_globals = null;
     private final boolean speculate;
-    private final boolean collect_stats;
-    
+    /**
+       @param {int} _collect_statistics_period_ms.  If period < 0, then
+       never collect statistics.
+     */
+    private final int collect_statistics_period_ms;
+
     public SwitchFactory(
         RalphGlobals _ralph_globals,boolean _speculate,
-        boolean _collect_stats)
+        int _collect_statistics_period_ms)
     {
         ralph_globals = _ralph_globals;
         speculate = _speculate;
-        collect_stats = _collect_stats;
+        collect_statistics_period_ms = _collect_statistics_period_ms;
     }
 
     /**
@@ -120,7 +124,7 @@ public class SwitchFactory
         PronghornInternalSwitch internal_switch =
             new PronghornInternalSwitch(
                 ralph_globals,new_switch_id,available_capacity,
-                switch_delta,collect_stats,shim,floodlight_switch_id);
+                switch_delta,collect_statistics_period_ms,shim,floodlight_switch_id);
 
         SwitchSpeculateListener switch_speculate_listener =
             new SwitchSpeculateListener();
@@ -147,21 +151,20 @@ public class SwitchFactory
         public String ralph_internal_switch_id;
         private final ShimInterface shim;
 
-        /**
-           Currently, once every five minutes.
-         */
-        private final int PERIOD_POLL_FOR_STATS_MS = 5*60*1000;
         private final String floodlight_switch_id;
         
         /**
-           Set to true if should periodically query for stats from
-           switches.
+           @param {int} collect_statistics_period_ms.  If period < 0, then
+           never collect statistics.
          */
+        private final int collect_statistics_period_ms;
+        
         public PronghornInternalSwitch(
             RalphGlobals ralph_globals,String _ralph_internal_switch_id,
             double _available_capacity,
             _InternalSwitchDelta internal_switch_delta,
-            boolean collect_stats, ShimInterface _shim, String _floodlight_switch_id)
+            int _collect_statistics_period_ms, ShimInterface _shim,
+            String _floodlight_switch_id)
         {
             super(ralph_globals);
             ralph_internal_switch_id = _ralph_internal_switch_id;
@@ -174,8 +177,10 @@ public class SwitchFactory
 
             shim = _shim;
             floodlight_switch_id = _floodlight_switch_id;
+            collect_statistics_period_ms = _collect_statistics_period_ms;
+            
             // shim == null if simulating hardware
-            if ((collect_stats) && (shim != null)) 
+            if ((collect_statistics_period_ms > 0) && (shim != null)) 
             {
                 // update thread to periodically poll for switch
                 // statistics.
@@ -218,7 +223,7 @@ public class SwitchFactory
                 // wait some time before polling again for more updates.
                 try
                 {
-                    Thread.sleep(PERIOD_POLL_FOR_STATS_MS);
+                    Thread.sleep(collect_statistics_period_ms);
                 }
                 catch (InterruptedException ex)
                 {

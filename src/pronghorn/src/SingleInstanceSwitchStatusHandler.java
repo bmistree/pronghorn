@@ -51,12 +51,16 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
 
     private ShimInterface shim = null;
     private final boolean speculate;
-    
+
+    /**
+       @param {int} collect_statistics_period_ms.  If period < 0, then
+       never collect statistics.
+     */
     public SingleInstanceSwitchStatusHandler(
         ShimInterface shim,
         Instance prong,
         FlowTableToHardwareFactory rtable_to_hardware_factory,
-        boolean speculate,boolean collect_statistics)
+        boolean speculate,int collect_statistics_period_ms)
     {
         this.shim = shim;
         this.prong = prong;
@@ -65,7 +69,7 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
 
         switch_factory =
             new SwitchFactory(
-                prong.ralph_globals,speculate,collect_statistics);
+                prong.ralph_globals,speculate,collect_statistics_period_ms);
         switch_factory.init(UNIQUE_SWITCH_FACTORY_PREFIX);
     }
 

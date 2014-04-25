@@ -35,7 +35,8 @@ public class MultiControllerError
     // if number_ops_to_run is not 0, then that means that this is head node.
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 2;
     public static final int FAILURE_PROBABILITY_ARG_INDEX = 3;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 4;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 5;
 
     public static Instance prong = null;
     private static final int MAX_NUM_OPS_BEFORE_CHECK = 20;
@@ -52,7 +53,7 @@ public class MultiControllerError
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 6)
         {
             print_usage();
             return;
@@ -77,9 +78,13 @@ public class MultiControllerError
         // will add a single dummy switch that injects errors.
         float failure_probability =
             Float.parseFloat(args[FAILURE_PROBABILITY_ARG_INDEX]);
+
+        boolean collect_statistics =
+            Boolean.parseBoolean(args[COLLECT_STATISTICS_ARG_INDEX]);
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
+        
         /* Start up pronghorn */
         GetNumberSwitches num_switches_app = null;
         try
@@ -106,7 +111,7 @@ public class MultiControllerError
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                false);
+                false,collect_statistics);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -202,6 +207,11 @@ public class MultiControllerError
         usage_string +=
             "\n\t<float>: failure probability.\n";
 
+        // COLLECT_STATISTICS_ARG_INDEX
+        usage_string +=
+            "\n\t<boolean> : whether or not to collect switch " +
+            "stats while running\n";
+        
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
         

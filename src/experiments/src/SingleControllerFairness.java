@@ -18,7 +18,8 @@ public class SingleControllerFairness
 {
     public static final int USE_WOUND_WAIT_ARG_INDEX = 0;
     public static final int NUM_EXTERNAL_CALLS_ARG_INDEX = 1;
-    public static final int OUTPUT_FILENAME_INDEX = 2;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 2;
+    public static final int OUTPUT_FILENAME_INDEX = 3;
 
     // This queue keeps track of all the work in the system
     final static ConcurrentLinkedQueue<String> tsafe_queue =
@@ -32,7 +33,7 @@ public class SingleControllerFairness
 
     public static void main (String[] args)
     {
-        if (args.length != 3)
+        if (args.length != 4)
         {
             FairnessUtil.print_usage();
             return;
@@ -47,6 +48,9 @@ public class SingleControllerFairness
         
         int num_external_calls = 
             Integer.parseInt(args[NUM_EXTERNAL_CALLS_ARG_INDEX]);
+
+        boolean collect_statistics =
+            Boolean.parseBoolean(args[COLLECT_STATISTICS_ARG_INDEX]);
         
         String result_filename = args[OUTPUT_FILENAME_INDEX];
 
@@ -89,7 +93,7 @@ public class SingleControllerFairness
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                false);
+                false,collect_statistics);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

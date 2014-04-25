@@ -20,12 +20,13 @@ public class SingleControllerSpeculation
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
     public static final int SHOULD_SPECULATE_ARG_INDEX = 1;
     public static final int NUMBER_FTABLE_ENTRIES_TO_PRELOAD_ARG_INDEX = 2;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
 
     public static void main(String [] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 5)
         {
             print_usage();
             return;
@@ -39,6 +40,9 @@ public class SingleControllerSpeculation
 
         int num_entries_to_preload =
             Integer.parseInt(args[NUMBER_FTABLE_ENTRIES_TO_PRELOAD_ARG_INDEX]);
+
+        boolean collect_statistics =
+            Boolean.parseBoolean(args[COLLECT_STATISTICS_ARG_INDEX]);
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
@@ -68,7 +72,7 @@ public class SingleControllerSpeculation
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                speculate);
+                speculate,collect_statistics);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -199,6 +203,11 @@ public class SingleControllerSpeculation
         // Number of flow table entries to preload
         usage_string +=
             "\n\t<int>: Number of flow table entries to preload.\n";
+
+        // COLLECT_STATISTICS_ARG_INDEX
+        usage_string +=
+            "\n\t<boolean> : whether or not to collect switch " +
+            "stats while running\n";
         
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";

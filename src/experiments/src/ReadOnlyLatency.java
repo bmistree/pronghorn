@@ -21,7 +21,8 @@ import experiments.Util.LatencyThread;
 public class ReadOnlyLatency
 {
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 1;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 1;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -29,9 +30,9 @@ public class ReadOnlyLatency
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 2)
+        if (args.length != 3)
         {
-            System.out.println("\nExpecting 2 arguments.\n");
+            System.out.println("\nExpecting 3 arguments.\n");
             print_usage();
             return;
         }
@@ -41,9 +42,10 @@ public class ReadOnlyLatency
 
         int num_threads = 1;
 
+        boolean collect_statistics =
+            Boolean.parseBoolean(args[COLLECT_STATISTICS_ARG_INDEX]);
 
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
-
         
         /* Start up pronghorn */
         Instance prong = null;
@@ -75,7 +77,7 @@ public class ReadOnlyLatency
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                false);
+                false,collect_statistics);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -120,7 +122,12 @@ public class ReadOnlyLatency
         // NUMBER_TIMES_TO_RUN_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
-
+        
+        // COLLECT_STATISTICS_ARG_INDEX
+        usage_string +=
+            "\n\t<boolean> : whether or not to collect switch " +
+            "stats while running\n";
+        
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
 

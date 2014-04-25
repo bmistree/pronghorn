@@ -65,7 +65,8 @@ public class MultiControllerFairness
     // it receives a request to perform a single operation.
     public static final int SHOULD_WRITE_ARG_INDEX = 3;
     public static final int USE_WOUND_WAIT_ARG_INDEX = 4;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 5;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 5;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 6;
 
     public static Instance prong = null;
     /**
@@ -84,7 +85,7 @@ public class MultiControllerFairness
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 6)
+        if (args.length != 7)
         {
             print_usage();
             return;
@@ -112,6 +113,9 @@ public class MultiControllerFairness
         boolean use_wound_wait =
             Boolean.parseBoolean(args[USE_WOUND_WAIT_ARG_INDEX]);
 
+        boolean collect_statistics =
+            Boolean.parseBoolean(args[COLLECT_STATISTICS_ARG_INDEX]);
+        
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
         if (use_wound_wait)
@@ -161,7 +165,7 @@ public class MultiControllerFairness
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                false);
+                false,collect_statistics);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -272,6 +276,11 @@ public class MultiControllerFairness
             "\n\t<boolean>: true if should run using wound-wait; " +
             "false if should use ralph scheduler.\n";
 
+        // COLLECT_STATISTICS_ARG_INDEX
+        usage_string +=
+            "\n\t<boolean> : whether or not to collect switch " +
+            "stats while running\n";
+        
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
         

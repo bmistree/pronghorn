@@ -31,7 +31,8 @@ public class MultiControllerLatency
     public static final int CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX = 0;
     public static final int PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX = 1;
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 2;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
 
     
     public static Instance prong = null;
@@ -46,7 +47,7 @@ public class MultiControllerLatency
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 5)
         {
             print_usage();
             return;
@@ -67,6 +68,8 @@ public class MultiControllerLatency
 
         int num_threads = 1;
 
+        boolean collect_statistics =
+            Boolean.parseBoolean(args[COLLECT_STATISTICS_ARG_INDEX]);
 
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
@@ -96,7 +99,7 @@ public class MultiControllerLatency
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                false);
+                false,collect_statistics);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -194,6 +197,11 @@ public class MultiControllerLatency
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
 
+        // COLLECT_STATISTICS_ARG_INDEX
+        usage_string +=
+            "\n\t<boolean> : whether or not to collect switch " +
+            "stats while running\n";
+        
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
 

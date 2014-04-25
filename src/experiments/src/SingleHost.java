@@ -15,6 +15,9 @@ import org.slf4j.LoggerFactory;
 
 public class SingleHost
 {
+    // collect statistics once every 10 seconds.
+    private static final int COLLECT_STATISTICS_PERIOD_MS = 10*1000;
+    
     protected static final Logger log =
         LoggerFactory.getLogger(SingleHost.class);
 
@@ -45,9 +48,8 @@ public class SingleHost
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                true,
-                // collect statistics on
-                true);
+                true,COLLECT_STATISTICS_PERIOD_MS);
+
         shim.subscribe_switch_status_handler(switch_status_handler);
         boolean block_traffic = true;
 

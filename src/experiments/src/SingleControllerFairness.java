@@ -49,8 +49,8 @@ public class SingleControllerFairness
         int num_external_calls = 
             Integer.parseInt(args[NUM_EXTERNAL_CALLS_ARG_INDEX]);
 
-        boolean collect_statistics =
-            Boolean.parseBoolean(args[COLLECT_STATISTICS_ARG_INDEX]);
+        int collect_statistics_period_ms =
+            Integer.parseInt(args[COLLECT_STATISTICS_ARG_INDEX]);
         
         String result_filename = args[OUTPUT_FILENAME_INDEX];
 
@@ -93,7 +93,7 @@ public class SingleControllerFairness
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                false,collect_statistics);
+                false,collect_statistics_period_ms);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

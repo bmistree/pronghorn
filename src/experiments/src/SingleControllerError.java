@@ -29,7 +29,8 @@ public class SingleControllerError
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
     public static final boolean SHOULD_SPECULATE = true;
-    public static final boolean COLLECT_STATISTICS = false;
+    // not going to collect statistics
+    public static final int COLLECT_STATISTICS_PERIOD_MS = -1;
     
     
     public static void main (String[] args) 
@@ -80,7 +81,7 @@ public class SingleControllerError
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                SHOULD_SPECULATE,COLLECT_STATISTICS);
+                SHOULD_SPECULATE,COLLECT_STATISTICS_PERIOD_MS);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

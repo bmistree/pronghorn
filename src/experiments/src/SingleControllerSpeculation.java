@@ -41,8 +41,8 @@ public class SingleControllerSpeculation
         int num_entries_to_preload =
             Integer.parseInt(args[NUMBER_FTABLE_ENTRIES_TO_PRELOAD_ARG_INDEX]);
 
-        boolean collect_statistics =
-            Boolean.parseBoolean(args[COLLECT_STATISTICS_ARG_INDEX]);
+        int collect_statistics_period_ms =
+            Integer.parseInt(args[COLLECT_STATISTICS_ARG_INDEX]);
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
@@ -72,7 +72,7 @@ public class SingleControllerSpeculation
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                speculate,collect_statistics);
+                speculate,collect_statistics_period_ms);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -206,8 +206,8 @@ public class SingleControllerSpeculation
 
         // COLLECT_STATISTICS_ARG_INDEX
         usage_string +=
-            "\n\t<boolean> : whether or not to collect switch " +
-            "stats while running\n";
+            "\n\t<int> : period for collecting individual switch stastics " +
+            "in ms.  < 0 if should not collect any statistics\n";
         
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";

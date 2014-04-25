@@ -4,6 +4,8 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.Set;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.Future;
+import java.util.List;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -17,6 +19,7 @@ import net.floodlightcontroller.core.Main;
 import net.floodlightcontroller.core.module.FloodlightModuleException;
 import net.floodlightcontroller.pronghornmodule.IPronghornService;
 
+import org.openflow.protocol.statistics.OFStatistics;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -75,6 +78,13 @@ public class SingleInstanceFloodlightShim
 
     
     /** ShimInterface methods */
+    @Override
+    public Future<List<OFStatistics>> get_stats(String switch_id)
+        throws IOException
+    {
+        return pronghorn_floodlight.get_stats(switch_id);
+    }
+    
     @Override
     public void subscribe_switch_status_handler(ISwitchStatusHandler status_handler)
     {

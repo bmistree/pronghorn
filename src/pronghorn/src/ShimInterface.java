@@ -1,6 +1,10 @@
 package pronghorn;
 
+import java.util.concurrent.Future;
 import java.util.List;
+import java.io.IOException;
+
+import org.openflow.protocol.statistics.OFStatistics;
 
 /**
    Shim layer translates between Pronghorn and Floodlight.  Any shim
@@ -16,4 +20,10 @@ public interface ShimInterface
         ISwitchStatusHandler status_handler);
     public boolean switch_rtable_updates(
         String switch_id,List<FTableUpdate> updates);
+
+    /**
+       Can return null, eg., if switch is missing.
+     */
+    public Future<List<OFStatistics>> get_stats(String switch_id)
+        throws IOException;
 }

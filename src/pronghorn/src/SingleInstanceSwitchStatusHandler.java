@@ -56,14 +56,16 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
         ShimInterface shim,
         Instance prong,
         FlowTableToHardwareFactory rtable_to_hardware_factory,
-        boolean speculate)
+        boolean speculate,boolean collect_statistics)
     {
         this.shim = shim;
         this.prong = prong;
         this.rtable_to_hardware_factory = rtable_to_hardware_factory;
         this.speculate = speculate;
 
-        switch_factory = new SwitchFactory(prong.ralph_globals,speculate);
+        switch_factory =
+            new SwitchFactory(
+                prong.ralph_globals,speculate,collect_statistics);
         switch_factory.init(UNIQUE_SWITCH_FACTORY_PREFIX);
     }
 
@@ -207,7 +209,8 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
             rtable_to_hardware_factory.construct(shim,floodlight_switch_id);
         PronghornInternalSwitch new_switch =
             switch_factory.construct(
-                DEFAULT_INITIAL_SWITCH_CAPACITY,rtable_to_hardware);
+                DEFAULT_INITIAL_SWITCH_CAPACITY,rtable_to_hardware,shim,
+                floodlight_switch_id);
         
         String pronghorn_switch_id = new_switch.ralph_internal_switch_id;
         floodlight_to_pronghorn_ids.put(

@@ -200,7 +200,7 @@ public class SwitchFactory
                 try
                 {
                     Future<List<OFStatistics>> future_stats =
-                        shim.get_stats(floodlight_switch_id);
+                        shim.get_port_stats(floodlight_switch_id);
                     List<OFStatistics> stats = future_stats.get();
                 }
                 catch (IOException ex)

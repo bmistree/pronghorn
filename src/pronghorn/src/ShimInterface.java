@@ -24,6 +24,6 @@ public interface ShimInterface
     /**
        Can return null, eg., if switch is missing.
      */
-    public Future<List<OFStatistics>> get_stats(String switch_id)
+    public Future<List<OFStatistics>> get_port_stats(String switch_id)
         throws IOException;
 }

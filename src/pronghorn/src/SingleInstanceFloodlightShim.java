@@ -79,10 +79,10 @@ public class SingleInstanceFloodlightShim
     
     /** ShimInterface methods */
     @Override
-    public Future<List<OFStatistics>> get_stats(String switch_id)
+    public Future<List<OFStatistics>> get_port_stats(String switch_id)
         throws IOException
     {
-        return pronghorn_floodlight.get_stats(switch_id);
+        return pronghorn_floodlight.get_port_stats(switch_id);
     }
     
     @Override

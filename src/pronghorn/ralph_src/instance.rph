@@ -4,6 +4,8 @@ alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSw
 
 #include 'switch.rph'
 alias Struct Switch as 'pronghorn.SwitchJava.Switch';
+#include 'port_stats.rph'
+alias Struct PortStats as 'pronghorn.PortStatsJava.PortStats';
 
 alias Service FlowTableUtil as 'pronghorn.FTable.FlowTableUtil';
 alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
@@ -27,6 +29,20 @@ Service Instance
         }
     }
 
+    update_port_stats(
+        Text switch_id, Number port_num, Struct PortStats port_stats)
+    {
+        Struct StructWrappedSwitch sws = null;
+        atomically
+        {
+            sws = switch_map.get(switch_id);
+        }
+        
+        if (sws == null)
+            return;
+        sws.wrapped_switch.update_port_stats(port_num,port_stats);
+    }
+    
     // called from external code
     remove_switch(Text to_remove_id)
     {

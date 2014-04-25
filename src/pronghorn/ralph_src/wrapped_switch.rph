@@ -8,6 +8,9 @@ alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
 alias Service FlowTableUtil as 'pronghorn.FTable.FlowTableUtil';
 alias Service WrappedSwitch as 'pronghorn.WrappedSwitchJava.WrappedSwitch';
 
+#include 'port_stats.rph'
+alias Struct PortStats as 'pronghorn.PortStatsJava.PortStats';
+
 Struct StructWrappedSwitch
 {
     Service WrappedSwitch wrapped_switch = null;
@@ -36,6 +39,50 @@ Service WrappedSwitch
         return wrapped_switch.ftable.size();
     }
 
+    update_port_stats(Number port_num, Struct PortStats new_stats)
+    {
+        Struct PortStats old_stats = wrapped_switch.port_stats.get(port_num);
+        if (old_stats != null)
+        {
+            new_stats.delta_rx_packets = difference_with_wrap_around(
+                new_stats.rx_packets,old_stats.rx_packets);
+            new_stats.delta_tx_packets = difference_with_wrap_around(
+                new_stats.tx_packets,old_stats.tx_packets);
+            new_stats.delta_rx_bytes = difference_with_wrap_around(
+                new_stats.rx_bytes,old_stats.rx_bytes);
+            new_stats.delta_tx_bytes = difference_with_wrap_around(
+                new_stats.tx_bytes,old_stats.tx_bytes);
+            new_stats.delta_rx_dropped = difference_with_wrap_around(
+                new_stats.rx_dropped,old_stats.rx_dropped);
+            new_stats.delta_tx_dropped = difference_with_wrap_around(
+                new_stats.tx_dropped,old_stats.tx_dropped);
+            new_stats.delta_rx_errors = difference_with_wrap_around(
+                new_stats.rx_errors,old_stats.rx_errors);
+            new_stats.delta_tx_errors = difference_with_wrap_around(
+                new_stats.tx_errors,old_stats.tx_errors);
+            new_stats.delta_rx_frame_err = difference_with_wrap_around(
+                new_stats.rx_frame_err,old_stats.rx_frame_err);
+        }
+        wrapped_switch.port_stats.set(port_num,new_stats);
+    }
+
+    /**
+       @param {Number} a --- 64 bit int
+       @param {Number} b --- 64 bit int
+
+       @returns {Number} --- a-b. Note that because of wraparound, b may be >
+       a.  We *should* handle this case, but for now, in that case, we just
+       return a.
+     */
+    difference_with_wrap_around(Number a, Number b) returns Number
+    {
+        // FIXME: actually handle wraparound correctly
+        if (a < b)
+            return a;
+        
+        return a - b;
+    }
+    
     // should only be called from within WrappedSwitch service.  Assumption is
     // that it is being called from within an atomically statement.  Otherwise,
     // write lock doesn't do anything.

@@ -41,6 +41,11 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
     // FIXME: set this to a number that actually has meaning
     private final static double DEFAULT_INITIAL_SWITCH_CAPACITY = 20.0;
 
+    /**
+       Used to update statistics for each switch.
+     */
+    private final StatisticsUpdater stats_updater;
+    
     // maps from floodlight switch ids to pronghorn switch ids and
     // vice versa.
     private HashMap<String,String> floodlight_to_pronghorn_ids =
@@ -66,7 +71,8 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
         this.prong = prong;
         this.rtable_to_hardware_factory = rtable_to_hardware_factory;
         this.speculate = speculate;
-
+        stats_updater = new StatisticsUpdater(prong);
+        
         switch_factory =
             new SwitchFactory(
                 prong.ralph_globals,speculate,collect_statistics_period_ms);
@@ -210,12 +216,13 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
         String floodlight_switch_id = HexString.toHexString(switch_id);
         
         FlowTableToHardware rtable_to_hardware =
-            rtable_to_hardware_factory.construct(shim,floodlight_switch_id);
+            rtable_to_hardware_factory.construct(
+                shim,floodlight_switch_id);
         PronghornInternalSwitch new_switch =
             switch_factory.construct(
                 DEFAULT_INITIAL_SWITCH_CAPACITY,rtable_to_hardware,shim,
-                floodlight_switch_id);
-        
+                floodlight_switch_id,stats_updater);
+
         String pronghorn_switch_id = new_switch.ralph_internal_switch_id;
         floodlight_to_pronghorn_ids.put(
             floodlight_switch_id,pronghorn_switch_id);

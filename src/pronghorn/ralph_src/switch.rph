@@ -24,5 +24,6 @@ Struct Switch
 
     Struct SwitchDelta delta = null;
 
-    Struct PortStats port_stats = null;
+    // initialize all port stats to 0.
+    Map (from: Number, to: Struct PortStats) port_stats;
 }

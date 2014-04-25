@@ -94,9 +94,9 @@ public class SwitchFactory
        say that we did.
      */
     public PronghornInternalSwitch construct(
-        double available_capacity)
+        double available_capacity,StatisticsUpdater stats_updater)
     {
-        return construct(available_capacity,null,null,"");
+        return construct(available_capacity,null,null,"",stats_updater);
     }
 
     /**
@@ -108,7 +108,8 @@ public class SwitchFactory
     public PronghornInternalSwitch construct(
         double available_capacity,
         FlowTableToHardware to_handle_pushing_changes,
-        ShimInterface shim, String floodlight_switch_id)
+        ShimInterface shim, String floodlight_switch_id,
+        StatisticsUpdater stats_updater)
     {
         // create a new switch id
         Integer factory_local_unique_id = atomic_switch_id.addAndGet(1);
@@ -124,7 +125,8 @@ public class SwitchFactory
         PronghornInternalSwitch internal_switch =
             new PronghornInternalSwitch(
                 ralph_globals,new_switch_id,available_capacity,
-                switch_delta,collect_statistics_period_ms,shim,floodlight_switch_id);
+                switch_delta,collect_statistics_period_ms,shim,
+                floodlight_switch_id,stats_updater);
 
         SwitchSpeculateListener switch_speculate_listener =
             new SwitchSpeculateListener();
@@ -146,7 +148,8 @@ public class SwitchFactory
     }
 
     
-    public class PronghornInternalSwitch extends _InternalSwitch implements Runnable
+    public class PronghornInternalSwitch
+        extends _InternalSwitch implements Runnable
     {
         public String ralph_internal_switch_id;
         private final ShimInterface shim;
@@ -158,13 +161,17 @@ public class SwitchFactory
            never collect statistics.
          */
         private final int collect_statistics_period_ms;
+        /**
+           Used to actually update switch statistics.
+         */
+        private final StatisticsUpdater stats_updater;
         
         public PronghornInternalSwitch(
             RalphGlobals ralph_globals,String _ralph_internal_switch_id,
             double _available_capacity,
             _InternalSwitchDelta internal_switch_delta,
             int _collect_statistics_period_ms, ShimInterface _shim,
-            String _floodlight_switch_id)
+            String _floodlight_switch_id,StatisticsUpdater _stats_updater)
         {
             super(ralph_globals);
             ralph_internal_switch_id = _ralph_internal_switch_id;
@@ -173,11 +180,13 @@ public class SwitchFactory
             switch_id = new NonAtomicTextVariable(
                 false,_ralph_internal_switch_id,ralph_globals);
             available_capacity =
-                new AtomicNumberVariable(false,_available_capacity,ralph_globals);
+                new AtomicNumberVariable(
+                    false,_available_capacity,ralph_globals);
 
             shim = _shim;
             floodlight_switch_id = _floodlight_switch_id;
             collect_statistics_period_ms = _collect_statistics_period_ms;
+            stats_updater = _stats_updater;
             
             // shim == null if simulating hardware
             if ((collect_statistics_period_ms > 0) && (shim != null)) 
@@ -201,7 +210,11 @@ public class SwitchFactory
                 {
                     Future<List<OFStatistics>> future_stats =
                         shim.get_port_stats(floodlight_switch_id);
-                    List<OFStatistics> stats = future_stats.get();
+                    List<OFStatistics> port_stats = future_stats.get();
+
+                    // FIXME: Must convert ofstatistics to port stats
+                    // and update
+                    
                 }
                 catch (IOException ex)
                 {

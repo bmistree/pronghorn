@@ -101,8 +101,11 @@ public class ErrorUtil
                     // software switch
                     num_switches -1);
 
-            
-            results_list.add(logical_correct && physical_correct);
+
+            boolean success = logical_correct && physical_correct;
+            results_list.add(success);
+            if ((i %5) == 0)
+                System.out.println("Finished " + i + " with result " + success);
 
             // clear hardware
             clear_hardware(num_switches -1);

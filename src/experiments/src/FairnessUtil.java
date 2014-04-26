@@ -16,7 +16,7 @@ public class FairnessUtil
        how many ms to wait before requesting b to dump its tasks after
        a has started its tasks
     */
-    final static int A_HEADSTART_TIME_MS = 8;
+    final static int A_HEADSTART_TIME_MS = 4;
 
     /**
        extra debugging flag: something for us to watch out for in case

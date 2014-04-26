@@ -5,6 +5,7 @@ import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.SwitchJava._InternalSwitch;
 import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
 import pronghorn.SwitchDeltaJava.SwitchDelta;
+import pronghorn.PortStatsJava._InternalPortStats;
 
 import ralph.Variables.NonAtomicTextVariable;
 import ralph.Variables.AtomicNumberVariable;
@@ -21,7 +22,7 @@ import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 
 import org.openflow.protocol.statistics.OFStatistics;
-
+import org.openflow.protocol.statistics.OFPortStatisticsReply;
 
 public class SwitchFactory
 {
@@ -208,13 +209,26 @@ public class SwitchFactory
             {
                 try
                 {
+                    // FIXME: decide whether to collect any additional
+                    // statistics, eg., flow stats.
+                    
+                    // handle port stats
                     Future<List<OFStatistics>> future_stats =
                         shim.get_port_stats(floodlight_switch_id);
-                    List<OFStatistics> port_stats = future_stats.get();
+                    List<OFStatistics> port_stats_list = future_stats.get();
+                    for (OFStatistics of_stat : port_stats_list)
+                    {
+                        OFPortStatisticsReply of_port_stat =
+                            (OFPortStatisticsReply) of_stat;
+                        _InternalPortStats port_stats =
+                            OFStatsMessageParser.of_port_stats_to_ralph(
+                                of_port_stat,ralph_globals);
 
-                    // FIXME: Must convert ofstatistics to port stats
-                    // and update
-                    
+                        Double port_num =
+                            new Double(of_port_stat.getPortNumber());
+                        stats_updater.update_port_stats(
+                            ralph_internal_switch_id,port_num,port_stats);
+                    }
                 }
                 catch (IOException ex)
                 {

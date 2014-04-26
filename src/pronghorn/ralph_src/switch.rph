@@ -1,11 +1,13 @@
 #include 'port.rph'
-#include 'flow_table_entry.rph'
-#include 'switch_delta.rph'
-#include 'port_stats.rph'
 alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
+#include 'flow_table_entry.rph'
 alias Struct Port as 'pronghorn.PortJava.Port';
+#include 'switch_delta.rph'
 alias Struct SwitchDelta as 'pronghorn.SwitchDeltaJava.SwitchDelta';
+#include 'port_stats.rph'
 alias Struct PortStats as 'pronghorn.PortStatsJava.PortStats';
+#include 'access_control.rph'
+alias Struct AccessControl as 'pronghorn.AccessControlJava.AccessControl';
 
 Struct Switch
 {
@@ -26,4 +28,15 @@ Struct Switch
 
     // initialize all port stats to 0.
     Map (from: Number, to: Struct PortStats) port_stats;
+
+
+    // keys are principal ids.  values are access controls that those
+    // principals have on switch.  if principal is not listed in this
+    // map, then use default_access_control struct below.
+    TVar Map(from: Number, to: Struct AccessControl) access_control_map;
+    
+    // if a user id is not in the access control map above, check what
+    // the default access should be using struct below.  If struct
+    // below is null, then keep switch hidden from application.
+    Struct AccessControl default_access_control = null;
 }

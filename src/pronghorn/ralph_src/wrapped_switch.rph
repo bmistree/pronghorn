@@ -11,6 +11,9 @@ alias Service WrappedSwitch as 'pronghorn.WrappedSwitchJava.WrappedSwitch';
 #include 'port_stats.rph'
 alias Struct PortStats as 'pronghorn.PortStatsJava.PortStats';
 
+#include 'access_control.rph'
+alias Struct AccessControl as 'pronghorn.AccessControlJava.AccessControl';
+
 Struct StructWrappedSwitch
 {
     Service WrappedSwitch wrapped_switch = null;
@@ -22,11 +25,23 @@ Service WrappedSwitch
     Struct Switch wrapped_switch = null;
     Service FlowTableUtil ft_util = null;
 
-    init(Struct Switch wrapped_switch_, Service FlowTableUtil ft_util_)
+    Struct AccessControl access_control = null;
+
+    
+    init(
+        Struct Switch wrapped_switch_, Service FlowTableUtil ft_util_,
+        Struct AccessControl access_control_)
     {
         wrapped_switch = wrapped_switch_;
         ft_util = ft_util_;
+        access_control = access_control_;
     }
+
+    get_switch() returns Struct Switch
+    {
+        return wrapped_switch;
+    }
+    
 
     id () returns Text
     {

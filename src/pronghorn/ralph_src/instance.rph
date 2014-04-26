@@ -13,14 +13,23 @@ alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
 
 Service Instance
 {
+    // This is switch map that gets passed to root user.
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
     Service FlowTableUtil shared_ft_util;
-
+    Number ROOT_PRINCIPAL_ID = 0;
+    
     // called from external code
     add_switch(Struct Switch to_add)
     {
+        // allow all operations on switch for principal user
+        Struct AccessControl ac;
+        ac.allow_writes = True;
+        to_add.access_control_map.set(ROOT_PRINCIPAL_ID, ac);
+
+        
         Service WrappedSwitch ws;
-        ws.init(to_add,shared_ft_util);
+        ws.init(to_add,shared_ft_util,ac);
+        
         Struct StructWrappedSwitch sws;
         sws.wrapped_switch = ws;
         atomically
@@ -52,12 +61,59 @@ Service Instance
         }
     }
 
-    add_application(Interface IApplication app)
+    add_application(Interface IApplication app, Number principal_id)
     {
-        app.init(self,switch_map);
+        TVar Map(from: Text, to: Struct StructWrappedSwitch)
+            principal_switch_map = null;
+        
+        if (principal_id == ROOT_PRINCIPAL_ID)
+            principal_switch_map = switch_map;
+        else
+            principal_switch_map = produce_switch_map_for_principal(principal_id);
+        app.init(self,principal_switch_map);
         app.run();
     }
 
+    /**
+       Create a map of switches that principal with id principal_id is at least
+       allowed to view.
+     */
+    produce_switch_map_for_principal(Number principal_id)
+        returns TVar Map(from: Text, to: Struct StructWrappedSwitch)
+    {
+        TVar Map (from: Text, to: Struct StructWrappedSwitch) to_return;
+        atomically
+        {
+            // iterate over canonical switch map, looking for switches that are,
+            // at least, visible to principal with id, principal_id
+            for (Text switch_id in switch_map)
+            {
+                Struct StructWrappedSwitch sws = switch_map.get(switch_id);
+                Struct Switch internal_switch = sws.wrapped_switch.get_switch();
+
+                Struct AccessControl acl =
+                    internal_switch.access_control_map.get(principal_id);
+                if (acl == null)
+                    acl = internal_switch.default_access_control;
+                
+                if (acl != null)
+                {
+                    if (acl.allow_writes or acl.read_only)
+                    {
+                        // principal has permission to at least read this
+                        // switch.  add it to principal's switch map
+                        Struct StructWrappedSwitch sws_to_add;
+                        Service WrappedSwitch ws;
+                        ws.init(internal_switch,shared_ft_util,acl);
+                        sws.wrapped_switch = ws;
+                        to_return.set(switch_id,sws_to_add);
+                    }
+                }
+            }
+        }
+        return to_return;
+    }
+    
     process_port_updates(List(element: Struct Port) port_updates)
     {
         // FIXME: Should fill in stub

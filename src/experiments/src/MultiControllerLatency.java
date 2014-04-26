@@ -84,8 +84,8 @@ public class MultiControllerLatency
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
             
-            prong.add_application(mc_off_on_app);
-            prong.add_application(num_switches_app);
+            prong.add_application(mc_off_on_app,Util.ROOT_APP_ID);
+            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
         }
         catch (Exception _ex)
         {

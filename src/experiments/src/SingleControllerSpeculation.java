@@ -58,7 +58,7 @@ public class SingleControllerSpeculation
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
             
-            prong.add_application(num_switches_app);
+            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
         }
         catch (Exception _ex)
         {
@@ -87,7 +87,7 @@ public class SingleControllerSpeculation
         {
             speculation_app = new SingleHostSpeculation(
                 ralph_globals,new SingleSideConnection());
-            prong.add_application(speculation_app);
+            prong.add_application(speculation_app,Util.ROOT_APP_ID);
         }
         catch (Exception ex)
         {

@@ -61,8 +61,8 @@ public class ReadOnlyLatency
             read_only_app = new ReadOnly(
                 ralph_globals,new SingleSideConnection());
             
-            prong.add_application(num_switches_app);
-            prong.add_application(read_only_app);
+            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
+            prong.add_application(read_only_app,Util.ROOT_APP_ID);
             
         }
         catch (Exception _ex)

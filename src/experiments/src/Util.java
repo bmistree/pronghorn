@@ -24,6 +24,8 @@ import experiments.ReadOnlyJava.ReadOnly;
 
 public class Util
 {
+    public final static Double ROOT_APP_ID = 0.;
+    
     final static int TIME_TO_WAIT_AFTER_FIRST_SWITCH_MS = 12000;
     final static int FIRST_SWITCH_POLL_PERIOD_MS = 250;
     /**

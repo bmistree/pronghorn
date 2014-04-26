@@ -138,7 +138,8 @@ public class MultiControllerFairness
             mc_fairness_app_principal_a = new MultiControllerFairnessApp(
                 ralph_globals,new SingleSideConnection());
             mc_fairness_app_principal_a.set_should_write(should_write);
-            prong.add_application(mc_fairness_app_principal_a);
+            prong.add_application(
+                mc_fairness_app_principal_a,Util.ROOT_APP_ID);
             
             if (is_head)
             {
@@ -146,12 +147,14 @@ public class MultiControllerFairness
                 // have one.
                 mc_fairness_app_principal_b = new MultiControllerFairnessApp(
                     ralph_globals,new SingleSideConnection());
-                prong.add_application(mc_fairness_app_principal_b);
+                prong.add_application(
+                    mc_fairness_app_principal_b,Util.ROOT_APP_ID);
                 mc_fairness_app_principal_b.set_should_write(should_write);
             }
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
-            prong.add_application(num_switches_app);
+            prong.add_application(
+                num_switches_app,Util.ROOT_APP_ID);
         }
         catch (Exception _ex)
         {

@@ -94,10 +94,10 @@ public class MultiControllerError
             
             mc_error_app = new MultiControllerErrorApp(
                 ralph_globals,new SingleSideConnection());
-            prong.add_application(mc_error_app);
+            prong.add_application(mc_error_app,Util.ROOT_APP_ID);
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
-            prong.add_application(num_switches_app);
+            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
         }
         catch (Exception _ex)
         {

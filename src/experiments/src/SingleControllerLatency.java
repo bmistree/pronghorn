@@ -65,8 +65,8 @@ public class SingleControllerLatency
             off_on_app = new OffOnApplication(
                 ralph_globals,new SingleSideConnection());
             
-            prong.add_application(num_switches_app);
-            prong.add_application(off_on_app);
+            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
+            prong.add_application(off_on_app,Util.ROOT_APP_ID);
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;

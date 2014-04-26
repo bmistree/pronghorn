@@ -77,9 +77,9 @@ public class SingleControllerFairness
             fairness_app_b = new FairnessApplication(
                 ralph_globals,new SingleSideConnection());
             
-            prong.add_application(num_switches_app);
-            prong.add_application(fairness_app_a);
-            prong.add_application(fairness_app_b);
+            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
+            prong.add_application(fairness_app_a,Util.ROOT_APP_ID);
+            prong.add_application(fairness_app_b,Util.ROOT_APP_ID);
         }
         catch (Exception _ex)
         {

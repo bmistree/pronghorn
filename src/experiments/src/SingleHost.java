@@ -55,7 +55,7 @@ public class SingleHost
 
         try
         {
-            prong.add_application(app);
+            prong.add_application(app,Util.ROOT_APP_ID);
         }
         catch (Exception ex)
         {

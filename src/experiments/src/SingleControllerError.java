@@ -66,8 +66,8 @@ public class SingleControllerError
                 ralph_globals,new SingleSideConnection());
             error_app = new ErrorApplication(
                 ralph_globals,new SingleSideConnection());
-            prong.add_application(num_switches_app);
-            prong.add_application(error_app);
+            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
+            prong.add_application(error_app,Util.ROOT_APP_ID);
                         
         }
         catch (Exception ex)

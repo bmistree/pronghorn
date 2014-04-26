@@ -24,19 +24,18 @@ public class SingleControllerError
 {
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
     public static final int FAILURE_PROBABILITY_ARG_INDEX = 1;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 2;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
     public static final boolean SHOULD_SPECULATE = true;
-    // not going to collect statistics
-    public static final int COLLECT_STATISTICS_PERIOD_MS = -1;
     
     
     public static void main (String[] args) 
     {
         /* Grab arguments */
-        if (args.length != 3)
+        if (args.length != 4)
         {
             print_usage();
             return;
@@ -48,6 +47,9 @@ public class SingleControllerError
         float failure_probability =
             Float.parseFloat(args[FAILURE_PROBABILITY_ARG_INDEX]);
 
+        int collect_statistics_period_ms =
+            Integer.parseInt(args[COLLECT_STATISTICS_ARG_INDEX]);
+        
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
         
@@ -81,7 +83,7 @@ public class SingleControllerError
             new SingleInstanceSwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                SHOULD_SPECULATE,COLLECT_STATISTICS_PERIOD_MS);
+                SHOULD_SPECULATE,collect_statistics_period_ms);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -131,6 +133,11 @@ public class SingleControllerError
         // FAILURE_PROBABILITY_ARG_INDEX
         usage_string +=
             "\n\t<float>: failure probability.\n";
+
+        // COLLECT_STATISTICS_ARG_INDEX
+        usage_string +=
+            "\n\t<int> : period for collecting individual switch stastics " +
+            "in ms.  < 0 if should not collect any statistics\n";
         
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";

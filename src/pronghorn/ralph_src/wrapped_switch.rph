@@ -25,9 +25,11 @@ Service WrappedSwitch
     Struct Switch wrapped_switch = null;
     Service FlowTableUtil ft_util = null;
 
+    // Applications interact with a wrapped switch.  access_control should be
+    // checked to ensure operations application makes are valid.
     Struct AccessControl access_control = null;
 
-    
+    // called by root instance only.  
     init(
         Struct Switch wrapped_switch_, Service FlowTableUtil ft_util_,
         Struct AccessControl access_control_)
@@ -36,7 +38,7 @@ Service WrappedSwitch
         ft_util = ft_util_;
         access_control = access_control_;
     }
-
+    // called by root instance only
     get_switch() returns Struct Switch
     {
         return wrapped_switch;
@@ -54,6 +56,7 @@ Service WrappedSwitch
         return wrapped_switch.ftable.size();
     }
 
+    // called by system only
     update_port_stats(Number port_num, Struct PortStats new_stats)
     {
         Struct PortStats old_stats = wrapped_switch.port_stats.get(port_num);
@@ -121,11 +124,16 @@ Service WrappedSwitch
         wrapped_switch.delta.switch_lock;
     }
     
-    add_entry(Struct FlowTableEntry to_add)
+    add_entry(Struct FlowTableEntry to_add) returns TrueFalse
     {
         Struct FlowTableEntry copied_to_add = ft_util.copy_entry(to_add);
         Struct FlowTableDelta ftd;
 
+        // check allowed to add this entry
+        TrueFalse permissions_allowed = check_add_remove_permissions(to_add);
+        if (not permissions_allowed)
+            return False;
+        
         atomically
         {
             write_lock_switch();
@@ -137,9 +145,10 @@ Service WrappedSwitch
             // FIXME: should filter adds then removes or removes then adds
             wrapped_switch.delta.ft_deltas.append(ftd);
         }
+        return True;
     }
 
-    remove_entry(Number index_to_remove_from)
+    remove_entry(Number index_to_remove_from) returns TrueFalse
     {
         Struct FlowTableDelta ftd;
         atomically
@@ -150,13 +159,69 @@ Service WrappedSwitch
             ftd.inserted = False;
             ftd.entry =
                 wrapped_switch.ftable.get(index_to_remove_from);
+
+            // check allowed to remove this entry
+            TrueFalse permissions_allowed =
+                check_add_remove_permissions(ftd.entry);
+            if (not permissions_allowed)
+                return False;
+
+            // actually perform remove
             wrapped_switch.ftable.remove(index_to_remove_from);
 
             // FIXME: should filter adds then removes or removes then adds
             wrapped_switch.delta.ft_deltas.append(ftd);
         }
+        return True;
     }
 
+    check_add_remove_permissions(Struct FlowTableEntry ft_entry)
+        returns TrueFalse
+    {
+        // check access control here
+        if (not access_control.allow_writes)
+            return False;
+
+        // first check whitelist: only allowed to remove entries in whitelist
+        if (access_control.whitelist_ip_src_write_list != null)
+        {
+            if (not in_helper(ft_entry.src_ip, access_control.whitelist_ip_src_write_list))
+                return False;
+        }
+        if (access_control.whitelist_ip_dst_write_list != null)
+        {
+            if (not in_helper(ft_entry.dst_ip,access_control.whitelist_ip_dst_write_list))
+                return False;
+        }
+        // check blacklist: not allowed to remove entries in blacklist
+        if (access_control.blacklist_ip_src_write_list != null)
+        {
+            if (not in_helper(ft_entry.src_ip,access_control.blacklist_ip_src_write_list))
+                return False;
+        }
+        if (access_control.blacklist_ip_dst_write_list != null)
+        {
+            if (not in_helper(ft_entry.dst_ip, access_control.blacklist_ip_dst_write_list))
+                return False;
+        }
+        return True;
+    }
+    
+    /**
+       Substitute method for in operator, which is currently not supported on
+       lists.
+     */
+    in_helper(Text needle, List(element: Text) haystack) returns TrueFalse
+    {
+        for (Text item in haystack)
+        {
+            if (needle == item)
+                return True;
+        }
+        return False;
+    }
+    
+    
     get_entry (Number index) returns Struct FlowTableEntry
     {
         read_lock_switch();

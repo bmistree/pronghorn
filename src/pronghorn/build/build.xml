@@ -92,6 +92,14 @@
       <arg line="-p ${pronghorn_package}"/>
       <arg line="-c PortStatsJava"/>
     </exec>
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${pronghorn_ralph_src_dir}/access_control.rph"/>
+      <arg line="-o ${pronghorn_ralph_emitted_dir}/AccessControlJava.java"/>
+      <arg line="-p ${pronghorn_package}"/>
+      <arg line="-c AccessControlJava"/>
+    </exec>
     
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>

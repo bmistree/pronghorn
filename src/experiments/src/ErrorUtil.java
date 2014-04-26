@@ -26,9 +26,17 @@ import pronghorn.SwitchDeltaJava.SwitchDelta;
 public class ErrorUtil
 {
     // gives time to settle changes
-    private static final int SLEEP_TIME_BETWEEN_TESTS_MS = 1000;
+    private static final int SLEEP_TIME_BETWEEN_TESTS_MS = 500;
     private static final Random rand = new Random();
     private static final int MAX_NUM_OPS_BEFORE_CHECK = 20;
+    /**
+       Perform:
+          BASE_NUM_OPS_BEFORE_CHECK +
+          rand(0,RANDOM_NUM_ADDITIONAL_OPS_BEFORE_CHECK)
+       for each run.
+     */
+    private static final int BASE_NUM_OPS_BEFORE_CHECK = 100;
+    private static final int RANDOM_NUM_ADDITIONAL_OPS_BEFORE_CHECK = 20;
 
     
     /**
@@ -61,8 +69,9 @@ public class ErrorUtil
             
             // perform random number of operations
             int num_ops_to_perform =
-                rand.nextInt(MAX_NUM_OPS_BEFORE_CHECK) + 1;
-            
+                BASE_NUM_OPS_BEFORE_CHECK + 
+                rand.nextInt(RANDOM_NUM_ADDITIONAL_OPS_BEFORE_CHECK);
+
             for (int j = 0; j < num_ops_to_perform; ++j)
             {
                 try

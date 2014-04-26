@@ -52,6 +52,7 @@ public class DeltaListStateSupplier
         // internal_ft_deltas_list object first.
         List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> internal_list =
             null;
+        internal_ft_deltas_list._lock();
         if (internal_ft_deltas_list.dirty_val != null)
             internal_list = internal_ft_deltas_list.dirty_val.val;
         else
@@ -59,8 +60,8 @@ public class DeltaListStateSupplier
             internal_list =
                 new ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>();
         }
-            
-
+        internal_ft_deltas_list._unlock();
+        
         List<FTableUpdate> to_return = produce_ftable_updates(internal_list);
 
         
@@ -93,11 +94,13 @@ public class DeltaListStateSupplier
         AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
             internal_ft_deltas_list = null;
 
+        ft_deltas_list._lock();
         if (ft_deltas_list.dirty_val != null)
             internal_ft_deltas_list = ft_deltas_list.dirty_val.val;
         else
             internal_ft_deltas_list = ft_deltas_list.val.val;
-
+        ft_deltas_list._unlock();
+        
         return internal_ft_deltas_list;
     }
 
@@ -121,10 +124,12 @@ public class DeltaListStateSupplier
             try
             {
                 flow_table_delta = (_InternalFlowTableDelta) (ro.get_val(null));
+                flow_table_delta.entry._lock();
                 if (flow_table_delta.entry.dirty_val != null)
                     entry = flow_table_delta.entry.dirty_val.val;
                 else
                     entry = flow_table_delta.entry.val.val;
+                flow_table_delta.entry._unlock();
             }
             catch (Exception ex)
             {
@@ -135,27 +140,55 @@ public class DeltaListStateSupplier
                 assert(false);
             }
 
+            
+            if (entry == null)
+            {
+                // can get a null entry in cases where are currently
+                // backing out of an update (and therefore reverting
+                // to original flow_table_delta value).  In that case,
+                // we do not need to produce an update for this target
+                // (no need to push it to switch), and can just
+                // continue.
+                continue;
+            }
+            
+
             // non tvar, therefore has different val.val access pattern.
             boolean insertion =
                 flow_table_delta.inserted.val.val.booleanValue();
+            
             String src_ip = null;
+            entry.src_ip._lock();
             if (entry.src_ip.dirty_val != null)
                 src_ip = entry.src_ip.dirty_val.val;
             else
                 src_ip = entry.src_ip.val.val;
-            
+            entry.src_ip._unlock();
+
             String dst_ip = null;
+            entry.dst_ip._lock();
             if (entry.dst_ip.dirty_val != null)
                 dst_ip = entry.dst_ip.dirty_val.val;
             else
                 dst_ip = entry.dst_ip.val.val;
+            entry.dst_ip._unlock();
             
             String actions = null;
+            entry.action._lock();
             if (entry.action.dirty_val != null)
                 actions = entry.action.dirty_val.val;
             else
                 actions = entry.action.val.val;
+            entry.action._unlock();
 
+            // means that this change was backed out before could
+            // complete and src_ip or dst_ip was backed out and reset
+            // to default text value.  do not apply change (it will be
+            // backed out anyways).
+            if (dst_ip.equals("") || src_ip.equals(""))
+                continue;
+
+            
             FTableUpdate update_to_push =  null;
             // FIXME: get rid of entry names in PronghonrFlowTableEntry
             String entry_name = "";

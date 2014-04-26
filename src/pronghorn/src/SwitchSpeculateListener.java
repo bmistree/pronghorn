@@ -69,11 +69,13 @@ public class SwitchSpeculateListener implements ISpeculateListener
         AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
             internal_ft_deltas_list = null;
 
+        ft_deltas_list._lock();
         if (ft_deltas_list.dirty_val != null)
             internal_ft_deltas_list = ft_deltas_list.dirty_val.val;
         else
             internal_ft_deltas_list = ft_deltas_list.val.val;
-
+        ft_deltas_list._unlock();
+        
         return internal_ft_deltas_list;
     }
 
@@ -90,11 +92,13 @@ public class SwitchSpeculateListener implements ISpeculateListener
         AtomicInternalList<_InternalFlowTableEntry,_InternalFlowTableEntry>
             internal_ft_list = null;
 
+        ft_list._lock();
         if (ft_list.dirty_val != null)
             internal_ft_list = ft_list.dirty_val.val;
         else
             internal_ft_list = ft_list.val.val;
-
+        ft_list._unlock();
+        
         return internal_ft_list;
     }
 

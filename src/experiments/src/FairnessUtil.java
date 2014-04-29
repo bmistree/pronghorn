@@ -115,6 +115,11 @@ public class FairnessUtil
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
 
+        // COLLECT_STATISTICS_ARG_INDEX
+        usage_string +=
+            "\n\t<int> : period for collecting individual switch stastics " +
+            "in ms.  < 0 if should not collect any statistics\n";
+
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
 

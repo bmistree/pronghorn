@@ -4,7 +4,7 @@ alias Struct ReducedTopos as 'experiments.MultiControllerTunnelsJava.ReducedTopo
 
 Struct DummyStruct
 {
-    Map (from: Text, to: Struct ReducedTopos) internal = null;
+    Map (from: Text, to: Struct ReducedTopos) internal;
 }
 
 Endpoint PronghornConnectionTunnels

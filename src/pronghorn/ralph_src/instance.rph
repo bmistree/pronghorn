@@ -130,7 +130,18 @@ Service Instance
                     {
                         Struct Switch internal_switch =
                             sws.wrapped_switch.get_switch();
-                        internal_switch.available_ports.set(local_port_number,port);
+
+                        // filter out ports we already have
+                        if (not internal_switch.available_ports.contains(local_port_number))
+                            internal_switch.available_ports.set(local_port_number,port);
+                        else
+                        {
+                            Struct Port existing_port =
+                                internal_switch.available_ports.get(local_port_number);
+                            
+                            if (existing_port.remote_switch_id != port.remote_switch_id)
+                                internal_switch.available_ports.set(local_port_number,port);
+                        }
                     }
                 }
             }

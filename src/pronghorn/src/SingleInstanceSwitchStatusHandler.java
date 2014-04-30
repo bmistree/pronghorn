@@ -23,10 +23,13 @@ import net.floodlightcontroller.core.IOFSwitchListener;
 import net.floodlightcontroller.core.ImmutablePort;
 import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscoveryListener;
+import net.floodlightcontroller.linkdiscovery.ILinkDiscovery;
 
 import org.openflow.util.HexString;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+
 
 public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
 {
@@ -100,6 +103,10 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
         // only handle link up messages to start with
         for (LDUpdate update : update_list)
         {
+            // FIXME: should also process port down.
+            if (update.getOperation() != ILinkDiscovery.UpdateOperation.LINK_UPDATED)
+                continue;
+            
             _InternalPort ralph_port = create_internal_port_from_update(update);
             if (ralph_port != null)
             {

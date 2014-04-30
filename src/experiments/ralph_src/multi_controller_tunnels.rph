@@ -79,6 +79,14 @@ Service MultiControllerTunnelsApp implements Interface IApplication
                     wrapper.child.update_switch_ids(switch_ids_to_update);
             }
         }
+
+        if (not path_found)
+        {
+            print(
+                '\n\nWarning: no path found between ' + switch_id_1 +
+                ' and ' + switch_id_2 + '\n\n');
+        }
+        
         return path_found;
     }
 
@@ -138,24 +146,29 @@ Service MultiControllerTunnelsApp implements Interface IApplication
         for (Number start_port in start.ports_to_switches)
         {
             Text connected_switch = start.ports_to_switches.get(start_port);
-            // avoid looking back to caller path
-            if (connected_switch != caller_switch)
+            // -1 is sentinel used for port with no connected switch...ugh this
+            // is getting ugly.
+            if (connected_switch != '-1')
             {
-                List(element: Text) path = null;
-                path = find_shortest_path(
-                    connected_switch,switch_id_2,switch_id_1,reduced_topos);
-
-                if (path != null)
+                // avoid looking back to caller path
+                if (connected_switch != caller_switch)
                 {
-                    if (not found_path)
+                    List(element: Text) path = null;
+                    path = find_shortest_path(
+                        connected_switch,switch_id_2,switch_id_1,reduced_topos);
+
+                    if (path != null)
                     {
-                        found_path = True;
-                        to_return = path;
-                    }
-                    else
-                    {
-                        if (path.size() < to_return.size())
+                        if (not found_path)
+                        {
+                            found_path = True;
                             to_return = path;
+                        }
+                        else
+                        {
+                            if (path.size() < to_return.size())
+                                to_return = path;
+                        }
                     }
                 }
             }
@@ -195,7 +208,11 @@ Service MultiControllerTunnelsApp implements Interface IApplication
             for (Number port_num in internal_switch.available_ports)
             {
                 Struct Port port = internal_switch.available_ports.get(port_num);
-                reduced_topo.ports_to_switches.set(port_num,port.remote_switch_id);
+                Text remote_switch_id = '-1';
+                if (port.remote_switch_id != null)
+                    remote_switch_id = port.remote_switch_id;
+                
+                reduced_topo.ports_to_switches.set(port_num,remote_switch_id);
             }
             to_return.set(internal_switch.switch_id,reduced_topo);
         }

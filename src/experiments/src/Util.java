@@ -371,6 +371,8 @@ public class Util
             /* perform all operations and determine how long they take */
             for (int i = 0; i < num_ops_to_run; ++i)
             {
+                System.out.println("\n\nRUNNING " + i + "\n\n");
+                
                 long start_time = System.nanoTime();
                 try
                 {
@@ -406,6 +408,11 @@ public class Util
                 }
                 long total_time = System.nanoTime() - start_time;
                 all_times.add(total_time);
+                if ((i % 100) == 0)
+                {
+                    System.out.println(
+                        "\n\nFinished " + i + " with time: " + total_time + "\n\n");
+                }
             }
         }
 

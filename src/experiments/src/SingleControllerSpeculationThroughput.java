@@ -2,6 +2,7 @@ package experiments;
 
 import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
+import pronghorn.WrappedSwitchJava._InternalStructWrappedSwitch;
 import pronghorn.InstanceJava.Instance;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.SingleHostSpeculationJava.SingleHostSpeculation;
@@ -132,25 +133,39 @@ public class SingleControllerSpeculationThroughput
         // each thread has a unique index into this results map
         ConcurrentHashMap<String,List<Long>> results =
             new ConcurrentHashMap<String,List<Long>>();
-        
-        // spawn 2 threads per switch pair
-        for (int i=0; i < (num_switches/2); ++i)
-        {
-            String one_switch = switch_ids.get(2*i);
-            String other_switch = switch_ids.get(2*i +1);
-            
-            SpeculationThroughputThread stt_1 =
-                new SpeculationThroughputThread(
-                    one_switch,other_switch,num_ops_to_run,speculation_app,
-                    results);
-            SpeculationThroughputThread stt_2 =
-                new SpeculationThroughputThread(
-                    other_switch,one_switch,num_ops_to_run,speculation_app,
-                    results);
 
-            threads.add(stt_1);
-            threads.add(stt_2);
+        try
+        {
+            // spawn 2 threads per switch pair
+            for (int i=0; i < (num_switches/2); ++i)
+            {
+                String one_switch_id = switch_ids.get(2*i);
+                String other_switch_id = switch_ids.get(2*i +1);
+
+                _InternalStructWrappedSwitch one_switch =
+                    speculation_app.get_struct_wrapped_switch(one_switch_id);
+                _InternalStructWrappedSwitch other_switch =
+                    speculation_app.get_struct_wrapped_switch(other_switch_id);
+
+                SpeculationThroughputThread stt_1 =
+                    new SpeculationThroughputThread(
+                        one_switch,other_switch,num_ops_to_run,speculation_app,
+                        results);
+                SpeculationThroughputThread stt_2 =
+                    new SpeculationThroughputThread(
+                        other_switch,one_switch,num_ops_to_run,speculation_app,
+                        results);
+
+                threads.add(stt_1);
+                threads.add(stt_2);
+            }
         }
+        catch(Exception ex)
+        {
+            ex.printStackTrace();
+            assert(false);
+        }
+        
         
         long start = System.nanoTime();
         for (Thread t : threads)
@@ -237,8 +252,8 @@ public class SingleControllerSpeculationThroughput
     {
         private static final AtomicInteger atom_int = new AtomicInteger(0);
         
-        String one_switch_id;
-        String two_switch_id;
+        _InternalStructWrappedSwitch one_switch;
+        _InternalStructWrappedSwitch two_switch;
         int num_ops_to_run;
         SingleHostSpeculation speculation_app;
         ConcurrentHashMap<String,List<Long>> results;
@@ -246,12 +261,13 @@ public class SingleControllerSpeculationThroughput
         String result_id = null;
         
         public SpeculationThroughputThread(
-            String one_switch_id, String two_switch_id,int num_ops_to_run,
+            _InternalStructWrappedSwitch one_switch,
+            _InternalStructWrappedSwitch two_switch,int num_ops_to_run,
             SingleHostSpeculation speculation_app,
             ConcurrentHashMap<String,List<Long>> results)
         {
-            this.one_switch_id = one_switch_id;
-            this.two_switch_id = two_switch_id;
+            this.one_switch = one_switch;
+            this.two_switch = two_switch;
             this.num_ops_to_run = num_ops_to_run;
             this.speculation_app = speculation_app;
             this.results = results;
@@ -265,8 +281,8 @@ public class SingleControllerSpeculationThroughput
                 try
                 {
                     boolean add_entry = (i % 2) == 0;
-                    speculation_app.some_event(
-                        one_switch_id,two_switch_id,add_entry);
+                    speculation_app.some_event_switches(
+                        one_switch,two_switch,add_entry);
                 }
                 catch (Exception _ex)
                 {

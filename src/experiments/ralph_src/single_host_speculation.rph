@@ -64,6 +64,22 @@ Service SingleHostSpeculation implements Interface IApplication
             add_entry_switch_ip(sws,ip_src);
         }
     }
+
+    get_struct_wrapped_switch(Text switch_id)
+        returns Struct StructWrappedSwitch
+    {
+        Struct StructWrappedSwitch to_return =
+            switch_map.get(switch_id);
+        return to_return;
+    }
+    some_event_switches (
+        Struct StructWrappedSwitch read_switch,
+        Struct StructWrappedSwitch write_switch, TrueFalse add_entry)
+    {
+        read_and_write(read_switch,write_switch,not add_entry);
+    }
+    
+    
     some_event(Text read_switch_id, Text write_switch_id, TrueFalse add_entry)
     {
         Struct StructWrappedSwitch to_read_from =

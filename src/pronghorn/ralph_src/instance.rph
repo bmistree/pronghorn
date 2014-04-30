@@ -122,12 +122,15 @@ Service Instance
             Number local_port_number = port.local_port_number;
             atomically
             {
-                Struct StructWrappedSwitch sws = switch_map.get(local_switch_id);
-                if (sws != null)
+                if (switch_map.contains(local_switch_id))
                 {
-                    Struct Switch internal_switch =
-                        sws.wrapped_switch.get_switch();
-                    internal_switch.available_ports.set(local_port_number,port);
+                    Struct StructWrappedSwitch sws = null;
+                    sws = switch_map.get(local_switch_id);
+                    {
+                        Struct Switch internal_switch =
+                            sws.wrapped_switch.get_switch();
+                        internal_switch.available_ports.set(local_port_number,port);
+                    }
                 }
             }
         }

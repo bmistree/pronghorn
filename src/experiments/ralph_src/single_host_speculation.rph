@@ -21,6 +21,10 @@ Service SingleHostSpeculation implements Interface IApplication
 
     TVar TrueFalse s1_last_added = False;
     TVar TrueFalse s2_last_added = False;
+
+    Map(from: Text, to: TrueFalse) added_map;
+
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map = null;
     
     // @Override --- from IApplication interface
     init(Service Instance inst_,
@@ -28,18 +32,19 @@ Service SingleHostSpeculation implements Interface IApplication
     {
         inst = inst_;
 
+        switch_map = switch_map_;
         atomically
         {
             Number counter = 0;
             for (Text switch_id in switch_map_)
             {
+                added_map.set(switch_id,False);
                 Struct StructWrappedSwitch tmp = switch_map_.get(switch_id);
                 if (s1 == null)
                     s1 = tmp;
                 else
                 {
                     s2 = tmp;
-                    break;
                 }
             }
         }
@@ -54,6 +59,27 @@ Service SingleHostSpeculation implements Interface IApplication
     // @Override --- do nothing when first installed
     run(){}
 
+    load_entry_all_switches()
+    {
+        for( Text switch_id in switch_map)
+        {
+            Struct StructWrappedSwitch sws = switch_map.get(switch_id);
+            add_entry_switch(sws);
+        }
+    }
+    some_event(Text read_switch_id, Text write_switch_id)
+    {
+        Struct StructWrappedSwitch to_read_from =
+            switch_map.get(read_switch_id);
+        Struct StructWrappedSwitch to_write_to =
+            switch_map.get(write_switch_id);
+
+        TrueFalse add_entry = added_map.get(write_switch_id);
+        read_and_write(to_read_from,to_write_to, not add_entry);
+        added_map.set(write_switch_id,not add_entry);
+    }
+    
+    
     load_entry_both_switches()
     {
         add_entry_switch(s1);

@@ -113,11 +113,23 @@ Service Instance
         }
         return to_return;
     }
-    
+
     process_port_updates(List(element: Struct Port) port_updates)
     {
-        // FIXME: Should fill in stub
-        print ('Warn: stub method process port updates called on instance.');
+        for (Struct Port port in port_updates)
+        {
+            Text local_switch_id = port.local_switch_id;
+            Number local_port_number = port.local_port_number;
+            atomically
+            {
+                Struct StructWrappedSwitch sws = switch_map.get(local_switch_id);
+                if (sws != null)
+                {
+                    Struct Switch internal_switch =
+                        sws.wrapped_switch.get_switch();
+                    internal_switch.available_ports.set(local_port_number,port);
+                }
+            }
+        }
     }
-    
 }

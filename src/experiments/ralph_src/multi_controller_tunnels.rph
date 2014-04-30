@@ -180,8 +180,12 @@ Service MultiControllerTunnelsApp implements Interface IApplication
     get_topos() returns Map (from: Text, to: Struct ReducedTopos)
     {
         Map(from: Text, to: Struct ReducedTopos) to_return;
-        for (Struct StructWrappedSwitch sws in switch_map)
+        // for (Struct StructWrappedSwitch sws in switch_map)
+        for (Text switch_id in switch_map)            
         {
+            Struct StructWrappedSwitch sws = null;
+            sws = switch_map.get(switch_id);
+            
             Struct ReducedTopos reduced_topo;
             
             Struct Switch internal_switch = null;

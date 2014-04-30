@@ -152,6 +152,11 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
             String dst_floodlight_switch_id =
                 HexString.toHexString(update.getDst());
 
+            String src_ralph_switch_id =
+                floodlight_to_pronghorn_ids.get(src_floodlight_switch_id);
+            String dst_ralph_switch_id =
+                floodlight_to_pronghorn_ids.get(dst_floodlight_switch_id);
+            
             short src_port_num = update.getSrcPort();
             short dst_port_num = update.getDstPort();
 
@@ -164,11 +169,11 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
             to_return.port_up =
                 new AtomicTrueFalseVariable(false,true,prong.ralph_globals);
 
-            to_return.remote_switch_id.set_val(null,dst_floodlight_switch_id);
+            to_return.remote_switch_id.set_val(null,dst_ralph_switch_id);
             to_return.remote_port_number.set_val(
                 null,new Double(dst_port_num));
 
-            to_return.local_switch_id.set_val(null,src_floodlight_switch_id);
+            to_return.local_switch_id.set_val(null,src_ralph_switch_id);
             to_return.local_port_number.set_val(
                 null,new Double(src_port_num));
 

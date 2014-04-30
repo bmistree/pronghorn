@@ -70,6 +70,7 @@ Service Instance
             principal_switch_map = switch_map;
         else
             principal_switch_map = produce_switch_map_for_principal(principal_id);
+
         app.init(self,principal_switch_map);
         app.run();
     }

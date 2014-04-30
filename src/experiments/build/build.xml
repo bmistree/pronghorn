@@ -308,7 +308,7 @@
                multi_controller_throughput,ordering,
                multi_controller_fairness,speculation, single_controller_error,
                multi_controller_error,ordering,
-               single_controller_fairness,read_only"
+               single_controller_fairness,read_only,multi_controller_tunnels"
       description="create jars for each type of experiment">
   </target>
 
@@ -551,7 +551,21 @@
       </antcall>
   </target>
 
-  
+  <!-- Testing tunnels -->
+  <property
+      name="multi_controller_tunnels_jar"
+      value="multi_controller_tunnels.jar"/>
+  <target
+      name="multi_controller_tunnels"
+      depends="compile_libs,compile_experiments"
+      description="Compare latencies for tunnel ops">
+
+      <antcall target="make_jar">
+        <param name="main_class" value="MultiControllerTunnels"/>
+        <param name="dest_jar" value="${multi_controller_tunnels_jar}"/>
+      </antcall>
+  </target>
+
   
   <!-- Delete the build directories -->
   <target name="clean" description="get rid of build dir">
@@ -576,6 +590,7 @@
     <delete file="${single_controller_error_jar}"/>
     <delete file="${single_controller_latency_jar}"/>
     <delete file="${speculation_jar}"/>
+    <delete file="${multi_controller_tunnels_jar}"/>
     
   </target>
 

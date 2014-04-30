@@ -5,6 +5,7 @@ import java.lang.Runtime;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.Random;
 
 import java.io.FileWriter;
 import java.io.PrintWriter;
@@ -21,6 +22,7 @@ import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.OffOnApplicationJava.OffOnApplication;
 import experiments.MultiControllerOffOnJava.MultiControllerOffOn;
 import experiments.ReadOnlyJava.ReadOnly;
+import experiments.MultiControllerTunnelsJava.MultiControllerTunnelsApp;
 
 public class Util
 {
@@ -280,10 +282,15 @@ public class Util
         private OffOnApplication off_on_app = null;
         private MultiControllerOffOn mc_off_on_app = null;
         private ReadOnly read_only_app = null;
+        private MultiControllerTunnelsApp tunnels_app = null;
+        private List<String> switch_names = null;
         private String switch_id = null;
         private int num_ops_to_run = -1;
 
         private boolean no_read_first = false;
+
+        private static Random rand = new Random();
+        
         
         // For locals
         public LatencyThread(
@@ -315,6 +322,48 @@ public class Util
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
         }
+
+        // For read only
+        public LatencyThread(
+            MultiControllerTunnelsApp tunnels_app, 
+            int num_ops_to_run,List<String> switch_names)
+        {
+            this.tunnels_app = tunnels_app;
+            this.num_ops_to_run = num_ops_to_run;
+            this.switch_names = switch_names;
+        }
+
+
+        private String select_one_switch(List <String> switch_names)
+        {
+            if (switch_names.size() == 0)
+            {
+                System.out.println(
+                    "Cannot select an element from empty list.");
+                assert(false);
+            }
+            int index = rand.nextInt(switch_names.size());
+            return switch_names.get(index);
+        }
+        private String select_one_switch(
+            List<String> switch_names, String switch_to_skip)
+        {
+            if (switch_names.size() <= 1)
+            {
+                System.out.println(
+                    "Cannot select an element from list with 1 element.");
+                assert(false);
+            }
+
+            String to_return = null;
+            while (true)
+            {
+                to_return = select_one_switch(switch_names);
+                if (! to_return.equals(switch_to_skip))
+                    break;
+            }
+            return to_return;
+        }
         
 
         public void run()
@@ -329,6 +378,12 @@ public class Util
                         read_only_app.read_first_instance_flow_table();
                     else if (mc_off_on_app != null)
                         mc_off_on_app.single_op_and_ask_children_for_single_op();
+                    else if (tunnels_app != null)
+                    {
+                        String switch_id_1 = select_one_switch(switch_names);
+                        String switch_id_2 = select_one_switch(switch_names,switch_id_1);
+                        tunnels_app.install_shortest_path(switch_id_1,switch_id_2);
+                    }
                     else
                     {
                         if (no_read_first)

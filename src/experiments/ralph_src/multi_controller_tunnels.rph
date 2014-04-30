@@ -1,0 +1,200 @@
+#include 'iapplication.rph'
+alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
+
+#include 'wrapped_switch.rph'
+alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
+
+
+alias Service Instance as 'pronghorn.InstanceJava.Instance';
+alias Endpoint PronghornConnectionTunnels as 'experiments.PronghornConnectionTunnelsJava.PronghornConnectionTunnels';
+alias Service ErrorApplication as 'experiments.ErrorApplicationJava.ErrorApplication';
+alias Interface IErrorApplication as 'experiments.IErrorApplicationJava.IErrorApplication';
+
+
+Struct ConnectionWrapper
+{
+    Endpoint PronghornConnectionTunnels child = null;
+}
+
+Struct ReducedTopos
+{
+    Text switch_id;
+    Map (from: Number, to: Text) ports_to_switches;
+}
+
+Service MultiControllerTunnelsApp implements Interface IApplication
+{
+    Service Instance inst = null;
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+
+    // Other controllers connected to.  Connections are directional.  Eg.,
+    // A -> B
+    // where A only requests single ops on B (B cannot request single ops on A).
+    TVar List(element : Struct ConnectionWrapper) children;
+
+    // @Override: from IApplication interface
+    init(Service Instance inst_,
+        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    {
+        inst = inst_;
+        switch_map = switch_map_;
+    }
+
+    // @Override: from IApplication interface
+    run()
+    {}
+
+    install_shortest_path(Text switch_id_1, Text switch_id_2) returns TrueFalse
+    {
+        TrueFalse path_found = False;
+        atomically
+        {
+            path_found = False;
+            // grab neighboring topologies
+            for (Struct ConnectionWrapper wrapper in children)
+            {
+                wrapper.child.get_topos();
+            }
+            
+            // grab own topology: do shortest path computation on it.  Keep
+            // track of changes and send them to all children to install
+            // themselves.
+            Map (from: Text, to: Struct ReducedTopos) reduced_topos = null;
+            reduced_topos = get_topos();
+
+            // find path between switches: know there aren't cycles, so use
+            // depth-first-search
+
+            List (element: Text) switch_ids_to_update = null;
+            switch_ids_to_update = find_shortest_path(
+                //using -1 as caller switch id, because know no other switch
+                //will match it
+                switch_id_1,switch_id_2,'-1',reduced_topos);
+
+            if (switch_ids_to_update != null)
+            {
+                path_found = True;
+                update_switch_ids(switch_ids_to_update);
+                for (Struct ConnectionWrapper wrapper in children)
+                    wrapper.child.update_switch_ids(switch_ids_to_update);
+            }
+        }
+        return path_found;
+    }
+
+    // locally update ftable entry in list of switches... for now just inserting
+    // any flow table entry
+    update_switch_ids(List (element: Text) switch_id_list)
+    {
+        for (Text switch_id in switch_id_list)
+        {
+            // if the switch has an entry, then remove it.  if it doesn't have
+            // an entry, then add one.
+            Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
+            if (target_switch.wrapped_switch.ftable_size() == 0)
+                add_entry_switch(switch_id);
+            else
+                remove_entry_switch(switch_id);
+        }
+    }
+
+    add_entry_switch(Text switch_id)
+    {
+        atomically
+        {
+            Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
+            Struct FlowTableEntry to_add;
+            to_add.src_ip = '18.18.18.18';
+            to_add.dst_ip = '18.18.18.19';
+            // drop all packets
+            to_add.action = '';
+            target_switch.wrapped_switch.add_entry(to_add);            
+        }
+    }    
+    remove_entry_switch(Text switch_id)
+    {
+        atomically
+        {
+            Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
+            target_switch.wrapped_switch.remove_entry(0);
+        }
+    }
+    
+    find_shortest_path(
+        Text switch_id_1, Text switch_id_2,Text caller_switch,
+        Map(from:Text, to: Struct ReducedTopos) reduced_topos)
+        returns List (element: Text)
+    {
+        List(element: Text) to_return;
+        if (( not reduced_topos.contains(switch_id_1))
+            or (not reduced_topos.contains(switch_id_2)))
+            return null;
+            
+        if (switch_id_1 == switch_id_2)
+            return to_return;
+
+        Struct ReducedTopos start = reduced_topos.get(switch_id_1);
+        TrueFalse found_path = False;
+        for (Number start_port in start.ports_to_switches)
+        {
+            Text connected_switch = start.ports_to_switches.get(start_port);
+            // avoid looking back to caller path
+            if (connected_switch != caller_switch)
+            {
+                List(element: Text) path = null;
+                path = find_shortest_path(
+                    connected_switch,switch_id_2,switch_id_1,reduced_topos);
+
+                if (path != null)
+                {
+                    if (not found_path)
+                    {
+                        found_path = True;
+                        to_return = path;
+                    }
+                    else
+                    {
+                        if (path.size() < to_return.size())
+                            to_return = path;
+                    }
+                }
+            }
+        }
+
+        if (not found_path)
+            return null;
+        
+        to_return.append(switch_id_1);
+        return to_return;
+    }
+    
+    add_child_connection(Endpoint PronghornConnectionTunnels connection)
+    {
+        Struct ConnectionWrapper connection_wrapper;
+        connection_wrapper.child = connection;
+        children.append(connection_wrapper);
+    }
+
+
+    // return topos for all internal switches
+    get_topos() returns Map (from: Text, to: Struct ReducedTopos)
+    {
+        Map(from: Text, to: Struct ReducedTopos) to_return;
+        for (Struct StructWrappedSwitch sws in switch_map)
+        {
+            Struct ReducedTopos reduced_topo;
+            
+            Struct Switch internal_switch = null;
+            internal_switch = sws.wrapped_switch.get_switch();
+
+            reduced_topo.switch_id = internal_switch.switch_id;
+            for (Number port_num in internal_switch.available_ports)
+            {
+                Struct Port port = internal_switch.available_ports.get(port_num);
+                reduced_topo.ports_to_switches.set(port_num,port.remote_switch_id);
+            }
+            to_return.set(internal_switch.switch_id,reduced_topo);
+        }
+        return to_return;
+    }
+}

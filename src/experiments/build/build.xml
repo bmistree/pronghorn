@@ -238,6 +238,24 @@
       <arg line="-c PronghornConnectionErrorJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/multi_controller_tunnels.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/MultiControllerTunnelsJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c MultiControllerTunnelsJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+    
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_tunnels.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/PronghornConnectionTunnelsJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c PronghornConnectionTunnelsJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
     
   </target>
 

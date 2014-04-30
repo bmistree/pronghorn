@@ -114,6 +114,9 @@ public class SingleControllerSpeculationThroughput
             speculation_app = new SingleHostSpeculation(
                 ralph_globals,new SingleSideConnection());
             prong.add_application(speculation_app,Util.ROOT_APP_ID);
+            speculation_app.load_entry_all_switches("39.2.3.1");
+            speculation_app.load_entry_all_switches("39.2.3.2");
+            speculation_app.load_entry_all_switches("39.2.3.3");
         }
         catch (Exception ex)
         {
@@ -135,6 +138,7 @@ public class SingleControllerSpeculationThroughput
         {
             String one_switch = switch_ids.get(2*i);
             String other_switch = switch_ids.get(2*i +1);
+            
             SpeculationThroughputThread stt_1 =
                 new SpeculationThroughputThread(
                     one_switch,other_switch,num_ops_to_run,speculation_app,
@@ -260,7 +264,9 @@ public class SingleControllerSpeculationThroughput
             {
                 try
                 {
-                    speculation_app.some_event(one_switch_id,two_switch_id);
+                    boolean add_entry = (i % 2) == 0;
+                    speculation_app.some_event(
+                        one_switch_id,two_switch_id,add_entry);
                 }
                 catch (Exception _ex)
                 {

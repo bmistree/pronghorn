@@ -27,9 +27,10 @@ Service GetNumberSwitches implements Interface IApplication
         List(element: Text) to_return;
         atomically
         {
-            to_return.clear();
+            List(element: Text) internal_to_return;
             for (Text switch_id in switch_map)
-                to_return.append(switch_id);
+                internal_to_return.append(switch_id);
+            to_return = internal_to_return;
         }
         return to_return;
     }

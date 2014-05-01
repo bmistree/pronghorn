@@ -52,6 +52,7 @@ Service MultiControllerSpeculation implements Interface IApplication
                     switch_id_to_use = switch_id;
                     break;
                 }
+                counter = counter + 1;
             }
 
             off_on_app.single_op(switch_id_to_use);

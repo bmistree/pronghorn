@@ -102,6 +102,18 @@ public class SingleControllerThroughput
 
         // wait until a few switches connect
         Util.wait_on_switches(num_switches_app);
+
+        try
+        {
+            off_on_app.add_entry_all_switches("43.31.1.3");
+            off_on_app.add_entry_all_switches("43.31.1.2");
+            off_on_app.add_entry_all_switches("43.31.1.1");
+        }
+        catch (Exception ex)
+        {
+            System.out.println("Unknown exception error.");
+            assert(false);
+        }
         
         List<String> switch_ids = Util.get_switch_id_list(num_switches_app);
         int num_switches = switch_ids.size();

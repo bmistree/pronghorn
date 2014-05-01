@@ -226,6 +226,10 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
     public void switchActivated(long switch_id)
     {
         String floodlight_switch_id = HexString.toHexString(switch_id);
+
+        // already had switch
+        if (floodlight_to_pronghorn_ids.containsKey(floodlight_switch_id))
+            return;
         
         FlowTableToHardware rtable_to_hardware =
             rtable_to_hardware_factory.construct(
@@ -250,6 +254,7 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
                 "\nError: Should not generate exception from adding switch\n");
         }
     }
+    
     @Override
     public void switchPortChanged(
         long switch_id,ImmutablePort port, IOFSwitch.PortChangeType type)

@@ -1,0 +1,23 @@
+alias Service MultiControllerSpeculation as 'experiments.MultiControllerSpeculationJava.MultiControllerSpeculation';
+
+Endpoint PronghornConnectionSpeculation
+{
+    Service MultiControllerSpeculation speculation_app = null;
+
+    set_speculation_app(Service MultiControllerSpeculation to_set_to)
+    {
+        speculation_app = to_set_to;
+    }
+
+    // called from multi_controller_speculation
+    single_op(Number which_switch)
+    {
+        @partner.receive_single_op(which_switch);
+    }
+
+    // called exclusively from partner
+    receive_single_op(Number which_switch)
+    {
+        speculation_app.single_op(which_switch);
+    }
+}

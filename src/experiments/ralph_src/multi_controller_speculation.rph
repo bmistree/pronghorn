@@ -1,0 +1,73 @@
+#include 'iapplication.rph'
+alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
+
+alias Service Instance as 'pronghorn.InstanceJava.Instance';
+alias Endpoint PronghornConnectionSpeculation as 'experiments.PronghornConnectionSpeculationJava.PronghornConnectionSpeculation';
+alias Service OffOnApplication as 'experiments.OffOnApplicationJava.OffOnApplication';
+alias Interface IOffOnApplication as 'experiments.IOffOnApplicationJava.IOffOnApplication';
+
+
+Struct ConnectionWrapper
+{
+    Endpoint PronghornConnectionSpeculation child;
+}
+
+Service MultiControllerSpeculation implements Interface IApplication
+{
+    Service Instance inst = null;
+    Service OffOnApplication off_on_app;
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+
+    TVar List(element : Struct ConnectionWrapper) children;
+
+    // @Override: from IApplication interface
+    init(Service Instance inst_,
+        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    {
+        inst = inst_;
+        switch_map = switch_map_;
+        off_on_app.init(inst,switch_map);
+    }
+
+    // @Override: from IApplication interface
+    run()
+    {
+        off_on_app.run();
+    }
+
+
+    single_op(Number which_switch)
+    {
+        // first perform action locally, then ask partner to
+        atomically
+        {
+            Number counter = 0;
+            Text switch_id_to_use = '';
+            // FIXME: this presupposes that keysets maps return for iterators in
+            // same order.
+            for (Text switch_id in switch_map)
+            {
+                if (counter == which_switch)
+                {
+                    switch_id_to_use = switch_id;
+                    break;
+                }
+            }
+
+            off_on_app.single_op(switch_id_to_use);
+            for (Struct ConnectionWrapper wrapper in children)
+            {
+                Endpoint PronghornConnectionSpeculation endpt = wrapper.child;
+                endpt.single_op(which_switch);
+            }
+        }
+    }
+
+    
+    add_child_connection(Endpoint PronghornConnectionSpeculation new_child)
+    {
+        Struct ConnectionWrapper wrapper;
+        wrapper.child = new_child;
+        children.append(wrapper);
+    }
+}

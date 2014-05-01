@@ -120,6 +120,25 @@
       <arg line="-c IOffOnApplicationJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
+
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/multi_controller_speculation.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/MultiControllerSpeculationJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c MultiControllerSpeculationJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+    
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_speculation.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/PronghornConnectionSpeculationJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c PronghornConnectionSpeculationJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+
     
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>

@@ -248,7 +248,6 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
-    
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_error.rph"/>
@@ -329,7 +328,7 @@
                multi_controller_error,ordering,
                single_controller_fairness,read_only,multi_controller_tunnels,
                single_controller_speculation_throughput,
-               multi_controller_speculation_throughput"
+               multi_controller_speculation_throughput,read_only_throughput"
       description="create jars for each type of experiment">
   </target>
 
@@ -617,6 +616,22 @@
       </antcall>
   </target>
 
+  <!-- Read only throughput -->
+  <property
+      name="read_only_throughput_jar"
+      value="read_only_throughput.jar"/>
+  <target
+      name="read_only_throughput"
+      depends="compile_libs,compile_experiments"
+      description="Read only throughput jar">
+
+      <antcall target="make_jar">
+        <param name="main_class" value="ReadOnlyThroughput"/>
+        <param name="dest_jar" value="${read_only_throughput_jar}"/>
+      </antcall>
+  </target>
+
+  
   
   <!-- Delete the build directories -->
   <target name="clean" description="get rid of build dir">
@@ -644,6 +659,7 @@
     <delete file="${multi_controller_tunnels_jar}"/>
     <delete file="${single_controller_speculation_throughput_jar}"/>
     <delete file="${multi_controller_speculation_throughput_jar}"/>
+    <delete file="${read_only_throughput_jar}"/>
     
   </target>
 

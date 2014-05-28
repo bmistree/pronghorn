@@ -103,6 +103,7 @@
   <target name="translate_ralph" depends="init"
           description="translate ralph files">
 
+    <echo message="read_only.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/read_only.rph"/>
@@ -112,6 +113,17 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <echo message="read_only_throughput.rph"/>
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/read_only_throughput.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/ReadOnlyThroughputJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c ReadOnlyThroughputJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+
+    <echo message="ioff_on_application.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/ioff_on_application.rph"/>
@@ -121,6 +133,7 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <echo message="multi_controller_speculation.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/multi_controller_speculation.rph"/>
@@ -129,7 +142,8 @@
       <arg line="-c MultiControllerSpeculationJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
-    
+
+    <echo message="pronghorn_connection_speculation.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_speculation.rph"/>
@@ -139,7 +153,7 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
-    
+    <echo message="multi_controller_off_on.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/multi_controller_off_on.rph"/>
@@ -148,7 +162,8 @@
       <arg line="-c MultiControllerOffOnJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
-    
+
+    <echo message="pronghorn_connection.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection.rph"/>
@@ -158,6 +173,7 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <echo message="off_on_application.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/off_on_application.rph"/>
@@ -166,7 +182,8 @@
       <arg line="-c OffOnApplicationJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
-
+    
+    <echo message="get_number_switches.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/get_number_switches.rph"/>
@@ -175,7 +192,8 @@
       <arg line="-c GetNumberSwitchesJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
-
+    
+    <echo message="single_host_speculation.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/single_host_speculation.rph"/>
@@ -185,6 +203,7 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <echo message="ifairness_application.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/ifairness_application.rph"/>
@@ -194,6 +213,7 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <echo message="fairness_application.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/fairness_application.rph"/>
@@ -203,6 +223,7 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
     
+    <echo message="multi_controller_fairness.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/multi_controller_fairness.rph"/>
@@ -212,6 +233,7 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <echo message="pronghorn_connection_fairness.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_fairness.rph"/>
@@ -221,6 +243,7 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <echo message="ierror_application.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/ierror_application.rph"/>
@@ -229,7 +252,8 @@
       <arg line="-c IErrorApplicationJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
-    
+
+    <echo message="error_application.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/error_application.rph"/>
@@ -239,6 +263,7 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <echo message="multi_controller_error.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/multi_controller_error.rph"/>
@@ -248,6 +273,7 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <echo message="multi_controller_error.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_error.rph"/>
@@ -257,6 +283,7 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
+    <echo message="multi_controller_tunnels.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/multi_controller_tunnels.rph"/>
@@ -265,7 +292,8 @@
       <arg line="-c MultiControllerTunnelsJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
-    
+
+    <echo message="pronghorn_connection_tunnels.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_tunnels.rph"/>

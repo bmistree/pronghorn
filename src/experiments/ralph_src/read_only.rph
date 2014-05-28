@@ -7,7 +7,6 @@ alias Service Instance as 'pronghorn.InstanceJava.Instance';
 #include 'wrapped_switch.rph'
 alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
 
-
 Service ReadOnly implements Interface IApplication
 {
     Service Instance inst = null;
@@ -25,15 +24,6 @@ Service ReadOnly implements Interface IApplication
     run()
     {}
 
-    read_switch(Text switch_id)
-    {
-        atomically
-        {
-            Struct StructWrappedSwitch sws = switch_map.get(switch_id);
-            sws.wrapped_switch.ftable_size();
-        }
-    }
-    
     read_first_instance_flow_table()
     {
         atomically

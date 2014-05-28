@@ -1,41 +1,40 @@
 package experiments;
 
+import java.lang.Thread;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import RalphConnObj.SingleSideConnection;
+import ralph.RalphGlobals;
+
 import pronghorn.SingleInstanceFloodlightShim;
 import pronghorn.SingleInstanceSwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
-import experiments.GetNumberSwitchesJava.GetNumberSwitches;
-import experiments.ReadOnlyJava.ReadOnly;
-import RalphConnObj.SingleSideConnection;
-import ralph.RalphGlobals;
-import ralph.NonAtomicInternalList;
 import pronghorn.FloodlightFlowTableToHardware;
-import java.lang.Thread;
-import java.util.ArrayList;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.List;
-import java.util.Collections;
-import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.HashSet;
-import java.util.Set;
-import experiments.Util.HostPortPair;
+
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.ReadOnlyThroughputJava.ReadOnly;
 import experiments.Util;
 
 
 public class ReadOnlyThroughput
 {
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
-    public static final int THREADS_PER_SWITCH_ARG_INDEX = 1;
-    public static final int COLLECT_STATISTICS_ARG_INDEX = 2;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
+    public static final int NUMBER_OPS_TO_WARMUP_ARG_INDEX = 1;
+    public static final int THREADS_PER_SWITCH_ARG_INDEX = 2;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
 
-    // wait this long for pronghorn to add all switches
-    public static final int SETTLING_TIME_WAIT = 5000;
+    // if any thread errored out, report error to had_exception.
+    // Before returning, will make note of thread issues.
+    public static final AtomicBoolean had_exception =
+        new AtomicBoolean(false);
     
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 5)
         {
             print_usage();
             return;
@@ -44,6 +43,9 @@ public class ReadOnlyThroughput
         int num_ops_to_run = 
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
 
+        int num_warmup_ops_to_run =
+            Integer.parseInt(args[NUMBER_OPS_TO_WARMUP_ARG_INDEX]);
+        
         int threads_per_switch =
             Integer.parseInt(args[THREADS_PER_SWITCH_ARG_INDEX]);
 
@@ -55,26 +57,20 @@ public class ReadOnlyThroughput
         /* Start up pronghorn */
         Instance prong = null;
         GetNumberSwitches num_switches_app = null;
-        ReadOnly read_only = null;
+        RalphGlobals ralph_globals = new RalphGlobals();
         try
         {
-            RalphGlobals ralph_globals = new RalphGlobals();
             prong = new Instance(
                 ralph_globals,new SingleSideConnection());
 
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
-            read_only = new ReadOnly(
-                ralph_globals,new SingleSideConnection());
-            
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);
-            prong.add_application(read_only,Util.ROOT_APP_ID);
-            
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
         }
-
+        
         SingleInstanceFloodlightShim shim = new SingleInstanceFloodlightShim();
         
         SingleInstanceSwitchStatusHandler switch_status_handler =
@@ -86,80 +82,77 @@ public class ReadOnlyThroughput
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
 
-        /* wait a while to ensure that all switches are connected */
-        try {
-            Thread.sleep(SETTLING_TIME_WAIT);
-        } catch (InterruptedException _ex) {
-            _ex.printStackTrace();
-            assert(false);
-        }
-
         // wait until a few switches connect
         Util.wait_on_switches(num_switches_app);
 
         List<String> switch_ids = Util.get_switch_id_list(num_switches_app);
         int num_switches = switch_ids.size();
-        if (num_switches == 0)
-        {
-            System.out.println(
-                "No switches attached to pronghorn: error");
-            assert(false);
-        }        
 
-        
-        /* Spawn thread per switch to operate on it */
-        ArrayList<Thread> threads = new ArrayList<Thread>();
-        // each thread has a unique index into this results map
-        ConcurrentHashMap<String,List<Long>> results =
-            new ConcurrentHashMap<String,List<Long>>();
-
-        long start = System.nanoTime();
-        for (String switch_id : switch_ids)
+        List<Thread> warmup_threads_to_run = new ArrayList<Thread>();
+        List<Thread> threads_to_run = new ArrayList<Thread>();
+        try
         {
-            for (int j = 0; j < threads_per_switch; ++j)
+            for (String switch_id : switch_ids)
             {
-                ThroughputThread t =
-                    new ThroughputThread(
-                        switch_id,read_only, num_ops_to_run, results);
-                
+                for (int i = 0; i < threads_per_switch; ++i)
+                {
+                    ReadOnly read_only = new ReadOnly(
+                        ralph_globals,new SingleSideConnection());
+                    prong.add_application(read_only,Util.ROOT_APP_ID);
+                    if (! read_only.set_switch(switch_id).booleanValue())
+                    {
+                        System.out.println("Trying to set switch that does not exist");
+                        throw new Exception();
+                    }
+                    
+                    threads_to_run.add(
+                        new ReadOnlyThroughputThread(read_only, num_ops_to_run));
+                    warmup_threads_to_run.add(
+                        new ReadOnlyThroughputThread(
+                            read_only, num_warmup_ops_to_run));
+                }
+            }
+
+            // run warmup
+            for (Thread t : warmup_threads_to_run)
                 t.start();
-                threads.add(t);
-            }
-        }
-
-        for (Thread t : threads) {
-            try {
+            for (Thread t : warmup_threads_to_run)
                 t.join();
-            } catch (Exception _ex) {
-                _ex.printStackTrace();
-                assert(false);
-            }
-        }
-        long end = System.nanoTime();
-        long elapsedNano = end-start;
+            
+            // run timed throughput
+            long start = System.nanoTime();
+            for (Thread t : threads_to_run)
+                t.start();
+            for (Thread t : threads_to_run)
+                t.join();
+            long end = System.nanoTime();
 
-        
-        StringBuffer string_buffer = new StringBuffer();
-        for (String switch_id : results.keySet())
+            
+            double total_ops_performed_d =
+                num_switches*threads_per_switch*num_ops_to_run;
+            double elapsed_time_ns_d = ((double)(end - start));
+            
+            double throughput_per_ns = (total_ops_performed_d/elapsed_time_ns_d);
+            double throughput_per_s = throughput_per_ns * 1000000000;
+            String output_string = "Total throughput: " + throughput_per_s;
+
+            if (had_exception.get())
+                output_string = "Had exception while running";
+            
+            System.out.println("\n\n");
+            System.out.println(output_string);
+            System.out.println("\n\n");
+            Util.write_results_to_file(output_filename,output_string);
+        }
+        catch (Exception ex)
         {
-            List<Long> times = results.get(switch_id);
-            String line = "";
-            for (Long time : times)
-                line += time.toString() + ",";
-            if (line != "") {
-                // trim off trailing comma
-                line = line.substring(0, line.length() - 1);
-            }
-            string_buffer.append(line).append("\n");
+            had_exception.set(true);
+            ex.printStackTrace();
+            String output_string = "Had exception while running";
+            Util.write_results_to_file(output_filename,output_string);
+            assert(false);
         }
-        Util.write_results_to_file(output_filename,string_buffer.toString());
-
-
-        double throughputPerS =
-            ((double) (num_switches * threads_per_switch * num_ops_to_run)) /
-            ((double)elapsedNano/1000000000);
-        System.out.println("Switches: " + num_switches + " Throughput(op/s): " + throughputPerS);
-
+        
         // actually tell shims to stop.
         shim.stop();
 
@@ -174,6 +167,10 @@ public class ReadOnlyThroughput
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
 
+        // NUMBER_TIMES_TO_WARMUP_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to use for warmup\n";
+        
         // NUMBER_THREADS_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number threads.\n";
@@ -189,45 +186,33 @@ public class ReadOnlyThroughput
         System.out.println(usage_string);
         
     }
-    
-    public static class ThroughputThread extends Thread
+
+    public static class ReadOnlyThroughputThread extends Thread
     {
-
-        private static final AtomicInteger atom_int = new AtomicInteger(0);
-
-        int num_ops_to_run;
-        ReadOnly read_only;
-        String switch_id;
-        ConcurrentHashMap<String,List<Long>> results;
-        String result_id = null;
+        private final ReadOnly read_only;
+        private final int num_ops_to_run;
         
-        public ThroughputThread(
-            String switch_id, ReadOnly read_only, int num_ops_to_run,
-            ConcurrentHashMap<String,List<Long>> results)
+        public ReadOnlyThroughputThread(ReadOnly read_only, int num_ops_to_run)
         {
-            this.switch_id = switch_id;
-            this.num_ops_to_run = num_ops_to_run;
             this.read_only = read_only;
-            this.results = results;
-            this.result_id = Integer.toString(atom_int.getAndIncrement());
+            this.num_ops_to_run = num_ops_to_run;
     	}
 
+        @Override
     	public void run() {
-            ArrayList<Long> completion_times = new ArrayList<Long>();
             for (int i = 0; i < num_ops_to_run; ++i)
             {
                 try
                 {
-                    read_only.read_switch(switch_id);
+                    read_only.read_switch();
                 }
                 catch (Exception _ex)
                 {
                     _ex.printStackTrace();
+                    had_exception.set(true);
                     assert(false);
                 }
-                completion_times.add(System.nanoTime());
             }
-            results.put(result_id,completion_times);
     	}
     }
 }

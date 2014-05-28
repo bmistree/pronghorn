@@ -62,8 +62,12 @@ public class SingleControllerFairness
             RalphGlobals ralph_globals = null;
             if (use_wound_wait)
             {
-                ralph_globals = new RalphGlobals(
-                    DeadlockAvoidanceAlgorithm.WOUND_WAIT);
+                RalphGlobals.Parameters rg_params =
+                    new RalphGlobals.Parameters();
+                rg_params.deadlock_avoidance_algorithm =
+                    DeadlockAvoidanceAlgorithm.WOUND_WAIT;
+                
+                ralph_globals = new RalphGlobals(rg_params);
             }
             else
                 ralph_globals = new RalphGlobals();

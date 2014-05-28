@@ -120,9 +120,11 @@ public class MultiControllerFairness
 
         if (use_wound_wait)
         {
+            RalphGlobals.Parameters rg_params = new RalphGlobals.Parameters();
+            rg_params.deadlock_avoidance_algorithm =
+                DeadlockAvoidanceAlgorithm.WOUND_WAIT;
             System.out.println("\nUsing wound-wait\n");
-            ralph_globals = new RalphGlobals(
-                DeadlockAvoidanceAlgorithm.WOUND_WAIT);
+            ralph_globals = new RalphGlobals(rg_params);
         }
         else
         {

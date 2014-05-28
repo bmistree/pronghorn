@@ -1,0 +1,53 @@
+#include 'iapplication.rph'
+alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
+
+#include 'instance.rph'
+alias Service Instance as 'pronghorn.InstanceJava.Instance';
+
+#include 'wrapped_switch.rph'
+alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
+alias Service WrappedSwitch as 'pronghorn.WrappedSwitchJava.WrappedSwitch';
+
+Service ReadOnly implements Interface IApplication
+{
+    Service Instance inst = null;
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+    Service WrappedSwitch to_read_target = null;
+
+
+    // @Override --- from IApplication interface
+    init(Service Instance inst_,
+        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    {
+        inst = inst_;
+        switch_map = switch_map_;
+    }
+
+    // @Override --- do nothing when first installed
+    run()
+    {}
+    
+    // For throughput experiments, read only 
+    set_switch(Text switch_id) returns TrueFalse
+    {
+        TrueFalse found_switch = False;
+        atomically
+        {
+            if (switch_map.contains(switch_id))
+            {
+                Struct StructWrappedSwitch sws = switch_map.get(switch_id);
+                to_read_target = sws.wrapped_switch;
+                found_switch = True;
+            }
+        }
+        return found_switch;
+    }
+    
+    read_switch()
+    {
+        atomically
+        {
+            to_read_target.ftable_size();
+        }
+    }
+}

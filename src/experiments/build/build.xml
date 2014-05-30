@@ -349,7 +349,6 @@
       name="jarify_all"
       depends="init,compile_libs,compile_experiments,single_host,
                single_controller_latency,single_controller_throughput,
-               single_controller_variable_contention_throughput,
                read_only,multi_controller_latency,
                multi_controller_throughput,ordering,
                multi_controller_fairness,speculation, single_controller_error,
@@ -430,19 +429,6 @@
         <param name="dest_jar" value="${single_controller_throughput_jar}"/>
       </antcall>
     </target>
-
-  <property
-      name="single_controller_variable_contention_throughput_jar"
-      value="single_controller_variable_contention_throughput.jar"/>
-  <target
-      name="single_controller_variable_contention_throughput"
-      depends="compile_libs,compile_experiments"
-      description="Run no contention throughput benchmark on single instance.">
-      <antcall target="make_jar">
-        <param name="main_class" value="SingleControllerVariableContentionAllSwitches"/>
-        <param name="dest_jar" value="${single_controller_variable_contention_throughput_jar}"/>
-      </antcall>
-  </target>
 
 
   <!--
@@ -673,7 +659,6 @@
     <!-- Delete generated jars -->
     <delete file="${single_host_jar}"/>
     <delete file="${single_controller_throughput_jar}"/>
-    <delete file="${single_controller_variable_contention_throughput_jar}"/>
     <delete file="${read_only_latency_jar}"/>
     <delete file="${multi_controller_latency_jar}"/>
     <delete file="${multi_controller_error_jar}"/>

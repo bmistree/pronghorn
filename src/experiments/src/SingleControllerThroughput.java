@@ -131,20 +131,31 @@ public class SingleControllerThroughput
         ConcurrentHashMap<String,List<Long>> results =
             new ConcurrentHashMap<String,List<Long>>();
 
-        long start = System.nanoTime();
+
+        int highest_subnet_byte = 0;
         for (String switch_id : switch_ids)
         {
             for (int j = 0; j < threads_per_switch; ++j)
             {
+                ++highest_subnet_byte;
                 ThroughputThread t =
                     new ThroughputThread(
-                        switch_id, off_on_app, num_ops_to_run, results,coarse_locking);
-                
-                t.start();
+                        switch_id, off_on_app, num_ops_to_run, results,coarse_locking,
+                        highest_subnet_byte);
                 threads.add(t);
             }
         }
 
+        if (highest_subnet_byte > 256)
+        {
+            System.out.println("Error: more threads than subnet bytes");
+            System.exit(-1);
+        }
+
+        long start = System.nanoTime();
+        for (Thread t: threads)
+            t.start();
+        
         for (Thread t : threads) {
             try {
                 t.join();
@@ -224,9 +235,15 @@ public class SingleControllerThroughput
         boolean coarse_locking;
         String result_id = null;
         
+        // Each thread adds entries from a unique range of high level
+        // ip addrs.  Eg., one thread would add entries for 18.*.*.*,
+        // another for 19.*.*.*, etc.
+        int highest_subnet_byte;
+        
         public ThroughputThread(
             String switch_id, OffOnApplication off_on_app, int num_ops_to_run,
-            ConcurrentHashMap<String,List<Long>> results, boolean coarse_locking)
+            ConcurrentHashMap<String,List<Long>> results, boolean coarse_locking,
+            int highest_subnet_byte)
         {
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
@@ -234,12 +251,21 @@ public class SingleControllerThroughput
             this.results = results;
             this.coarse_locking = coarse_locking;
             this.result_id = switch_id + atom_int.getAndIncrement();
+            this.highest_subnet_byte = highest_subnet_byte;
     	}
 
     	public void run() {
             ArrayList<Long> completion_times = new ArrayList<Long>();
             for (int i = 0; i < num_ops_to_run; ++i)
             {
+                int b_subnet_byte = i >> 16;
+                int c_subnet_byte = (i << 8) >> 16;
+                int d_subnet_byte = (i << 16) >> 16;
+                
+                String ip_src_to_add = highest_subnet_byte + "." +
+                    b_subnet_byte + "." + c_subnet_byte + "." +
+                    d_subnet_byte;
+                
                 try
                 {
                     if (coarse_locking)
@@ -247,7 +273,10 @@ public class SingleControllerThroughput
                     else
                     {
                         if ((i%2) == 0)
-                            off_on_app.add_entry_switch(switch_id);
+                        {
+                            off_on_app.add_specific_entry_switch(
+                                switch_id,ip_src_to_add);
+                        }
                         else
                             off_on_app.remove_entry_switch(switch_id);
                     }

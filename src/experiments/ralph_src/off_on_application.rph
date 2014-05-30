@@ -80,6 +80,21 @@ Service OffOnApplication
             target_switch.wrapped_switch.add_entry(to_add);            
         }
     }
+
+    add_specific_entry_switch(Text switch_id, Text src_ip)
+    {
+        Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
+        Struct FlowTableEntry to_add;
+        to_add.src_ip = src_ip;
+        to_add.dst_ip = '18.18.18.19';
+        // drop all packets
+        to_add.action = '';
+
+        atomically
+        {
+            target_switch.wrapped_switch.add_entry(to_add);
+        }
+    }
     
     add_entry_switch(Text switch_id)
     {

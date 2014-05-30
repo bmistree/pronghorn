@@ -147,9 +147,9 @@ public class DeltaListStateSupplier
                 // backing out of an update (and therefore reverting
                 // to original flow_table_delta value).  In that case,
                 // we do not need to produce an update for this target
-                // (no need to push it to switch), and can just
-                // continue.
-                continue;
+                // (no need to push it to switch), and can stop
+                // producing other updates.
+                break;
             }
             
 
@@ -186,7 +186,7 @@ public class DeltaListStateSupplier
             // to default text value.  do not apply change (it will be
             // backed out anyways).
             if (dst_ip.equals("") || src_ip.equals(""))
-                continue;
+                break;
 
             
             FTableUpdate update_to_push =  null;

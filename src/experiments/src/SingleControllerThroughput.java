@@ -16,21 +16,17 @@ import java.util.List;
 import java.util.Collections;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.HashSet;
-import java.util.Set;
-import experiments.Util.HostPortPair;
 import experiments.Util;
-
-
 
 
 public class SingleControllerThroughput
 {
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
-    public static final int COARSE_LOCKING_ARG_INDEX = 1;
-    public static final int THREADS_PER_SWITCH_ARG_INDEX = 2;
-    public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
+    public static final int NUMBER_OPS_TO_WARMUP_ARG_INDEX = 1;
+    public static final int COARSE_LOCKING_ARG_INDEX = 2;
+    public static final int THREADS_PER_SWITCH_ARG_INDEX = 3;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 4;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 5;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -38,7 +34,7 @@ public class SingleControllerThroughput
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 6)
         {
             print_usage();
             return;
@@ -46,6 +42,9 @@ public class SingleControllerThroughput
 
         int num_ops_to_run = 
                 Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
+
+        int num_warmup_ops_to_run =
+            Integer.parseInt(args[NUMBER_OPS_TO_WARMUP_ARG_INDEX]);
 
         boolean coarse_locking =
             Boolean.parseBoolean(args[COARSE_LOCKING_ARG_INDEX]);
@@ -134,6 +133,7 @@ public class SingleControllerThroughput
         
         /* Spawn thread per switch to operate on it */
         ArrayList<Thread> threads = new ArrayList<Thread>();
+        ArrayList<Thread> warmup_threads = new ArrayList<Thread>();
         // each thread has a unique index into this results map
         ConcurrentHashMap<String,List<Long>> results =
             new ConcurrentHashMap<String,List<Long>>();
@@ -152,6 +152,11 @@ public class SingleControllerThroughput
                         switch_id, off_on_app, num_ops_to_run, results,coarse_locking,
                         highest_subnet_byte);
                 threads.add(t);
+                ThroughputThread wt =
+                    new ThroughputThread(
+                        switch_id, off_on_app, num_ops_to_run, results,coarse_locking,
+                        highest_subnet_byte);
+                warmup_threads.add(wt);
             }
         }
 
@@ -161,6 +166,22 @@ public class SingleControllerThroughput
             System.exit(-1);
         }
 
+        // do warmup
+        try
+        {
+            for (Thread t : warmup_threads)
+                t.start();
+            for (Thread t : warmup_threads)
+                t.join();
+        }
+        catch (Exception ex)
+        {
+            ex.printStackTrace();
+            assert(false);
+            return;
+        }
+        
+        // do actual ops
         long start = System.nanoTime();
         for (Thread t: threads)
             t.start();
@@ -212,6 +233,10 @@ public class SingleControllerThroughput
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
 
+        // NUMBER_TIMES_TO_WARMUP_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to use for warmup\n";
+        
         // COARSE_LOCKING_ARG_INDEX_ARG_INDEX
         usage_string +=
             "\n\t<boolean>: true if should use coarse locking; ";

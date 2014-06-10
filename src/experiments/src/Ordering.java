@@ -42,9 +42,10 @@ import experiments.Util;
 public class Ordering
 {
     private static final int NUMBER_TIMES_TO_RUN_ARG_INDEX = 0;
-    private static final int ENSURE_ORDERING_ARG_INDEX = 1;
-    public static final int COLLECT_STATISTICS_ARG_INDEX = 2;
-    private static final int RESULT_FILENAME_ARG_INDEX = 3;
+    public static final int NUMBER_OPS_TO_WARMUP_ARG_INDEX = 1;
+    private static final int ENSURE_ORDERING_ARG_INDEX = 2;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
+    private static final int RESULT_FILENAME_ARG_INDEX = 4;
 
     
     // wait this long for pronghorn to add all switches
@@ -53,9 +54,9 @@ public class Ordering
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 5)
         {
-            System.out.println("\nExpected 4 arguments.\n");
+            System.out.println("\nExpected 5 arguments.\n");
             print_usage();
             return;
         }
@@ -63,6 +64,10 @@ public class Ordering
         int num_times_to_run = 
             Integer.parseInt(args[NUMBER_TIMES_TO_RUN_ARG_INDEX]);
 
+        // Ignore num warmup operations to run        
+        int num_warmup_ops_to_run =
+            Integer.parseInt(args[NUMBER_OPS_TO_WARMUP_ARG_INDEX]);
+        
         boolean ensure_ordering =
             Boolean.parseBoolean(args[ENSURE_ORDERING_ARG_INDEX]);
 
@@ -158,6 +163,10 @@ public class Ordering
         // NUMBER_TIMES_TO_RUN_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
+
+        // NUMBER_TIMES_TO_WARMUP_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to use for warmup\n";
         
         // ENSURE_ORDERING_ARG_INDEX
         usage_string +=

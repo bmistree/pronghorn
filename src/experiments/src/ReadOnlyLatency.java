@@ -21,8 +21,9 @@ import experiments.Util.LatencyThread;
 public class ReadOnlyLatency
 {
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
-    public static final int COLLECT_STATISTICS_ARG_INDEX = 1;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 2;
+    public static final int NUMBER_OPS_TO_WARMUP_ARG_INDEX = 1;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 2;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -30,16 +31,19 @@ public class ReadOnlyLatency
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 3)
+        if (args.length != 4)
         {
-            System.out.println("\nExpecting 3 arguments.\n");
+            System.out.println("\nExpecting 4 arguments.\n");
             print_usage();
             return;
         }
 
         int num_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
-
+        
+        int num_warmup_ops_to_run =
+            Integer.parseInt(args[NUMBER_OPS_TO_WARMUP_ARG_INDEX]);
+        
         int num_threads = 1;
 
         int collect_statistics_period_ms =
@@ -84,24 +88,41 @@ public class ReadOnlyLatency
 
         // wait for first switch to connect
         Util.wait_on_switches(num_switches_app);
-            
+
+        List<LatencyThread> warmup_threads= new ArrayList<LatencyThread>();
         List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
-        for (int i = 0; i < num_threads; ++i)
-            all_threads.add(new LatencyThread(read_only_app,"",num_ops_to_run));
-
-        for (LatencyThread lt : all_threads)
-            lt.start();
-
-        // wait for all threads to finish and collect their results
-        for (LatencyThread lt : all_threads)
+        try
         {
-            try {
+            // warmups
+            for (int i = 0; i < num_threads; ++i)
+            {
+                warmup_threads.add(
+                    new LatencyThread(read_only_app,"",num_warmup_ops_to_run));
+            }   
+            for (LatencyThread lt : warmup_threads)
+                lt.start();
+            for (LatencyThread lt : warmup_threads)
                 lt.join();
-            } catch (Exception _ex) {
-                _ex.printStackTrace();
-                assert(false);
-                return;
+            
+
+            // real calculated values         
+            for (int i = 0; i < num_threads; ++i)
+            {
+                all_threads.add(
+                    new LatencyThread(read_only_app,"",num_ops_to_run));
             }
+            
+            for (LatencyThread lt : all_threads)
+                lt.start();
+            
+            // wait for all threads to finish and collect their results
+            for (LatencyThread lt : all_threads)
+                lt.join();
+            
+        } catch (Exception _ex) {
+            _ex.printStackTrace();
+            assert(false);
+            return;
         }
 
         StringBuffer string_buffer = new StringBuffer();
@@ -123,6 +144,10 @@ public class ReadOnlyLatency
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
 
+        // NUMBER_TIMES_TO_WARMUP_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to use for warmup\n";
+        
         // COLLECT_STATISTICS_ARG_INDEX
         usage_string +=
             "\n\t<int> : period for collecting individual switch stastics " +

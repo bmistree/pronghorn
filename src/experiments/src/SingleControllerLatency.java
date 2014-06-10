@@ -23,9 +23,10 @@ import experiments.Util.LatencyThread;
 public class SingleControllerLatency
 {
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 0;
-    public static final int NUMBER_THREADS_ARG_INDEX = 1;
-    public static final int COLLECT_STATISTICS_ARG_INDEX = 2;
-    public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
+    public static final int NUMBER_OPS_TO_WARMUP_ARG_INDEX = 1;
+    public static final int NUMBER_THREADS_ARG_INDEX = 2;
+    public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
+    public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -33,7 +34,7 @@ public class SingleControllerLatency
     public static void main (String[] args) 
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 5)
         {
             print_usage();
             return;
@@ -42,6 +43,9 @@ public class SingleControllerLatency
         int num_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
 
+        int num_warmup_ops_to_run =
+            Integer.parseInt(args[NUMBER_OPS_TO_WARMUP_ARG_INDEX]);
+        
         int num_threads =
             Integer.parseInt(args[NUMBER_THREADS_ARG_INDEX]);
 
@@ -90,25 +94,35 @@ public class SingleControllerLatency
 
 
         List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
+        List<LatencyThread> warmup_threads = new ArrayList<LatencyThread>();
         for (int i = 0; i < num_threads; ++i)
         {
             all_threads.add(
                 new LatencyThread(off_on_app,switch_id,num_ops_to_run,true));
+            warmup_threads.add(
+                new LatencyThread(
+                    off_on_app,switch_id,num_warmup_ops_to_run,true));
         }
 
-        for (LatencyThread lt : all_threads)
-            lt.start();
-
-        // wait for all threads to finish and collect their results
-        for (LatencyThread lt : all_threads)
+        try
         {
-            try {
+            // run warmup threads
+            for (LatencyThread lt : warmup_threads)
+                lt.start();
+            for (LatencyThread lt : all_threads)
                 lt.join();
-            } catch (Exception _ex) {
-                _ex.printStackTrace();
-                assert(false);
-                return;
-            }
+
+            // run real experiments
+            for (LatencyThread lt : all_threads)
+                lt.start();
+            for (LatencyThread lt : all_threads)
+                lt.join();
+        }
+        catch (Exception _ex)
+        {
+            _ex.printStackTrace();
+            assert(false);
+            return;
         }
 
         StringBuffer results_buffer = new StringBuffer();
@@ -129,6 +143,10 @@ public class SingleControllerLatency
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
 
+        // NUMBER_TIMES_TO_WARMUP_ARG_INDEX
+        usage_string +=
+            "\n\t<int>: Number ops to use for warmup\n";
+        
         // NUMBER_THREADS_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number threads.\n";

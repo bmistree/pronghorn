@@ -406,11 +406,6 @@ public class Util
                 }
                 long total_time = System.nanoTime() - start_time;
                 all_times.add(total_time);
-                if ((i % 100) == 0)
-                {
-                    System.out.println(
-                        "\n\nFinished " + i + " with time: " + total_time + "\n\n");
-                }
             }
         }
 

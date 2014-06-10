@@ -193,16 +193,6 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
     
-    <echo message="single_host_speculation.rph"/>
-    <exec executable="python" failonerror="true">
-      <arg line="${ralph_compiler_py}"/>
-      <arg line="-i ${experiments_ralph_src_dir}/single_host_speculation.rph"/>
-      <arg line="-o ${experiments_ralph_emitted_dir}/SingleHostSpeculationJava.java"/>
-      <arg line="-p ${experiments_package}"/>
-      <arg line="-c SingleHostSpeculationJava"/>
-      <arg line="-I ${pronghorn_ralph_src_path}"/>
-    </exec>
-
     <echo message="ifairness_application.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
@@ -351,10 +341,9 @@
                single_controller_latency,single_controller_throughput,
                read_only,multi_controller_latency,
                multi_controller_throughput,ordering,
-               multi_controller_fairness,speculation, single_controller_error,
+               multi_controller_fairness, single_controller_error,
                multi_controller_error,ordering,
                single_controller_fairness,read_only,multi_controller_tunnels,
-               single_controller_speculation_throughput,
                multi_controller_speculation_throughput,read_only_throughput"
       description="create jars for each type of experiment">
   </target>
@@ -568,23 +557,6 @@
       </antcall>
   </target>
 
-  
-  
-  <!-- Testing speculation  -->
-  <property
-      name="speculation_jar"
-      value="speculation.jar"/>
-  <target
-      name="speculation"
-      depends="compile_libs,compile_experiments"
-      description="Compare latencies with and without speculation">
-
-      <antcall target="make_jar">
-        <param name="main_class" value="SingleControllerSpeculation"/>
-        <param name="dest_jar" value="${speculation_jar}"/>
-      </antcall>
-  </target>
-
   <!-- Testing tunnels -->
   <property
       name="multi_controller_tunnels_jar"
@@ -597,21 +569,6 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerTunnels"/>
         <param name="dest_jar" value="${multi_controller_tunnels_jar}"/>
-      </antcall>
-  </target>
-
-  <!-- Testing speculation throughput -->
-  <property
-      name="single_controller_speculation_throughput_jar"
-      value="single_controller_speculation_throughput.jar"/>
-  <target
-      name="single_controller_speculation_throughput"
-      depends="compile_libs,compile_experiments"
-      description="Single controller speculation throughput test">
-
-      <antcall target="make_jar">
-        <param name="main_class" value="SingleControllerSpeculationThroughput"/>
-        <param name="dest_jar" value="${single_controller_speculation_throughput_jar}"/>
       </antcall>
   </target>
 
@@ -668,9 +625,7 @@
     <delete file="${single_controller_fairness_jar}"/>
     <delete file="${single_controller_error_jar}"/>
     <delete file="${single_controller_latency_jar}"/>
-    <delete file="${speculation_jar}"/>
     <delete file="${multi_controller_tunnels_jar}"/>
-    <delete file="${single_controller_speculation_throughput_jar}"/>
     <delete file="${multi_controller_speculation_throughput_jar}"/>
     <delete file="${read_only_throughput_jar}"/>
     

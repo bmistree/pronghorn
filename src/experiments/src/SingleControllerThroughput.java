@@ -61,21 +61,16 @@ public class SingleControllerThroughput
         /* Start up pronghorn */
         Instance prong = null;
         GetNumberSwitches num_switches_app = null;
-        OffOnApplication off_on_app = null;
+        RalphGlobals ralph_globals = new RalphGlobals();
         try
         {
-            RalphGlobals ralph_globals = new RalphGlobals();
             prong = new Instance(
                 ralph_globals,new SingleSideConnection());
 
             num_switches_app = new GetNumberSwitches(
                 ralph_globals,new SingleSideConnection());
-            off_on_app = new OffOnApplication(
-                ralph_globals,new SingleSideConnection());
-            
-            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
-            prong.add_application(off_on_app,Util.ROOT_APP_ID);
-            
+
+            prong.add_application(num_switches_app,Util.ROOT_APP_ID);            
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
@@ -103,8 +98,29 @@ public class SingleControllerThroughput
         // wait until a few switches connect
         Util.wait_on_switches(num_switches_app);
 
+        List<String> switch_ids = Util.get_switch_id_list(num_switches_app);
+        int num_switches = switch_ids.size();
+        if (num_switches == 0)
+        {
+            System.out.println(
+                "No switches attached to pronghorn: error");
+            assert(false);
+        }        
+
+        List<OffOnApplication> off_on_app_list =
+            new ArrayList<OffOnApplication>();        
         try
         {
+            OffOnApplication off_on_app = null;
+            
+            for (int i = 0; i < num_switches; ++i)
+            {
+                off_on_app = new OffOnApplication(
+                    ralph_globals,new SingleSideConnection());
+                prong.add_application(off_on_app,Util.ROOT_APP_ID);
+                off_on_app_list.add(off_on_app);
+            }
+            // add some existing entries to all switches
             off_on_app.add_entry_all_switches("43.31.1.3");
             off_on_app.add_entry_all_switches("43.31.1.2");
             off_on_app.add_entry_all_switches("43.31.1.1");
@@ -115,15 +131,6 @@ public class SingleControllerThroughput
             assert(false);
         }
         
-        List<String> switch_ids = Util.get_switch_id_list(num_switches_app);
-        int num_switches = switch_ids.size();
-        if (num_switches == 0)
-        {
-            System.out.println(
-                "No switches attached to pronghorn: error");
-            assert(false);
-        }        
-
         
         /* Spawn thread per switch to operate on it */
         ArrayList<Thread> threads = new ArrayList<Thread>();
@@ -133,8 +140,10 @@ public class SingleControllerThroughput
 
 
         int highest_subnet_byte = 0;
-        for (String switch_id : switch_ids)
+        for (int i =0; i < switch_ids.size(); ++i)
         {
+            String switch_id = switch_ids.get(i);
+            OffOnApplication off_on_app = off_on_app_list.get(i);
             for (int j = 0; j < threads_per_switch; ++j)
             {
                 ++highest_subnet_byte;
@@ -169,9 +178,9 @@ public class SingleControllerThroughput
 
         
         StringBuffer string_buffer = new StringBuffer();
-        for (String switch_id : results.keySet())
+        for (String results_index : results.keySet())
         {
-            List<Long> times = results.get(switch_id);
+            List<Long> times = results.get(results_index);
             String line = "";
             for (Long time : times)
                 line += time.toString() + ",";
@@ -227,8 +236,8 @@ public class SingleControllerThroughput
     public static class ThroughputThread extends Thread {
 
         private static final AtomicInteger atom_int = new AtomicInteger(0);
-        
-        String switch_id;
+
+        private final String switch_id;
         int num_ops_to_run;
         OffOnApplication off_on_app;
         ConcurrentHashMap<String,List<Long>> results;

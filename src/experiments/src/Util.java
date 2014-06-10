@@ -371,8 +371,6 @@ public class Util
             /* perform all operations and determine how long they take */
             for (int i = 0; i < num_ops_to_run; ++i)
             {
-                System.out.println("\n\nRUNNING " + i + "\n\n");
-                
                 long start_time = System.nanoTime();
                 try
                 {

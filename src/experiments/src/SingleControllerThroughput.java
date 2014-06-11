@@ -154,7 +154,7 @@ public class SingleControllerThroughput
                 threads.add(t);
                 ThroughputThread wt =
                     new ThroughputThread(
-                        switch_id, off_on_app, num_ops_to_run, results,coarse_locking,
+                        switch_id, off_on_app, num_warmup_ops_to_run, results,coarse_locking,
                         highest_subnet_byte);
                 warmup_threads.add(wt);
             }

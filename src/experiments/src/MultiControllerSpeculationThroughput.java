@@ -171,11 +171,11 @@ public class MultiControllerSpeculationThroughput
 
         
         // produce results string
-        StringBuffer result_string = produce_result_string(results);
+        StringBuffer result_string = Util.produce_result_string(results);
         Util.write_results_to_file(output_filename,result_string.toString());
 
         // print to stdout the throughput of this experiments
-        print_throughput_results(
+        Util.print_throughput_results(
             num_switches,threads_per_switch,num_ops_to_run,elapsedNano);
 
         // run indefinitely
@@ -262,39 +262,6 @@ public class MultiControllerSpeculationThroughput
             }
             results.put(result_id,completion_times);
     	}
-    }
-
-
-    private static StringBuffer produce_result_string(
-        ConcurrentHashMap<String,List<Long>> results)
-    {
-        StringBuffer result_string = new StringBuffer();
-        for (String switch_id : results.keySet())
-        {
-            List<Long> times = results.get(switch_id);
-            String line = "";
-            for (Long time : times)
-                line += time.toString() + ",";
-            if (line != "")
-            {
-                // trim off trailing comma
-                line = line.substring(0, line.length() - 1);
-            }
-            result_string.append(line).append("\n");
-        }
-        return result_string;
-    }
-
-    private static void print_throughput_results(
-        int num_switches,int threads_per_switch,int num_ops_to_run,
-        long elapsedNano)
-    {
-        double throughputPerS =
-            ((double) (num_switches * threads_per_switch * num_ops_to_run)) /
-            ((double)elapsedNano/1000000000);
-        System.out.println(
-            "Switches: " + num_switches + " Throughput(op/s): " +
-            throughputPerS);
     }
 
     

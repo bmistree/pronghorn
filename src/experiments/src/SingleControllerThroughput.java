@@ -200,28 +200,13 @@ public class SingleControllerThroughput
         long end = System.nanoTime();
         long elapsedNano = end-start;
 
-        
-        StringBuffer string_buffer = new StringBuffer();
-        for (String results_index : results.keySet())
-        {
-            List<Long> times = results.get(results_index);
-            String line = "";
-            for (Long time : times)
-                line += time.toString() + ",";
-            if (line != "") {
-                // trim off trailing comma
-                line = line.substring(0, line.length() - 1);
-            }
-            string_buffer.append(line).append("\n");
-        }        
+
+        // output results
+        StringBuffer string_buffer = Util.produce_result_string(results);
         Util.write_results_to_file(output_filename,string_buffer.toString());
-
-
-        double throughputPerS =
-            ((double) (num_switches * threads_per_switch * num_ops_to_run)) /
-            ((double)elapsedNano/1000000000);
-        System.out.println("Switches: " + num_switches + " Throughput(op/s): " + throughputPerS);
-
+        Util.print_throughput_results(
+            num_switches,threads_per_switch,num_ops_to_run,elapsedNano);
+        
         // actually tell shims to stop.
         shim.stop();
 

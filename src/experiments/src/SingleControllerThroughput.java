@@ -137,6 +137,8 @@ public class SingleControllerThroughput
         // each thread has a unique index into this results map
         ConcurrentHashMap<String,List<Long>> results =
             new ConcurrentHashMap<String,List<Long>>();
+        ConcurrentHashMap<String,List<Long>> warmup_results =
+            new ConcurrentHashMap<String,List<Long>>();
 
 
         int highest_subnet_byte = 0;
@@ -154,7 +156,8 @@ public class SingleControllerThroughput
                 threads.add(t);
                 ThroughputThread wt =
                     new ThroughputThread(
-                        switch_id, off_on_app, num_warmup_ops_to_run, results,coarse_locking,
+                        switch_id, off_on_app, num_warmup_ops_to_run,
+                        warmup_results,coarse_locking,
                         highest_subnet_byte);
                 warmup_threads.add(wt);
             }
@@ -210,7 +213,7 @@ public class SingleControllerThroughput
                 line = line.substring(0, line.length() - 1);
             }
             string_buffer.append(line).append("\n");
-        }
+        }        
         Util.write_results_to_file(output_filename,string_buffer.toString());
 
 

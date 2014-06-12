@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Collections;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import experiments.Util;
 
 
@@ -30,6 +31,8 @@ public class SingleControllerThroughput
 
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
+
+    public static final AtomicBoolean had_exception = new AtomicBoolean(false);
     
     public static void main (String[] args)
     {
@@ -72,6 +75,7 @@ public class SingleControllerThroughput
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);            
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
+            had_exception.set(true);
             return;
         }
 
@@ -91,6 +95,7 @@ public class SingleControllerThroughput
             Thread.sleep(SETTLING_TIME_WAIT);
         } catch (InterruptedException _ex) {
             _ex.printStackTrace();
+            had_exception.set(true);
             assert(false);
         }
 
@@ -127,6 +132,7 @@ public class SingleControllerThroughput
         catch (Exception ex)
         {
             System.out.println("Unknown exception error.");
+            had_exception.set(true);
             assert(false);
         }
         
@@ -181,6 +187,7 @@ public class SingleControllerThroughput
         {
             ex.printStackTrace();
             assert(false);
+            had_exception.set(true);
             return;
         }
         
@@ -194,6 +201,7 @@ public class SingleControllerThroughput
                 t.join();
             } catch (Exception _ex) {
                 _ex.printStackTrace();
+                had_exception.set(true);
                 assert(false);
             }
         }
@@ -203,7 +211,11 @@ public class SingleControllerThroughput
 
         // output results
         StringBuffer string_buffer = Util.produce_result_string(results);
-        Util.write_results_to_file(output_filename,string_buffer.toString());
+        String results_to_write = string_buffer.toString();
+        if (had_exception.get())
+            results_to_write = "HAD AN EXCEPTION";
+        
+        Util.write_results_to_file(output_filename,results_to_write);
         Util.print_throughput_results(
             num_switches,threads_per_switch,num_ops_to_run,elapsedNano);
         
@@ -307,6 +319,7 @@ public class SingleControllerThroughput
                 catch (Exception _ex)
                 {
                     _ex.printStackTrace();
+                    had_exception.set(true);
                     assert(false);
                 }
                 completion_times.add(System.nanoTime());

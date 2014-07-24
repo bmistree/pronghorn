@@ -4,20 +4,9 @@ import java.util.List;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import pronghorn.InstanceJava.Instance;
-import pronghorn.SwitchFactory;
-import pronghorn.ISwitchStatusHandler;
-import pronghorn.FlowTableToHardware;
-import pronghorn.FlowTableToHardwareFactory;
-import pronghorn.SwitchFactory.PronghornInternalSwitch;
-import pronghorn.FloodlightFlowTableToHardware;
-import pronghorn.IFloodlightShim;
-import pronghorn.PortJava._InternalPort;
-import pronghorn.PortJava;;
-
-import RalphExceptions.BackoutException;
-import ralph.Variables.AtomicTrueFalseVariable;
-import ralph.Variables.NonAtomicListVariable;
+import org.openflow.util.HexString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.floodlightcontroller.core.IOFSwitchListener;
 import net.floodlightcontroller.core.ImmutablePort;
@@ -25,10 +14,22 @@ import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscoveryListener;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscovery;
 
-import org.openflow.util.HexString;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import RalphExceptions.BackoutException;
+import ralph.Variables.AtomicTrueFalseVariable;
+import ralph.Variables.NonAtomicListVariable;
 
+import pronghorn.switch_factory.ISwitchFactory;
+import pronghorn.switch_factory.SwitchFactory;
+
+import pronghorn.InstanceJava.Instance;
+import pronghorn.ISwitchStatusHandler;
+import pronghorn.FlowTableToHardware;
+import pronghorn.FlowTableToHardwareFactory;
+import pronghorn.switch_factory.PronghornInternalSwitch;
+import pronghorn.FloodlightFlowTableToHardware;
+import pronghorn.IFloodlightShim;
+import pronghorn.PortJava._InternalPort;
+import pronghorn.PortJava;;
 
 
 public class SwitchStatusHandler implements ISwitchStatusHandler
@@ -37,7 +38,7 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
         LoggerFactory.getLogger(SwitchStatusHandler.class);
     
     private Instance prong;
-    private SwitchFactory switch_factory;
+    private ISwitchFactory switch_factory;
     private final static String UNIQUE_SWITCH_FACTORY_PREFIX =
         "something_unique";
 

@@ -30,7 +30,7 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
     {
         @Override
         public FlowTableToHardware construct(
-            ShimInterface shim, String internal_switch_id)
+            IFloodlightShim shim, String internal_switch_id)
         {
             return new FloodlightFlowTableToHardware(
                 shim,internal_switch_id);
@@ -55,11 +55,11 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
      */
     private final ArrayList<String> entry_names = new ArrayList<String>();
 
-    private final ShimInterface shim;
+    private final IFloodlightShim shim;
     private final String floodlight_switch_id;
 
     protected FloodlightFlowTableToHardware(
-        ShimInterface _shim, String _floodlight_switch_id)
+        IFloodlightShim _shim, String _floodlight_switch_id)
     {
         shim = _shim;
         floodlight_switch_id = _floodlight_switch_id;

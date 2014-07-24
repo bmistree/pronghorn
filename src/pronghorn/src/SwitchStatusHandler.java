@@ -11,7 +11,7 @@ import pronghorn.FlowTableToHardware;
 import pronghorn.FlowTableToHardwareFactory;
 import pronghorn.SwitchFactory.PronghornInternalSwitch;
 import pronghorn.FloodlightFlowTableToHardware;
-import pronghorn.ShimInterface;
+import pronghorn.IFloodlightShim;
 import pronghorn.PortJava._InternalPort;
 import pronghorn.PortJava;;
 
@@ -31,10 +31,10 @@ import org.slf4j.LoggerFactory;
 
 
 
-public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
+public class SwitchStatusHandler implements ISwitchStatusHandler
 {
     protected static final Logger log =
-        LoggerFactory.getLogger(SingleInstanceSwitchStatusHandler.class);
+        LoggerFactory.getLogger(SwitchStatusHandler.class);
     
     private Instance prong;
     private SwitchFactory switch_factory;
@@ -57,15 +57,15 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
         new HashMap<String,String>();
     private FlowTableToHardwareFactory rtable_to_hardware_factory = null;
 
-    private ShimInterface shim = null;
+    private IFloodlightShim shim = null;
     private final boolean speculate;
 
     /**
        @param {int} collect_statistics_period_ms.  If period < 0, then
        never collect statistics.
      */
-    public SingleInstanceSwitchStatusHandler(
-        ShimInterface shim,
+    public SwitchStatusHandler(
+        IFloodlightShim shim,
         Instance prong,
         FlowTableToHardwareFactory rtable_to_hardware_factory,
         boolean speculate,int collect_statistics_period_ms)

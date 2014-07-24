@@ -10,7 +10,7 @@ import org.openflow.protocol.statistics.OFStatistics;
    Shim layer translates between Pronghorn and Floodlight.  Any shim
    must support this interface.
  */
-public interface ShimInterface
+public interface IFloodlightShim
 {
     public void start();
     public void stop();

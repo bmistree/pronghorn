@@ -109,7 +109,7 @@ public class SwitchFactory
     public PronghornInternalSwitch construct(
         double available_capacity,
         FlowTableToHardware to_handle_pushing_changes,
-        ShimInterface shim, String floodlight_switch_id,
+        IFloodlightShim shim, String floodlight_switch_id,
         StatisticsUpdater stats_updater)
     {
         // create a new switch id
@@ -153,7 +153,7 @@ public class SwitchFactory
         extends _InternalSwitch implements Runnable
     {
         public String ralph_internal_switch_id;
-        private final ShimInterface shim;
+        private final IFloodlightShim shim;
 
         private final String floodlight_switch_id;
         
@@ -171,7 +171,7 @@ public class SwitchFactory
             RalphGlobals ralph_globals,String _ralph_internal_switch_id,
             double _available_capacity,
             _InternalSwitchDelta internal_switch_delta,
-            int _collect_statistics_period_ms, ShimInterface _shim,
+            int _collect_statistics_period_ms, IFloodlightShim _shim,
             String _floodlight_switch_id,StatisticsUpdater _stats_updater)
         {
             super(ralph_globals);

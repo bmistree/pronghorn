@@ -9,7 +9,7 @@ import java.util.List;
 import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import pronghorn.ShimInterface;
+import pronghorn.IFloodlightShim;
 import pronghorn.FTableUpdate;
 import pronghorn.ISwitchStatusHandler;
 
@@ -27,11 +27,10 @@ import org.slf4j.LoggerFactory;
 /**
    Serves as intermediate layer between Ralph and Floodlight
  */
-public class SingleInstanceFloodlightShim
-    implements ShimInterface
+public class FloodlightShim implements IFloodlightShim
 {
     protected static final Logger log =
-        LoggerFactory.getLogger(SingleInstanceFloodlightShim.class);
+        LoggerFactory.getLogger(FloodlightShim.class);
     
     private IPronghornService pronghorn_floodlight = null;
 
@@ -51,7 +50,7 @@ public class SingleInstanceFloodlightShim
     private final AtomicInteger xid_generator = new AtomicInteger();
 
     
-    public SingleInstanceFloodlightShim()
+    public FloodlightShim()
     {
         try
         {
@@ -87,7 +86,7 @@ public class SingleInstanceFloodlightShim
     }
 
     
-    /** ShimInterface methods */
+    /** IFloodlightShim methods */
     @Override
     public Future<List<OFStatistics>> get_port_stats(String switch_id)
         throws IOException

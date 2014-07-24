@@ -164,8 +164,8 @@ public class SingleInstanceSwitchStatusHandler implements ISwitchStatusHandler
             String dst_ralph_switch_id =
                 floodlight_to_pronghorn_ids.get(dst_floodlight_switch_id);
             
-            short src_port_num = update.getSrcPort();
-            short dst_port_num = update.getDstPort();
+            int src_port_num = update.getSrcPort();
+            int dst_port_num = update.getDstPort();
 
             _InternalPort to_return = new _InternalPort (prong.ralph_globals);
 

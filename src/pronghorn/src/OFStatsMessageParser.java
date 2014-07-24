@@ -16,7 +16,7 @@ public class OFStatsMessageParser
         to_return.tx_dropped = new NonAtomicNumberVariable (
             false,(new Double(of_port_stats.getTransmitDropped())),ralph_globals);
         to_return.rx_packets = new NonAtomicNumberVariable (
-            false,(new Double(of_port_stats.getreceivePackets())),ralph_globals);
+            false,(new Double(of_port_stats.getReceivePackets())),ralph_globals);
         to_return.rx_frame_err = new NonAtomicNumberVariable (
             false,(new Double(of_port_stats.getReceiveFrameErrors())),ralph_globals);
         to_return.rx_bytes = new NonAtomicNumberVariable (

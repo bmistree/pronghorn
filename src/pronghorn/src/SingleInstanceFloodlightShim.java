@@ -40,6 +40,16 @@ public class SingleInstanceFloodlightShim
        switch went down, we notify these handlers. 
      */
     private ReentrantLock handler_lock = new ReentrantLock();
+
+    /**
+       Each flow mod we push to a switch must have a unique xid.  This
+       way, we know what flow mod error-ed out and can recover.
+       Although we only need to generate a unique id per switch (ie.,
+       switch 1 can have xid 0 and switch 2 can have xid 0), just
+       using a single generator to simplify life.
+     */
+    private final AtomicInteger xid_generator = new AtomicInteger();
+
     
     public SingleInstanceFloodlightShim()
     {
@@ -111,8 +121,9 @@ public class SingleInstanceFloodlightShim
         {
             try
             {
-                int xid = pronghorn_floodlight.add_entry(
-                    update.entry,switch_id);
+                int xid = xid_generator.getAndIncrement();
+                pronghorn_floodlight.issue_flow_mod(
+                    update.to_flow_mod(xid), switch_id);
                 floodlight_callback.add_xid(xid);
             }
             catch (IOException ex)

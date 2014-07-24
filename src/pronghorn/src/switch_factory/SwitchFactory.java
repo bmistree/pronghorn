@@ -13,8 +13,6 @@ import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
 import pronghorn.SwitchDeltaJava.SwitchDelta;
 
 import pronghorn.DeltaListStateSupplier;
-import pronghorn.InternalPronghornSwitchGuard;
-import pronghorn.SwitchSpeculateListener;
 import pronghorn.StatisticsUpdater;
 import pronghorn.FlowTableToHardware;
 import pronghorn.IFloodlightShim;

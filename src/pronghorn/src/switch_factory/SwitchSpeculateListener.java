@@ -1,4 +1,4 @@
-package pronghorn;
+package pronghorn.switch_factory;
 
 import java.util.ArrayList;
 

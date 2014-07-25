@@ -1,4 +1,4 @@
-package pronghorn;
+package pronghorn.ft_ops;
 
 import java.util.List;
 import java.util.ArrayList;

@@ -1,4 +1,4 @@
-package pronghorn;
+package pronghorn.ft_ops;
 
 
 import java.util.Set;
@@ -15,6 +15,8 @@ import ralph.RalphObject;
 import RalphExceptions.BackoutException;
 import RalphDataWrappers.ListTypeDataWrapper;
 
+import pronghorn.IFloodlightShim;
+
 /**
    Subclass this object to override behavior of internal list when
    it is asked to push changes to hardware or undo pushed changes
@@ -26,7 +28,7 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
         LoggerFactory.getLogger(FloodlightFlowTableToHardware.class);
     
     private static class FloodlightFlowTableToHardwareFactory
-        implements FlowTableToHardwareFactory
+        implements IFlowTableToHardwareFactory
     {
         @Override
         public FlowTableToHardware construct(

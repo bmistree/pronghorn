@@ -18,18 +18,19 @@ import RalphExceptions.BackoutException;
 import ralph.Variables.AtomicTrueFalseVariable;
 import ralph.Variables.NonAtomicListVariable;
 
+import pronghorn.PortJava._InternalPort;
+import pronghorn.PortJava;
+
 import pronghorn.switch_factory.ISwitchFactory;
 import pronghorn.switch_factory.SwitchFactory;
-
 import pronghorn.InstanceJava.Instance;
-import pronghorn.ISwitchStatusHandler;
-import pronghorn.FlowTableToHardware;
-import pronghorn.FlowTableToHardwareFactory;
+import pronghorn.ft_ops.FlowTableToHardware;
 import pronghorn.switch_factory.PronghornInternalSwitch;
-import pronghorn.FloodlightFlowTableToHardware;
+import pronghorn.ft_ops.IFlowTableToHardwareFactory;
+import pronghorn.ft_ops.FloodlightFlowTableToHardware;
+
+import pronghorn.ISwitchStatusHandler;
 import pronghorn.IFloodlightShim;
-import pronghorn.PortJava._InternalPort;
-import pronghorn.PortJava;;
 
 
 public class SwitchStatusHandler implements ISwitchStatusHandler
@@ -56,7 +57,7 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
         new HashMap<String,String>();
     private HashMap<String,String> pronghorn_to_floodlight_ids =
         new HashMap<String,String>();
-    private FlowTableToHardwareFactory rtable_to_hardware_factory = null;
+    private IFlowTableToHardwareFactory ftable_to_hardware_factory = null;
 
     private IFloodlightShim shim = null;
     private final boolean speculate;
@@ -68,12 +69,12 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
     public SwitchStatusHandler(
         IFloodlightShim shim,
         Instance prong,
-        FlowTableToHardwareFactory rtable_to_hardware_factory,
+        IFlowTableToHardwareFactory ftable_to_hardware_factory,
         boolean speculate,int collect_statistics_period_ms)
     {
         this.shim = shim;
         this.prong = prong;
-        this.rtable_to_hardware_factory = rtable_to_hardware_factory;
+        this.ftable_to_hardware_factory = ftable_to_hardware_factory;
         this.speculate = speculate;
         stats_updater = new StatisticsUpdater(prong);
         
@@ -232,12 +233,12 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
         if (floodlight_to_pronghorn_ids.containsKey(floodlight_switch_id))
             return;
         
-        FlowTableToHardware rtable_to_hardware =
-            rtable_to_hardware_factory.construct(
+        FlowTableToHardware ftable_to_hardware =
+            ftable_to_hardware_factory.construct(
                 shim,floodlight_switch_id);
         PronghornInternalSwitch new_switch =
             switch_factory.construct(
-                DEFAULT_INITIAL_SWITCH_CAPACITY,rtable_to_hardware,shim,
+                DEFAULT_INITIAL_SWITCH_CAPACITY,ftable_to_hardware,shim,
                 floodlight_switch_id,stats_updater);
 
         String pronghorn_switch_id = new_switch.ralph_internal_switch_id;

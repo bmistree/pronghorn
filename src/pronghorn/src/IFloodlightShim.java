@@ -6,6 +6,8 @@ import java.io.IOException;
 
 import org.openflow.protocol.statistics.OFStatistics;
 
+import pronghorn.ft_ops.FTableUpdate;
+
 /**
    Shim layer translates between Pronghorn and Floodlight.  Any shim
    must support this interface.

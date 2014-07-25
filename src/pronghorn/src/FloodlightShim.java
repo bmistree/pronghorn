@@ -10,7 +10,7 @@ import java.io.IOException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import pronghorn.IFloodlightShim;
-import pronghorn.FTableUpdate;
+import pronghorn.ft_ops.FTableUpdate;
 import pronghorn.ISwitchStatusHandler;
 
 import net.floodlightcontroller.core.IOFSwitchListener;

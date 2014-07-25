@@ -12,9 +12,10 @@ import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
 import pronghorn.SwitchDeltaJava.SwitchDelta;
 
-import pronghorn.DeltaListStateSupplier;
+import pronghorn.ft_ops.DeltaListStateSupplier;
+import pronghorn.ft_ops.FlowTableToHardware;
+
 import pronghorn.StatisticsUpdater;
-import pronghorn.FlowTableToHardware;
 import pronghorn.IFloodlightShim;
 
 public class SwitchFactory implements ISwitchFactory

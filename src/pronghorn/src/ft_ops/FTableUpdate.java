@@ -1,4 +1,4 @@
-package pronghorn;
+package pronghorn.ft_ops;
 
 import org.openflow.protocol.OFFlowMod;
 

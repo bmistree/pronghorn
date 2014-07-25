@@ -16,9 +16,10 @@ import RalphExtended.ISpeculateListener;
 import RalphExtended.ExtendedHardwareOverrides;
 
 import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
-import pronghorn.FTableUpdate;
-import pronghorn.FlowTableToHardware;
-import pronghorn.DeltaListStateSupplier;
+import pronghorn.ft_ops.FTableUpdate;
+import pronghorn.ft_ops.FlowTableToHardware;
+import pronghorn.ft_ops.DeltaListStateSupplier;
+
 
 public class InternalPronghornSwitchGuard extends AtomicNumberVariable
 {

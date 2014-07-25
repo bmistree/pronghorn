@@ -13,7 +13,7 @@ import ralph.Variables.AtomicListVariable;
 import ralph.RalphGlobals;
 
 import pronghorn.IFloodlightShim;
-import pronghorn.FlowTableToHardware;
+import pronghorn.ft_ops.FlowTableToHardware;
 import pronghorn.StatisticsUpdater;
 
 

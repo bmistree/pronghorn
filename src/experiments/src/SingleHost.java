@@ -1,16 +1,20 @@
 package experiments;
 
-import pronghorn.InstanceJava.Instance;
-import RalphConnObj.SingleSideConnection;
-import pronghorn.SingleInstanceFloodlightShim;
-import pronghorn.SingleInstanceSwitchStatusHandler;
-import pronghorn.FloodlightFlowTableToHardware;
-import ralph.RalphGlobals;
 import java.lang.Thread;
-import experiments.OffOnApplicationJava.OffOnApplication;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import RalphConnObj.SingleSideConnection;
+import ralph.RalphGlobals;
+
+import pronghorn.InstanceJava.Instance;
+import pronghorn.FloodlightShim;
+import pronghorn.SwitchStatusHandler;
+import pronghorn.ft_ops.FloodlightFlowTableToHardware;
+
+import experiments.OffOnApplicationJava.OffOnApplication;
+
 
 
 public class SingleHost
@@ -43,9 +47,9 @@ public class SingleHost
             assert(false);
         }
 
-        SingleInstanceFloodlightShim shim = new SingleInstanceFloodlightShim();
-        SingleInstanceSwitchStatusHandler switch_status_handler =
-            new SingleInstanceSwitchStatusHandler(
+        FloodlightShim shim = new FloodlightShim();
+        SwitchStatusHandler switch_status_handler =
+            new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 true,COLLECT_STATISTICS_PERIOD_MS);

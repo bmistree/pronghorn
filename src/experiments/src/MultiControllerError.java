@@ -1,30 +1,32 @@
 package experiments;
 
-import pronghorn.SingleInstanceFloodlightShim;
-import pronghorn.SingleInstanceSwitchStatusHandler;
-
-import pronghorn.InstanceJava.Instance;
-import experiments.GetNumberSwitchesJava.GetNumberSwitches;
-import experiments.MultiControllerErrorJava.MultiControllerErrorApp;
-import experiments.PronghornConnectionErrorJava.PronghornConnectionError;
-import java.util.concurrent.ConcurrentLinkedQueue;
-import RalphConnObj.SingleSideConnection;
-import ralph.RalphGlobals;
-import ralph.NonAtomicInternalList;
-import pronghorn.FloodlightFlowTableToHardware;
 import java.lang.Thread;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
-import experiments.Util.HostPortPair;
-import experiments.Util;
-import experiments.Util.LatencyThread;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 import ralph.RalphGlobals;
 import ralph.EndpointConstructorObj;
 import ralph.Endpoint;
 import ralph.Ralph;
+import RalphConnObj.SingleSideConnection;
+import ralph.RalphGlobals;
+import ralph.NonAtomicInternalList;
+
+import pronghorn.FloodlightShim;
+import pronghorn.SwitchStatusHandler;
+
+import pronghorn.InstanceJava.Instance;
+import pronghorn.ft_ops.FloodlightFlowTableToHardware;
+
+import experiments.Util.HostPortPair;
+import experiments.Util;
+import experiments.Util.LatencyThread;
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.MultiControllerErrorJava.MultiControllerErrorApp;
+import experiments.PronghornConnectionErrorJava.PronghornConnectionError;
 
 
 public class MultiControllerError
@@ -106,9 +108,9 @@ public class MultiControllerError
         }
 
 
-        SingleInstanceFloodlightShim shim = new SingleInstanceFloodlightShim();
-        SingleInstanceSwitchStatusHandler switch_status_handler =
-            new SingleInstanceSwitchStatusHandler(
+        FloodlightShim shim = new FloodlightShim();
+        SwitchStatusHandler switch_status_handler =
+            new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 false,collect_statistics_period_ms);

@@ -1,23 +1,25 @@
 package experiments;
 
-import pronghorn.SingleInstanceFloodlightShim;
-import pronghorn.SingleInstanceSwitchStatusHandler;
-import pronghorn.InstanceJava.Instance;
-import experiments.GetNumberSwitchesJava.GetNumberSwitches;
-import experiments.OffOnApplicationJava.OffOnApplication;
-
-import RalphConnObj.SingleSideConnection;
-import ralph.RalphGlobals;
-import ralph.NonAtomicInternalList;
-import pronghorn.FloodlightFlowTableToHardware;
 import java.lang.Thread;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
+
+import RalphConnObj.SingleSideConnection;
+import ralph.RalphGlobals;
+import ralph.NonAtomicInternalList;
+
+import pronghorn.FloodlightShim;
+import pronghorn.SwitchStatusHandler;
+import pronghorn.InstanceJava.Instance;
+import pronghorn.ft_ops.FloodlightFlowTableToHardware;
+
 import experiments.Util.HostPortPair;
 import experiments.Util;
 import experiments.Util.LatencyThread;
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.OffOnApplicationJava.OffOnApplication;
 
 
 public class SingleControllerLatency
@@ -76,10 +78,10 @@ public class SingleControllerLatency
             return;
         }
 
-        SingleInstanceFloodlightShim shim = new SingleInstanceFloodlightShim();
+        FloodlightShim shim = new FloodlightShim();
         
-        SingleInstanceSwitchStatusHandler switch_status_handler =
-            new SingleInstanceSwitchStatusHandler(
+        SwitchStatusHandler switch_status_handler =
+            new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 true,collect_statistics_period_ms);

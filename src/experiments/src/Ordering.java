@@ -1,24 +1,26 @@
 package experiments;
 
-import pronghorn.SingleInstanceFloodlightShim;
-import pronghorn.SingleInstanceSwitchStatusHandler;
-import pronghorn.InstanceJava.Instance;
-import experiments.GetNumberSwitchesJava.GetNumberSwitches;
-import experiments.OffOnApplicationJava.OffOnApplication;
-import RalphConnObj.SingleSideConnection;
-import ralph.RalphGlobals;
-import ralph.NonAtomicInternalList;
-import pronghorn.FloodlightFlowTableToHardware;
-import java.lang.Thread;
-import java.util.ArrayList;
-import pronghorn.FTableUpdate;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
-
 import java.util.HashSet;
 import java.util.Set;
+import java.lang.Thread;
+import java.util.ArrayList;
+
+import RalphConnObj.SingleSideConnection;
+import ralph.RalphGlobals;
+import ralph.NonAtomicInternalList;
+
+import pronghorn.FloodlightShim;
+import pronghorn.SwitchStatusHandler;
+import pronghorn.InstanceJava.Instance;
+import pronghorn.ft_ops.FloodlightFlowTableToHardware;
+import pronghorn.ft_ops.FTableUpdate;
+
+import experiments.GetNumberSwitchesJava.GetNumberSwitches;
+import experiments.OffOnApplicationJava.OffOnApplication;
 import experiments.Util.HostPortPair;
 import experiments.Util;
 
@@ -107,8 +109,8 @@ public class Ordering
 
         boolean allow_reordering = ! ensure_ordering;
         OrderingShim shim = new OrderingShim(allow_reordering);
-        SingleInstanceSwitchStatusHandler switch_status_handler =
-            new SingleInstanceSwitchStatusHandler(
+        SwitchStatusHandler switch_status_handler =
+            new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 true,collect_statistics_period_ms);
@@ -278,7 +280,7 @@ public class Ordering
     /**
        Creating a private subclass of shim that allows reordering 
      */
-    private static class OrderingShim extends SingleInstanceFloodlightShim
+    private static class OrderingShim extends FloodlightShim
     {
         private boolean allow_reordering;
         private int num_outstanding_before_push = -1;

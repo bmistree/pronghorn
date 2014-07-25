@@ -4,23 +4,24 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
-import pronghorn.InstanceJava.Instance;
+
 import ralph.RalphGlobals;
 import ralph.Variables.NonAtomicTextVariable;
 
 import RalphExtended.ExtendedHardwareOverrides;
 import RalphExtended.IHardwareChangeApplier;
 
-import experiments.IErrorApplicationJava.IErrorApplication;
-
-import pronghorn.FTableUpdate;
-import pronghorn.FlowTableToHardware;
-import pronghorn.DeltaListStateSupplier;
-import pronghorn.InternalPronghornSwitchGuard;
-import pronghorn.SwitchSpeculateListener;
+import pronghorn.InstanceJava.Instance;
+import pronghorn.ft_ops.FTableUpdate;
+import pronghorn.ft_ops.FlowTableToHardware;
+import pronghorn.ft_ops.DeltaListStateSupplier;
+import pronghorn.switch_factory.InternalPronghornSwitchGuard;
+import pronghorn.switch_factory.SwitchSpeculateListener;
 import pronghorn.SwitchJava._InternalSwitch;
 import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
 import pronghorn.SwitchDeltaJava.SwitchDelta;
+
+import experiments.IErrorApplicationJava.IErrorApplication;
 
 
 public class ErrorUtil

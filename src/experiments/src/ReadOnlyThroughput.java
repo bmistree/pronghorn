@@ -8,10 +8,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 
-import pronghorn.SingleInstanceFloodlightShim;
-import pronghorn.SingleInstanceSwitchStatusHandler;
+import pronghorn.FloodlightShim;
+import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
-import pronghorn.FloodlightFlowTableToHardware;
+import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.ReadOnlyThroughputJava.ReadOnly;
@@ -71,10 +71,10 @@ public class ReadOnlyThroughput
             return;
         }
         
-        SingleInstanceFloodlightShim shim = new SingleInstanceFloodlightShim();
+        FloodlightShim shim = new FloodlightShim();
         
-        SingleInstanceSwitchStatusHandler switch_status_handler =
-            new SingleInstanceSwitchStatusHandler(
+        SwitchStatusHandler switch_status_handler =
+            new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 true,collect_statistics_period_ms);

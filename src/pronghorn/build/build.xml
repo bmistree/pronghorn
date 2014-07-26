@@ -84,7 +84,14 @@
   <target name="translate_ralph" depends="init"
           description="translate ralph files">
 
-
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${pronghorn_ralph_src_dir}/match.rph"/>
+      <arg line="-o ${pronghorn_ralph_emitted_dir}/MatchJava.java"/>
+      <arg line="-p ${pronghorn_package}"/>
+      <arg line="-c MatchJava"/>
+    </exec>
+    
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${pronghorn_ralph_src_dir}/port_stats.rph"/>

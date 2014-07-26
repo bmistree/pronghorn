@@ -1,5 +1,7 @@
 #include 'port.rph'
 alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
+#include 'match.rph'
+alias Struct Match as 'pronghorn.MatchJava.Match';
 #include 'flow_table_entry.rph'
 alias Struct Port as 'pronghorn.PortJava.Port';
 #include 'switch_delta.rph'

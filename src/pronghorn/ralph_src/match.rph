@@ -1,0 +1,22 @@
+
+Struct Match
+{
+    TVar Text src_ip = null;
+    TVar Text dst_ip = null;
+
+    // FIXME: should add more match types.
+}
+
+Service MatchUtil
+{
+    copy_match(Struct Match to_copy) returns Struct Match
+    {
+        if (to_copy == null)
+            return null;
+
+        Struct Match to_return;
+        to_return.src_ip = to_copy.src_ip;
+        to_return.dst_ip = to_copy.dst_ip;
+        return to_return;
+    }
+}

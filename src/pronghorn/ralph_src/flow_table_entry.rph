@@ -1,8 +1,10 @@
+#include 'match.rph'
+alias Struct Match as 'pronghorn.MatchJava.Match';
+alias Service MatchUtil as 'pronghorn.MatchJava.MatchUtil';
+
 Struct FlowTableEntry
 {
-    // ipv4 addresses specified as a.b.c.d
-    TVar Text src_ip;
-    TVar Text dst_ip;
+    TVar Struct Match match = null;
     // See
     // http://www.openflowhub.org/display/floodlightcontroller/Static+Flow+Pusher+API+%28New%29
     // for list of supported actions.
@@ -14,12 +16,13 @@ Struct FlowTableEntry
  */
 Service FlowTableUtil
 {
+    Service MatchUtil match_util;
+    
     copy_entry (Struct FlowTableEntry to_copy) returns Struct FlowTableEntry
     {
         Struct FlowTableEntry to_return;
-        to_return.src_ip = to_copy.src_ip;
-        to_return.dst_ip = to_copy.dst_ip;
+        to_return.match = match_util.copy_match(to_copy.match);
         to_return.action = to_copy.action;
         return to_return;
-    }
+    }    
 }

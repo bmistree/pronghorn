@@ -185,23 +185,37 @@ Service WrappedSwitch
         // first check whitelist: only allowed to remove entries in whitelist
         if (access_control.whitelist_ip_src_write_list != null)
         {
-            if (not in_helper(ft_entry.src_ip, access_control.whitelist_ip_src_write_list))
+            TrueFalse in_list = in_helper(
+                ft_entry.match.src_ip,
+                access_control.whitelist_ip_src_write_list);
+            if (not in_list)
                 return False;
         }
         if (access_control.whitelist_ip_dst_write_list != null)
         {
-            if (not in_helper(ft_entry.dst_ip,access_control.whitelist_ip_dst_write_list))
+            TrueFalse in_list = in_helper(
+                ft_entry.match.dst_ip,
+                access_control.whitelist_ip_dst_write_list);
+
+            if (not in_list)
                 return False;
         }
         // check blacklist: not allowed to remove entries in blacklist
         if (access_control.blacklist_ip_src_write_list != null)
         {
-            if (not in_helper(ft_entry.src_ip,access_control.blacklist_ip_src_write_list))
+            TrueFalse in_list = in_helper(
+                ft_entry.match.src_ip,
+                access_control.blacklist_ip_src_write_list);
+            if (not in_list)
                 return False;
         }
         if (access_control.blacklist_ip_dst_write_list != null)
         {
-            if (not in_helper(ft_entry.dst_ip, access_control.blacklist_ip_dst_write_list))
+            TrueFalse in_list = in_helper(
+                ft_entry.match.dst_ip,
+                access_control.blacklist_ip_dst_write_list);
+            
+            if (not in_list)
                 return False;
         }
         return True;

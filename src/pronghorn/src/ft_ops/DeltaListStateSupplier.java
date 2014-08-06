@@ -16,6 +16,7 @@ import ralph.Variables.AtomicListVariable;
 import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
 import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
 import pronghorn.FTable._InternalFlowTableEntry;
+import pronghorn.MatchJava._InternalMatch;
 
 
 /**
@@ -121,6 +122,8 @@ public class DeltaListStateSupplier
         {
             _InternalFlowTableDelta flow_table_delta = null;
             _InternalFlowTableEntry entry = null;
+            _InternalMatch match = null;
+
             try
             {
                 flow_table_delta = (_InternalFlowTableDelta) (ro.get_val(null));
@@ -128,8 +131,33 @@ public class DeltaListStateSupplier
                 if (flow_table_delta.entry.dirty_val != null)
                     entry = flow_table_delta.entry.dirty_val.val;
                 else
-                    entry = flow_table_delta.entry.val.val;
+                    entry = flow_table_delta.entry.val.val;                
                 flow_table_delta.entry._unlock();
+
+
+                if (entry == null)
+                {
+                    // can get a null entry in cases where are currently
+                    // backing out of an update (and therefore reverting
+                    // to original flow_table_delta value).  In that case,
+                    // we do not need to produce an update for this target
+                    // (no need to push it to switch), and can stop
+                    // producing other updates.
+                    break;
+                }
+                
+                entry.match._lock();
+                if (entry.match.dirty_val != null)
+                    match = entry.match.dirty_val.val;
+                else
+                    match = entry.match.val.val;
+                entry.match._unlock();
+                if (match == null)
+                {
+                    // see above note about entry.
+                    break;
+                }
+                
             }
             catch (Exception ex)
             {
@@ -139,39 +167,29 @@ public class DeltaListStateSupplier
                     ex.toString());
                 assert(false);
             }
-
-            
-            if (entry == null)
-            {
-                // can get a null entry in cases where are currently
-                // backing out of an update (and therefore reverting
-                // to original flow_table_delta value).  In that case,
-                // we do not need to produce an update for this target
-                // (no need to push it to switch), and can stop
-                // producing other updates.
-                break;
-            }
             
 
             // non tvar, therefore has different val.val access pattern.
             boolean insertion =
                 flow_table_delta.inserted.val.val.booleanValue();
-            
+
+            // FIXME: double check that match cannot change out from
+            // under us during this process.
             String src_ip = null;
-            entry.src_ip._lock();
-            if (entry.src_ip.dirty_val != null)
-                src_ip = entry.src_ip.dirty_val.val;
+            match.src_ip._lock();
+            if (match.src_ip.dirty_val != null)
+                src_ip = match.src_ip.dirty_val.val;
             else
-                src_ip = entry.src_ip.val.val;
-            entry.src_ip._unlock();
+                src_ip = match.src_ip.val.val;
+            match.src_ip._unlock();
 
             String dst_ip = null;
-            entry.dst_ip._lock();
-            if (entry.dst_ip.dirty_val != null)
-                dst_ip = entry.dst_ip.dirty_val.val;
+            match.dst_ip._lock();
+            if (match.dst_ip.dirty_val != null)
+                dst_ip = match.dst_ip.dirty_val.val;
             else
-                dst_ip = entry.dst_ip.val.val;
-            entry.dst_ip._unlock();
+                dst_ip = match.dst_ip.val.val;
+            match.dst_ip._unlock();
             
             String actions = null;
             entry.action._lock();

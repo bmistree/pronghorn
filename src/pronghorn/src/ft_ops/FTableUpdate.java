@@ -115,7 +115,7 @@ public class FTableUpdate
         return to_return;
     }
     
-    
+
     /**
        Takes current flow mod instruction and creates an FTableUpdate
        that is the opposite of it.  If we run an FTableUpdate and then
@@ -124,11 +124,7 @@ public class FTableUpdate
      */
     public FTableUpdate create_undo()
     {
-        /**
-           TODO: fill in stub method as part of update to OF 1.3.
-         */
-        assert(false);
-        return null;
+        return new FTableUpdate(src_ip,dst_ip,actions,! insertion);
     }
     
     /**

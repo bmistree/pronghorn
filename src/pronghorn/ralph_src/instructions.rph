@@ -1,3 +1,5 @@
+#include 'actions.rph'
+alias Struct Action as 'pronghorn.ActionsJava.Action';
 
 Struct InstructionGotoTable
 {
@@ -17,12 +19,12 @@ Struct InstructionWriteMetadata
 
 Struct InstructionWriteActions
 {
-    List (element: Text) actions;
+    List (element: Struct Action) actions;
 }
 
 Struct InstructionApplyActions
 {
-    List (element: Text) actions;
+    List (element: Struct Action) actions;
 }
 
 Struct InstructionClearActions

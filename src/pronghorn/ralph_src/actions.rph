@@ -1,0 +1,103 @@
+Struct ActionOutput
+{
+    TVar Number port_number = null;
+}
+Struct ActionCopyTTLOut
+{}
+Struct ActionCopyTTLIn
+{}
+Struct ActionSetMPLSTTL
+{
+    /**
+       FIXME: Should only be 1 byte, nothing is actually checking though.
+     */
+    TVar Number mpls_ttl = null;
+}
+
+Struct ActionDecrementMPLSTTL
+{}
+
+Struct ActionPushVLAN
+{
+    /**
+       FIXME: Should only be 2 bytes, nothing is actually checking though.
+     */
+    TVar Number ethertype = null;
+}
+
+Struct ActionPopVLAN
+{}
+
+Struct ActionPushMPLS
+{
+    /**
+       FIXME: Should only be 2 bytes, nothing is actually checking though.
+     */
+    TVar Number ethertype = null;
+}
+
+Struct ActionPopMPLS
+{}
+
+Struct ActionSetQueue
+{
+    TVar Number queue_id = null;
+}
+
+Struct ActionGroup
+{
+    // apply group
+    TVar Number group_id = null;
+}
+
+Struct ActionSetNWTTL
+{
+    // set ip ttl
+    TVar Number ttl = null;
+}
+
+Struct ActionDecrementNWTTL
+{
+    // decrement ip ttl
+}
+
+Struct ActionSetField
+{
+    // Eg., in_port, in_phy_port, etc.
+
+    /**
+       FIXME: include some form of enum or global constants to make this easier.
+     */
+    TVar Text field_name = null;
+    TVar Text value = null;
+}
+
+Struct ActionPushPBB
+{
+    /**
+       FIXME: Should only be 2 bytes, nothing is actually checking though.
+     */
+    TVar Number ethertype = null;
+}
+Struct ActionPopPBB
+{}
+
+Struct Action
+{
+    Struct ActionOutput output = null;
+    Struct ActionCopyTTLOut copy_ttl_out = null;
+    Struct ActionCopyTTLIn copy_ttl_in = null;
+    Struct ActionSetMPLSTTL set_mpls_ttl = null;
+    Struct ActionDecrementMPLSTTL decrement_mpls_ttl = null;
+    Struct ActionPushVLAN push_vlan = null;
+    Struct ActionPopVLAN pop_vlan = null;
+    Struct ActionPushMPLS push_mpls = null;
+    Struct ActionPopMPLS pop_mpls = null;
+    Struct ActionSetQueue set_queue = null;
+    Struct ActionGroup group = null;
+    Struct ActionSetNWTTL set_nw_ttl= null;
+    Struct ActionDecrementNWTTL decrement_nw_ttl = null;
+    Struct ActionSetField set_field = null;
+    Struct ActionPushPBB push_pbb = null;
+    Struct ActionPopPBB pop_pbb = null;
+}

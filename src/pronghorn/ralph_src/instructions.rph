@@ -1,0 +1,45 @@
+
+Struct InstructionGotoTable
+{
+    TVar Number goto_table_id = null;    
+}
+
+Struct InstructionWriteMetadata
+{
+    /**
+       Each should be 8 bytes long.
+
+       FIXME: Nothing is currently enforcing 8 byte constraint.
+     */
+    TVar Text metadata = null;
+    TVar Text metadata_mask = null;
+}
+
+Struct InstructionWriteActions
+{
+    List (element: Text) actions;
+}
+
+Struct InstructionApplyActions
+{
+    List (element: Text) actions;
+}
+
+Struct InstructionClearActions
+{}
+
+Struct InstructionMeter
+{
+    TVar Number meter_id = null;
+}
+
+
+Struct Instructions
+{
+    Struct InstructionGotoTable goto_table = null;
+    Struct InstructionWriteMetadata write_metadata = null;
+    Struct InstructionWriteActions write_actions = null;
+    Struct InstructionApplyActions apply_actions = null;
+    Struct InstructionClearActions clear_actions = null;
+    Struct InstructionMeter meter = null;
+}

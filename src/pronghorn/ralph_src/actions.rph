@@ -101,3 +101,129 @@ Struct Action
     Struct ActionPushPBB push_pbb = null;
     Struct ActionPopPBB pop_pbb = null;
 }
+
+Service ActionUtil
+{
+    copy_action(Struct Action to_copy) returns Struct Action
+    {
+        if (to_copy == null)
+            return null;
+
+        Struct Action to_return;
+
+        if (to_copy.output != null)
+        {
+            Struct ActionOutput new_output;
+            new_output.port_number = to_copy.output.port_number;
+            to_return.output = new_output;
+        }
+
+        if (to_copy.copy_ttl_out != null)
+        {
+            // can use the same struct because it doesn't have any distinct
+            // fields.
+            to_return.copy_ttl_out = to_copy.copy_ttl_out;
+        }
+
+        if (to_copy.copy_ttl_in != null)
+        {
+            // can use the same struct because it doesn't have any distinct
+            // fields.
+            to_return.copy_ttl_in = to_copy.copy_ttl_in;
+        }
+
+        if (to_copy.set_mpls_ttl != null)
+        {
+            Struct ActionSetMPLSTTL new_set_mpls_ttl;
+            new_set_mpls_ttl.mpls_ttl = to_copy.set_mpls_ttl.mpls_ttl;
+            to_return.set_mpls_ttl = new_set_mpls_ttl;
+        }
+
+        if (to_copy.decrement_mpls_ttl != null)
+        {
+            // can use the same struct because it doesn't have any distinct
+            // fields.
+            to_return.decrement_mpls_ttl = to_copy.decrement_mpls_ttl;
+        }
+
+        if (to_copy.push_vlan != null)
+        {
+            Struct ActionPushVLAN new_push_vlan;
+            new_push_vlan.ethertype = to_copy.push_vlan.ethertype;
+            to_return.push_vlan = new_push_vlan;
+        }
+
+        if (to_copy.pop_vlan != null)
+        {
+            // can use the same struct because it doesn't have any distinct
+            // fields.
+            to_return.pop_vlan = to_copy.pop_vlan;
+        }
+
+        if (to_copy.push_mpls != null)
+        {
+            Struct ActionPushMPLS new_push_mpls;
+            new_push_mpls.ethertype = to_copy.push_mpls.ethertype;
+            to_return.push_mpls = new_push_mpls;
+        }
+        
+        if (to_copy.pop_mpls != null)
+        {
+            // can use the same struct because it doesn't have any distinct
+            // fields.
+            to_return.pop_mpls = to_copy.pop_mpls;
+        }
+
+        if (to_copy.set_queue != null)
+        {
+            Struct ActionSetQueue new_set_queue;
+            new_set_queue.queue_id = to_copy.set_queue.queue_id;
+            to_return.set_queue = new_set_queue;
+        }
+
+        if (to_copy.group != null)
+        {
+            Struct ActionGroup new_group;
+            new_group.group_id = to_copy.group.group_id;
+            to_return.group = new_group;
+        }
+
+        if (to_copy.set_nw_ttl != null)
+        {
+            Struct ActionSetNWTTL new_set_nw_ttl;
+            new_set_nw_ttl.ttl = to_copy.set_nw_ttl.ttl;
+            to_return.set_nw_ttl = new_set_nw_ttl;
+        }
+
+        if (to_copy.decrement_nw_ttl != null)
+        {
+            // can use the same struct because it doesn't have any distinct
+            // fields.
+            to_return.decrement_nw_ttl = to_copy.decrement_nw_ttl;
+        }
+
+        if (to_copy.set_field != null)
+        {
+            Struct ActionSetField new_set_field;
+            new_set_field.field_name = to_copy.set_field.field_name;
+            new_set_field.value = to_copy.set_field.value;
+            to_return.set_field = new_set_field;
+        }
+
+        if (to_copy.push_pbb != null)
+        {
+            Struct ActionPushPBB new_push_pbb;
+            new_push_pbb.ethertype = to_copy.push_pbb.ethertype;
+            to_return.push_pbb = new_push_pbb;
+        }
+        
+        if (to_copy.pop_pbb != null)
+        {
+            // can use the same struct because it doesn't have any distinct
+            // fields.
+            to_return.pop_pbb = to_copy.pop_pbb;
+        }
+        
+        return to_return;
+    }
+}

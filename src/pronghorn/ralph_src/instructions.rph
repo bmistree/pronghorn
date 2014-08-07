@@ -1,9 +1,10 @@
 #include 'actions.rph'
 alias Struct Action as 'pronghorn.ActionsJava.Action';
+alias Service ActionUtil as 'pronghorn.ActionsJava.ActionUtil';
 
 Struct InstructionGotoTable
 {
-    TVar Number goto_table_id = null;    
+    TVar Number table_id = null;
 }
 
 Struct InstructionWriteMetadata
@@ -44,4 +45,70 @@ Struct Instructions
     Struct InstructionApplyActions apply_actions = null;
     Struct InstructionClearActions clear_actions = null;
     Struct InstructionMeter meter = null;
+}
+
+Service InstructionsUtil
+{
+    Service ActionUtil action_util;
+    
+    copy_instructions(Struct Instructions to_copy) returns Struct Instructions
+    {
+        if (to_copy == null)
+            return null;
+
+        Struct Instructions to_return;
+        if (to_copy.goto_table != null)
+        {
+            Struct InstructionGotoTable new_goto_table;
+            new_goto_table.table_id = to_copy.goto_table.table_id;
+            to_return.goto_table = new_goto_table;
+        }
+
+        if (to_copy.write_metadata != null)
+        {
+            Struct InstructionWriteMetadata new_write_metadata;
+            new_write_metadata.metadata = to_copy.write_metadata.metadata;
+            new_write_metadata.metadata_mask =
+                to_copy.write_metadata.metadata_mask;
+            to_return.write_metadata = new_write_metadata;
+        }
+
+        if (to_copy.write_actions != null)
+        {
+            Struct InstructionWriteActions new_write_actions;
+            for (Struct Action action_to_copy in to_copy.write_actions.actions)
+            {
+                new_write_actions.actions.append(
+                    action_util.copy_action(action_to_copy));
+            }
+            to_return.write_actions = new_write_actions;
+        }
+
+        if (to_copy.apply_actions != null)
+        {
+            Struct InstructionApplyActions new_apply_actions;
+            for (Struct Action action_to_copy in to_copy.apply_actions.actions)
+            {
+                new_apply_actions.actions.append(
+                    action_util.copy_action(action_to_copy));
+            }
+            to_return.apply_actions = new_apply_actions;
+        }
+
+        if (to_copy.clear_actions != null)
+        {
+            // can use the same struct because it doesn't have any distinct
+            // fields.
+            to_return.clear_actions = to_copy.clear_actions;
+        }
+
+        if (to_copy.meter != null)
+        {
+            Struct InstructionMeter new_meter;
+            new_meter.meter_id = to_copy.meter.meter_id;
+            to_return.meter = new_meter;
+        }
+        
+        return to_return;
+    }
 }

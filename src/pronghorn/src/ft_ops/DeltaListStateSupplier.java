@@ -208,18 +208,15 @@ public class DeltaListStateSupplier
 
             
             FTableUpdate update_to_push =  null;
-            // FIXME: get rid of entry names in PronghonrFlowTableEntry
-            String entry_name = "";
-            
             if (insertion)
             {
                 update_to_push = FTableUpdate.create_insert_update(
-                    entry_name, src_ip, dst_ip,actions);
+                    src_ip, dst_ip,actions);
             }
             else
             {
                 update_to_push = FTableUpdate.create_remove_update(
-                    entry_name, src_ip, dst_ip,actions);
+                    src_ip, dst_ip,actions);
             }
             floodlight_updates.add(update_to_push);
         }

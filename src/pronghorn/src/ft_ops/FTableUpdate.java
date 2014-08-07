@@ -4,18 +4,21 @@ import org.openflow.protocol.OFFlowMod;
 
 public class FTableUpdate
 {
-    private String previous_actions_removing;
+    final private String src_ip;
+    final private String dst_ip;
+    final private String actions;
+    /**
+       true if this is an insertion flow mod.  false if it's a
+       deletion.
+     */
+    private boolean insertion;
     
     public static FTableUpdate create_insert_update(
-        String entry_name, String src_ip, String dst_ip,
-        String actions)
+        String src_ip, String dst_ip, String actions)
     {
-        /**
-           TODO: Fill in.  Redesigned interface to floodlight when
-           updated to OF 1.3.  
-         */
-        assert(false);
-        return null;
+        FTableUpdate to_return = new FTableUpdate(
+            src_ip,dst_ip,actions,true);
+        return to_return;
     }
 
     /**
@@ -26,15 +29,11 @@ public class FTableUpdate
        why we have the additional parameter below.
      */
     public static FTableUpdate create_remove_update(
-        String _entry_name,String src_ip, String dst_ip,
-        String actions)
+        String src_ip, String dst_ip, String actions)
     {
-        /**
-           TODO: Fill in.  Redesigned interface to floodlight when
-           updated to OF 1.3.  
-         */
-        assert(false);
-        return null;
+        FTableUpdate to_return = new FTableUpdate(
+            src_ip,dst_ip,actions,false);
+        return to_return;
     }
 
 
@@ -70,6 +69,12 @@ public class FTableUpdate
        Private constructor: use static methods to construct insertion
        and remove updates.
      */
-    private FTableUpdate()
-    {}
+    private FTableUpdate(
+        String _src_ip,String _dst_ip, String _actions,boolean _insertion)
+    {
+        src_ip = _src_ip;
+        dst_ip = _dst_ip;
+        actions = _actions;
+        insertion = _insertion;
+    }
 }

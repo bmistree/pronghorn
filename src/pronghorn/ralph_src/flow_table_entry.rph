@@ -9,11 +9,7 @@ alias Service InstructionsUtil as 'pronghorn.InstructionsJava.InstructionsUtil';
 Struct FlowTableEntry
 {
     TVar Struct Match match = null;
-    // See
-    // http://www.openflowhub.org/display/floodlightcontroller/Static+Flow+Pusher+API+%28New%29
-    // for list of supported actions.
-    //TVar Struct Instructions instructions = null;
-    TVar Text action = null;
+    TVar Struct Instructions instructions = null;
 }
 
 /**
@@ -28,8 +24,8 @@ Service FlowTableUtil
     {
         Struct FlowTableEntry to_return;
         to_return.match = match_util.copy_match(to_copy.match);
-        to_return.action = to_copy.action;
-        //to_return.instructions = instructions_util.copy(to_copy.instructions);
+        to_return.instructions =
+            instructions_util.copy_instructions(to_copy.instructions);
         return to_return;
     }    
 }

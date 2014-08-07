@@ -39,6 +39,8 @@ Struct InstructionMeter
 
 Struct Instructions
 {
+    // note any modifications here should also modify
+    // src/ft_ops/DeltaListStateSupplier.java
     Struct InstructionGotoTable goto_table = null;
     Struct InstructionWriteMetadata write_metadata = null;
     Struct InstructionWriteActions write_actions = null;
@@ -47,6 +49,9 @@ Struct Instructions
     Struct InstructionMeter meter = null;
 }
 
+/**
+   Makes deep copies of instructions
+ */
 Service InstructionsUtil
 {
     Service ActionUtil action_util;

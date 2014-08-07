@@ -102,6 +102,10 @@ Struct Action
     Struct ActionPopPBB pop_pbb = null;
 }
 
+
+/**
+   Makes deep copies of actions.
+ */
 Service ActionUtil
 {
     copy_action(Struct Action to_copy) returns Struct Action

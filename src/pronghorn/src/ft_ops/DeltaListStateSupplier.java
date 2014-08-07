@@ -6,17 +6,29 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openflow.protocol.instruction.OFInstruction;
+import org.openflow.protocol.instruction.OFInstructionGotoTable;
+import org.openflow.protocol.instruction.OFInstructionWriteMetaData;
+import org.openflow.protocol.instruction.OFInstructionWriteActions;
+import org.openflow.protocol.instruction.OFInstructionApplyActions;
+import org.openflow.protocol.instruction.OFInstructionClearActions;
+import org.openflow.protocol.instruction.OFInstructionMeter;
+
 import RalphExtended.IHardwareStateSupplier;
 import ralph.ActiveEvent;
 import ralph.RalphObject;
 import ralph.AtomicObject;
 import ralph.AtomicInternalList;
 import ralph.Variables.AtomicListVariable;
+import ralph.Variables.AtomicNumberVariable;
+
 
 import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
 import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
 import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.MatchJava._InternalMatch;
+import pronghorn.InstructionsJava._InternalInstructions;
+import pronghorn.InstructionsJava._InternalInstructionGotoTable;
 
 
 /**
@@ -190,14 +202,18 @@ public class DeltaListStateSupplier
             else
                 dst_ip = match.dst_ip.val.val;
             match.dst_ip._unlock();
-            
-            String actions = null;
-            entry.action._lock();
-            if (entry.action.dirty_val != null)
-                actions = entry.action.dirty_val.val;
+
+            _InternalInstructions instructions = null;
+            entry.instructions._lock();
+            if (entry.instructions.dirty_val != null)
+                instructions = entry.instructions.dirty_val.val;
             else
-                actions = entry.action.val.val;
-            entry.action._unlock();
+                instructions = entry.instructions.val.val;
+            entry.instructions._unlock();
+
+            List<OFInstruction> instruction_list =
+                instruction_list_from_internal_instructions(instructions);
+            
 
             // means that this change was backed out before could
             // complete and src_ip or dst_ip was backed out and reset
@@ -211,15 +227,139 @@ public class DeltaListStateSupplier
             if (insertion)
             {
                 update_to_push = FTableUpdate.create_insert_update(
-                    src_ip, dst_ip,actions);
+                    src_ip, dst_ip,instruction_list);
             }
             else
             {
                 update_to_push = FTableUpdate.create_remove_update(
-                    src_ip, dst_ip,actions);
+                    src_ip, dst_ip,instruction_list);
             }
             floodlight_updates.add(update_to_push);
         }
         return floodlight_updates;
     }
+
+
+    /**
+       Generates a list of floodlight instructions from ralph object.
+     */
+    private List<OFInstruction> instruction_list_from_internal_instructions(
+        _InternalInstructions instructions)
+    {
+        List<OFInstruction> to_return = new ArrayList<OFInstruction>();
+        
+        OFInstructionGotoTable goto_instruction =
+            produce_goto_from_internal(instructions);
+        if (goto_instruction != null)
+            to_return.add(goto_instruction);
+
+        OFInstructionWriteMetaData write_metadata_instruction =
+            produce_write_metadata_from_internal(instructions);
+        if (write_metadata_instruction != null)
+            to_return.add(write_metadata_instruction);
+
+        OFInstructionWriteActions write_actions_instruction =
+            produce_write_actions_from_internal(instructions);
+        if (write_actions_instruction != null)
+            to_return.add(write_actions_instruction);
+        
+        OFInstructionApplyActions apply_actions_instruction =
+            produce_apply_actions_from_internal(instructions);
+        if (apply_actions_instruction != null)
+            to_return.add(apply_actions_instruction);
+
+        OFInstructionClearActions clear_actions_instruction =
+            produce_clear_actions_from_internal(instructions);
+        if (clear_actions_instruction != null)
+            to_return.add(clear_actions_instruction);
+
+        OFInstructionMeter meter_instruction =
+            produce_meter_from_internal(instructions);
+        if (meter_instruction != null)
+            to_return.add(meter_instruction);
+        
+        return to_return;
+    }
+
+    /*
+       Take ralph InternalInstruction and produce floodlight
+       instruction from it.
+    */
+
+    /**
+       Helper method.  Takes a ralph AtomicNumberVariable and returns
+       either its dirty value, if available, and its non-dirty value
+       if unavailable.
+     */
+    private Double get_internal_number(AtomicNumberVariable number_variable)
+    {
+        Double to_return = null;
+        number_variable._lock();
+        if (number_variable.dirty_val != null)
+            to_return = number_variable.dirty_val.val;
+        else
+            to_return = number_variable.val.val;
+        number_variable._unlock();
+        return to_return;
+    }
+    
+    private OFInstructionGotoTable produce_goto_from_internal(
+        _InternalInstructions _instructions)
+    {
+        _InternalInstructionGotoTable goto_table = null;
+        _instructions.goto_table._lock();
+
+        if (_instructions.goto_table.dirty_val != null)
+            goto_table = _instructions.goto_table.dirty_val.val;
+        else
+            goto_table = _instructions.goto_table.val.val;
+        _instructions.goto_table._unlock();
+
+        if (goto_table == null)
+            return null;
+
+        Double table_id = get_internal_number(goto_table.table_id);
+        // means got a rollback as was sending
+        if (table_id == null)
+            return null;
+        
+        return new OFInstructionGotoTable(table_id.byteValue());
+    }
+
+
+    private OFInstructionWriteMetaData produce_write_metadata_from_internal(
+        _InternalInstructions _instructions)
+    {
+        // TODO: fill in stub method
+        return null;
+    }
+
+    private OFInstructionWriteActions produce_write_actions_from_internal(
+        _InternalInstructions _instructions)
+    {
+        // TODO: fill in stub method
+        return null;
+    }
+    
+    private OFInstructionApplyActions produce_apply_actions_from_internal(
+        _InternalInstructions _instructions)
+    {
+        // TODO: fill in stub method
+        return null;
+    }
+
+    private OFInstructionClearActions produce_clear_actions_from_internal(
+        _InternalInstructions _instructions)
+    {
+        // TODO: fill in stub method
+        return null;
+    }
+        
+    private OFInstructionMeter produce_meter_from_internal(
+        _InternalInstructions _instructions)
+    {
+        // TODO: fill in stub method
+        return null;
+    }
+    
 }

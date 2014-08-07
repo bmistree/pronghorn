@@ -107,13 +107,12 @@ public class DeltaListStateSupplier
         AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
             internal_ft_deltas_list = null;
 
-        ft_deltas_list._lock();
-        if (ft_deltas_list.dirty_val != null)
-            internal_ft_deltas_list = ft_deltas_list.dirty_val.val;
-        else
-            internal_ft_deltas_list = ft_deltas_list.val.val;
-        ft_deltas_list._unlock();
-        
+        internal_ft_deltas_list =
+            RalphInternalValueRemover.<
+                AtomicInternalList<
+                    _InternalFlowTableDelta,_InternalFlowTableDelta>,
+                _InternalFlowTableDelta>
+            list_get_internal(ft_deltas_list);
         return internal_ft_deltas_list;
     }
 

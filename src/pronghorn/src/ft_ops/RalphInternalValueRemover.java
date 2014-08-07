@@ -12,7 +12,7 @@ import ralph.AtomicValueVariable;
      Double table_id =
         RalphInternalValueRemover.<Double>get_internal(goto_table.table_id);
 */
-class RalphInternalValueRemover<InternalType>
+class RalphInternalValueRemover
 {
     // This notation allows calling method statically.
     public static <InternalType> InternalType get_internal(
@@ -27,4 +27,20 @@ class RalphInternalValueRemover<InternalType>
         atomic_variable._unlock();
         return to_return;
     }
+
+
+    // This notation allows calling method statically.
+    public static <InternalType1,InternalType2> InternalType1 list_get_internal(
+        AtomicValueVariable<InternalType1,InternalType2> atomic_variable)
+    {
+        InternalType1 to_return = null;
+        atomic_variable._lock();
+        if (atomic_variable.dirty_val != null)
+            to_return = atomic_variable.dirty_val.val;
+        else
+            to_return = atomic_variable.val.val;
+        atomic_variable._unlock();
+        return to_return;
+    }
+    
 }

@@ -285,23 +285,6 @@ public class DeltaListStateSupplier
        Take ralph InternalInstruction and produce floodlight
        instruction from it.
     */
-
-    /**
-       Helper method.  Takes a ralph AtomicNumberVariable and returns
-       either its dirty value, if available, and its non-dirty value
-       if unavailable.
-     */
-    private Double get_internal_number(AtomicNumberVariable number_variable)
-    {
-        Double to_return = null;
-        number_variable._lock();
-        if (number_variable.dirty_val != null)
-            to_return = number_variable.dirty_val.val;
-        else
-            to_return = number_variable.val.val;
-        number_variable._unlock();
-        return to_return;
-    }
     
     private OFInstructionGotoTable produce_goto_from_internal(
         _InternalInstructions _instructions)
@@ -318,7 +301,8 @@ public class DeltaListStateSupplier
         if (goto_table == null)
             return null;
 
-        Double table_id = get_internal_number(goto_table.table_id);
+        Double table_id =
+            RalphInternalValueRemover.<Double>get_internal(goto_table.table_id);
         // means got a rollback as was sending
         if (table_id == null)
             return null;

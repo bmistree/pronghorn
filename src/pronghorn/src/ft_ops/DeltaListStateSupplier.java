@@ -139,13 +139,9 @@ public class DeltaListStateSupplier
             try
             {
                 flow_table_delta = (_InternalFlowTableDelta) (ro.get_val(null));
-                flow_table_delta.entry._lock();
-                if (flow_table_delta.entry.dirty_val != null)
-                    entry = flow_table_delta.entry.dirty_val.val;
-                else
-                    entry = flow_table_delta.entry.val.val;                
-                flow_table_delta.entry._unlock();
-
+                entry =
+                    RalphInternalValueRemover.<_InternalFlowTableEntry>
+                    get_internal(flow_table_delta.entry);
 
                 if (entry == null)
                 {
@@ -157,13 +153,10 @@ public class DeltaListStateSupplier
                     // producing other updates.
                     break;
                 }
-                
-                entry.match._lock();
-                if (entry.match.dirty_val != null)
-                    match = entry.match.dirty_val.val;
-                else
-                    match = entry.match.val.val;
-                entry.match._unlock();
+
+                match =
+                    RalphInternalValueRemover.<_InternalMatch>
+                    get_internal(entry.match);
                 if (match == null)
                 {
                     // see above note about entry.
@@ -187,29 +180,14 @@ public class DeltaListStateSupplier
 
             // FIXME: double check that match cannot change out from
             // under us during this process.
-            String src_ip = null;
-            match.src_ip._lock();
-            if (match.src_ip.dirty_val != null)
-                src_ip = match.src_ip.dirty_val.val;
-            else
-                src_ip = match.src_ip.val.val;
-            match.src_ip._unlock();
+            String src_ip =
+                RalphInternalValueRemover.<String>get_internal(match.src_ip);
+            String dst_ip =
+                RalphInternalValueRemover.<String>get_internal(match.dst_ip);
 
-            String dst_ip = null;
-            match.dst_ip._lock();
-            if (match.dst_ip.dirty_val != null)
-                dst_ip = match.dst_ip.dirty_val.val;
-            else
-                dst_ip = match.dst_ip.val.val;
-            match.dst_ip._unlock();
-
-            _InternalInstructions instructions = null;
-            entry.instructions._lock();
-            if (entry.instructions.dirty_val != null)
-                instructions = entry.instructions.dirty_val.val;
-            else
-                instructions = entry.instructions.val.val;
-            entry.instructions._unlock();
+            _InternalInstructions instructions = 
+                RalphInternalValueRemover.<_InternalInstructions>
+                get_internal(entry.instructions);
 
             List<OFInstruction> instruction_list =
                 instruction_list_from_internal_instructions(instructions);
@@ -289,14 +267,9 @@ public class DeltaListStateSupplier
     private OFInstructionGotoTable produce_goto_from_internal(
         _InternalInstructions _instructions)
     {
-        _InternalInstructionGotoTable goto_table = null;
-        _instructions.goto_table._lock();
-
-        if (_instructions.goto_table.dirty_val != null)
-            goto_table = _instructions.goto_table.dirty_val.val;
-        else
-            goto_table = _instructions.goto_table.val.val;
-        _instructions.goto_table._unlock();
+        _InternalInstructionGotoTable goto_table =
+            RalphInternalValueRemover.<_InternalInstructionGotoTable>
+            get_internal(_instructions.goto_table);
 
         if (goto_table == null)
             return null;

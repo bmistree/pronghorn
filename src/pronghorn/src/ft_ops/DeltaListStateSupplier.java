@@ -306,6 +306,9 @@ public class DeltaListStateSupplier
             RalphInternalValueRemover.<Double>
             get_internal(write_metadata.metadata_mask);
 
+        if ((metadata == null) || (metadata_mask == null))
+            return null;
+            
         return new OFInstructionWriteMetaData(
             metadata.longValue(),metadata_mask.longValue());
     }
@@ -330,6 +333,9 @@ public class DeltaListStateSupplier
         _InternalInstructionClearActions clear_actions =
             RalphInternalValueRemover.<_InternalInstructionClearActions>
             get_internal(_instructions.clear_actions);
+        
+        if (clear_actions == null)
+            return null;
 
         return new OFInstructionClearActions();
     }

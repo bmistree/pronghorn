@@ -14,8 +14,8 @@ Struct InstructionWriteMetadata
 
        FIXME: Nothing is currently enforcing 8 byte constraint.
      */
-    TVar Text metadata = null;
-    TVar Text metadata_mask = null;
+    TVar Number metadata = null;
+    TVar Number metadata_mask = null;
 }
 
 Struct InstructionWriteActions

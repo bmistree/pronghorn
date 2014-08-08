@@ -29,7 +29,7 @@ import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.MatchJava._InternalMatch;
 import pronghorn.InstructionsJava._InternalInstructions;
 import pronghorn.InstructionsJava._InternalInstructionGotoTable;
-
+import pronghorn.InstructionsJava._InternalInstructionWriteMetadata;
 
 /**
    When InternalPronghornSwitchGuard is ready to commit, it uses this
@@ -282,12 +282,29 @@ public class DeltaListStateSupplier
         return new OFInstructionGotoTable(table_id.byteValue());
     }
 
-
     private OFInstructionWriteMetaData produce_write_metadata_from_internal(
         _InternalInstructions _instructions)
     {
-        // TODO: fill in stub method
-        return null;
+        _InternalInstructionWriteMetadata write_metadata =
+            RalphInternalValueRemover.<_InternalInstructionWriteMetadata>
+            get_internal(_instructions.write_metadata);
+
+        if (write_metadata == null)
+            return null;
+
+        Double metadata = null;
+        Double metadata_mask = null;
+
+        metadata = 
+            RalphInternalValueRemover.<Double>
+            get_internal(write_metadata.metadata);
+
+        metadata_mask = 
+            RalphInternalValueRemover.<Double>
+            get_internal(write_metadata.metadata_mask);
+
+        return new OFInstructionWriteMetaData(
+            metadata.longValue(),metadata_mask.longValue());
     }
 
     private OFInstructionWriteActions produce_write_actions_from_internal(

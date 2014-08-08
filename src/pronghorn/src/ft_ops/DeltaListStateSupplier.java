@@ -32,7 +32,7 @@ import pronghorn.InstructionsJava._InternalInstructions;
 import pronghorn.InstructionsJava._InternalInstructionGotoTable;
 import pronghorn.InstructionsJava._InternalInstructionWriteMetadata;
 import pronghorn.InstructionsJava._InternalInstructionClearActions;
-
+import pronghorn.InstructionsJava._InternalInstructionMeter;
 
 /**
    When InternalPronghornSwitchGuard is ready to commit, it uses this
@@ -343,8 +343,21 @@ public class DeltaListStateSupplier
     private OFInstructionMeter produce_meter_from_internal(
         _InternalInstructions _instructions)
     {
-        // TODO: fill in stub method
-        return null;
+        _InternalInstructionMeter meter =
+            RalphInternalValueRemover.<_InternalInstructionMeter>
+            get_internal(_instructions.meter);
+
+        if (meter == null)
+            return null;
+
+        Double meter_id = null;
+        meter_id = 
+            RalphInternalValueRemover.<Double>
+            get_internal(meter.meter_id);
+
+        if (meter_id == null)
+            return null;
+
+        return new OFInstructionMeter(meter_id.intValue());
     }
-    
 }

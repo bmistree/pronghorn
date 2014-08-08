@@ -32,6 +32,9 @@ import org.openflow.protocol.action.OFActionDecrementNwTTL;
 import org.openflow.protocol.action.OFActionPushPBB;
 import org.openflow.protocol.action.OFActionPopPBB;
 
+import org.openflow.protocol.OFOXMFieldType;
+
+
 
 import RalphExtended.IHardwareStateSupplier;
 import ralph.ActiveEvent;
@@ -628,6 +631,102 @@ public class DeltaListStateSupplier
                 return new OFActionPopPBB();
         }
         
+        return null;
+    }
+
+
+    /**
+       Application writers specify field type for set_field actions
+       using strings.  This method converts that string into proper
+       floodlight enum-d field type.
+     */
+    private OFOXMFieldType ralph_field_type_to_floodlight_field_type(
+        String field_name)
+    {
+        if (field_name.equals(OFOXMFieldType.IN_PORT.getName()))
+            return OFOXMFieldType.IN_PORT;
+        if (field_name.equals(OFOXMFieldType.IN_PHY_PORT.getName()))
+            return OFOXMFieldType.IN_PHY_PORT;            
+        if (field_name.equals(OFOXMFieldType.METADATA.getName()))
+            return OFOXMFieldType.METADATA;
+        if (field_name.equals(OFOXMFieldType.ETH_DST.getName()))
+            return OFOXMFieldType.ETH_DST;
+        if (field_name.equals(OFOXMFieldType.ETH_SRC.getName()))
+            return OFOXMFieldType.ETH_SRC;
+        if (field_name.equals(OFOXMFieldType.ETH_TYPE.getName()))
+            return OFOXMFieldType.ETH_TYPE;
+        if (field_name.equals(OFOXMFieldType.VLAN_VID.getName()))
+            return OFOXMFieldType.VLAN_VID;
+        if (field_name.equals(OFOXMFieldType.VLAN_PCP.getName()))
+            return OFOXMFieldType.VLAN_PCP;
+        if (field_name.equals(OFOXMFieldType.IP_DSCP.getName()))
+            return OFOXMFieldType.IP_DSCP;
+        if (field_name.equals(OFOXMFieldType.IP_ECN.getName()))
+            return OFOXMFieldType.IP_ECN;
+        if (field_name.equals(OFOXMFieldType.IP_PROTO.getName()))
+            return OFOXMFieldType.IP_PROTO;
+        if (field_name.equals(OFOXMFieldType.IPV4_SRC.getName()))
+            return OFOXMFieldType.IPV4_SRC;
+        if (field_name.equals(OFOXMFieldType.IPV4_DST.getName()))
+            return OFOXMFieldType.IPV4_DST;
+        if (field_name.equals(OFOXMFieldType.TCP_SRC.getName()))
+            return OFOXMFieldType.TCP_SRC;
+        if (field_name.equals(OFOXMFieldType.TCP_DST.getName()))
+            return OFOXMFieldType.TCP_DST;
+        if (field_name.equals(OFOXMFieldType.UDP_SRC.getName()))
+            return OFOXMFieldType.UDP_SRC;
+        if (field_name.equals(OFOXMFieldType.UDP_DST.getName()))
+            return OFOXMFieldType.UDP_DST;
+        if (field_name.equals(OFOXMFieldType.SCTP_SRC.getName()))
+            return OFOXMFieldType.SCTP_SRC;
+        if (field_name.equals(OFOXMFieldType.SCTP_DST.getName()))
+            return OFOXMFieldType.SCTP_DST;
+        if (field_name.equals(OFOXMFieldType.ICMPV4_TYPE.getName()))
+            return OFOXMFieldType.ICMPV4_TYPE;
+        if (field_name.equals(OFOXMFieldType.ICMPV4_CODE.getName()))
+            return OFOXMFieldType.ICMPV4_CODE;
+        if (field_name.equals(OFOXMFieldType.ARP_OP.getName()))
+            return OFOXMFieldType.ARP_OP;
+        if (field_name.equals(OFOXMFieldType.ARP_SPA.getName()))
+            return OFOXMFieldType.ARP_SPA;
+        if (field_name.equals(OFOXMFieldType.ARP_TPA.getName()))
+            return OFOXMFieldType.ARP_TPA;
+        if (field_name.equals(OFOXMFieldType.ARP_SHA.getName()))
+            return OFOXMFieldType.ARP_SHA;
+        if (field_name.equals(OFOXMFieldType.ARP_THA.getName()))
+            return OFOXMFieldType.ARP_THA;
+        if (field_name.equals(OFOXMFieldType.IPV6_SRC.getName()))
+            return OFOXMFieldType.IPV6_SRC;
+        if (field_name.equals(OFOXMFieldType.IPV6_DST.getName()))
+            return OFOXMFieldType.IPV6_DST;
+        if (field_name.equals(OFOXMFieldType.IPV6_FLABEL.getName()))
+            return OFOXMFieldType.IPV6_FLABEL;
+        if (field_name.equals(OFOXMFieldType.ICMPV6_TYPE.getName()))
+            return OFOXMFieldType.ICMPV6_TYPE;
+        if (field_name.equals(OFOXMFieldType.ICMPV6_CODE.getName()))
+            return OFOXMFieldType.ICMPV6_CODE;
+        if (field_name.equals(OFOXMFieldType.IPV6_ND_TARGET.getName()))
+            return OFOXMFieldType.IPV6_ND_TARGET;
+        if (field_name.equals(OFOXMFieldType.IPV6_ND_SLL.getName()))
+            return OFOXMFieldType.IPV6_ND_SLL;
+        if (field_name.equals(OFOXMFieldType.IPV6_ND_TLL.getName()))
+            return OFOXMFieldType.IPV6_ND_TLL;
+        if (field_name.equals(OFOXMFieldType.MPLS_LABEL.getName()))
+            return OFOXMFieldType.MPLS_LABEL;
+        if (field_name.equals(OFOXMFieldType.MPLS_TC.getName()))
+            return OFOXMFieldType.MPLS_TC;
+        if (field_name.equals(OFOXMFieldType.MPLS_BOS.getName()))
+            return OFOXMFieldType.MPLS_BOS;
+        if (field_name.equals(OFOXMFieldType.PBB_ISID.getName()))
+            return OFOXMFieldType.PBB_ISID;
+        if (field_name.equals(OFOXMFieldType.TUNNEL_ID.getName()))
+            return OFOXMFieldType.TUNNEL_ID;
+        if (field_name.equals(OFOXMFieldType.IPV6_EXTHDR.getName()))
+            return OFOXMFieldType.IPV6_EXTHDR;
+
+        // FIXME: Handle case of incorrectly specified field type.
+        log.error("Incorrect field type specified for set field.");
+        assert(false);
         return null;
     }
 }

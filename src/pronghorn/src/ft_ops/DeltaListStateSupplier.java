@@ -13,6 +13,7 @@ import org.openflow.protocol.instruction.OFInstructionWriteActions;
 import org.openflow.protocol.instruction.OFInstructionApplyActions;
 import org.openflow.protocol.instruction.OFInstructionClearActions;
 import org.openflow.protocol.instruction.OFInstructionMeter;
+import org.openflow.protocol.instruction.OFInstructionClearActions;
 
 import RalphExtended.IHardwareStateSupplier;
 import ralph.ActiveEvent;
@@ -30,6 +31,8 @@ import pronghorn.MatchJava._InternalMatch;
 import pronghorn.InstructionsJava._InternalInstructions;
 import pronghorn.InstructionsJava._InternalInstructionGotoTable;
 import pronghorn.InstructionsJava._InternalInstructionWriteMetadata;
+import pronghorn.InstructionsJava._InternalInstructionClearActions;
+
 
 /**
    When InternalPronghornSwitchGuard is ready to commit, it uses this
@@ -324,8 +327,11 @@ public class DeltaListStateSupplier
     private OFInstructionClearActions produce_clear_actions_from_internal(
         _InternalInstructions _instructions)
     {
-        // TODO: fill in stub method
-        return null;
+        _InternalInstructionClearActions clear_actions =
+            RalphInternalValueRemover.<_InternalInstructionClearActions>
+            get_internal(_instructions.clear_actions);
+
+        return new OFInstructionClearActions();
     }
         
     private OFInstructionMeter produce_meter_from_internal(

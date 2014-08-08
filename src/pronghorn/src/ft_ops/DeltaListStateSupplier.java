@@ -28,6 +28,7 @@ import org.openflow.protocol.action.OFActionPushMPLS;
 import org.openflow.protocol.action.OFActionPopMPLS;
 import org.openflow.protocol.action.OFActionSetQueue;
 import org.openflow.protocol.action.OFActionGroup;
+import org.openflow.protocol.action.OFActionSetField;
 import org.openflow.protocol.action.OFActionSetNwTTL;
 import org.openflow.protocol.action.OFActionDecrementNwTTL;
 import org.openflow.protocol.action.OFActionPushPBB;
@@ -606,9 +607,10 @@ public class DeltaListStateSupplier
                     RalphInternalValueRemover.<String>
                     get_internal(action_set_field.value);
 
-                // FIXME: must finish set field action
-                System.out.println("\n\nMust finish set field\n\n");
-                assert(false);
+                OFOXMField field =
+                    ralph_set_field_to_floodlight_field(
+                        field_name,value);
+                return new OFActionSetField(field);
             }
         }
 

@@ -15,6 +15,24 @@ import org.openflow.protocol.instruction.OFInstructionClearActions;
 import org.openflow.protocol.instruction.OFInstructionMeter;
 import org.openflow.protocol.instruction.OFInstructionClearActions;
 
+import org.openflow.protocol.action.OFAction;
+import org.openflow.protocol.action.OFActionOutput;
+import org.openflow.protocol.action.OFActionCopyTTLOut;
+import org.openflow.protocol.action.OFActionCopyTTLIn;
+import org.openflow.protocol.action.OFActionSetMPLSTTL;
+import org.openflow.protocol.action.OFActionDecrementMPLSTTL;
+import org.openflow.protocol.action.OFActionSetMPLSTTL;
+import org.openflow.protocol.action.OFActionPopVLAN;
+import org.openflow.protocol.action.OFActionPushMPLS;
+import org.openflow.protocol.action.OFActionPopMPLS;
+import org.openflow.protocol.action.OFActionSetQueue;
+import org.openflow.protocol.action.OFActionGroup;
+import org.openflow.protocol.action.OFActionSetNwTTL;
+import org.openflow.protocol.action.OFActionDecrementNwTTL;
+import org.openflow.protocol.action.OFActionPushPBB;
+import org.openflow.protocol.action.OFActionPopPBB;
+
+
 import RalphExtended.IHardwareStateSupplier;
 import ralph.ActiveEvent;
 import ralph.RalphObject;
@@ -33,6 +51,25 @@ import pronghorn.InstructionsJava._InternalInstructionGotoTable;
 import pronghorn.InstructionsJava._InternalInstructionWriteMetadata;
 import pronghorn.InstructionsJava._InternalInstructionClearActions;
 import pronghorn.InstructionsJava._InternalInstructionMeter;
+
+import pronghorn.ActionsJava._InternalAction;
+import pronghorn.ActionsJava._InternalActionOutput;
+import pronghorn.ActionsJava._InternalActionCopyTTLOut;
+import pronghorn.ActionsJava._InternalActionCopyTTLIn;
+import pronghorn.ActionsJava._InternalActionSetMPLSTTL;
+import pronghorn.ActionsJava._InternalActionDecrementMPLSTTL;
+import pronghorn.ActionsJava._InternalActionPushVLAN;
+import pronghorn.ActionsJava._InternalActionPopVLAN;
+import pronghorn.ActionsJava._InternalActionPushMPLS;
+import pronghorn.ActionsJava._InternalActionPopMPLS;
+import pronghorn.ActionsJava._InternalActionSetQueue;
+import pronghorn.ActionsJava._InternalActionGroup;
+import pronghorn.ActionsJava._InternalActionSetNWTTL;
+import pronghorn.ActionsJava._InternalActionDecrementNWTTL;
+import pronghorn.ActionsJava._InternalActionSetField;
+import pronghorn.ActionsJava._InternalActionPushPBB;
+import pronghorn.ActionsJava._InternalActionPopPBB;
+
 
 /**
    When InternalPronghornSwitchGuard is ready to commit, it uses this
@@ -359,5 +396,238 @@ public class DeltaListStateSupplier
             return null;
 
         return new OFInstructionMeter(meter_id.intValue());
+    }
+
+
+    /*
+      Produce actions from ralph actions
+     */
+    private OFAction action_from_internal_action(_InternalAction action)
+    {
+        // output action
+        {
+            _InternalActionOutput action_output =
+                RalphInternalValueRemover.<_InternalActionOutput>
+                get_internal(action.output);
+
+            if (action_output != null)
+            {
+                Double port_number =
+                    RalphInternalValueRemover.<Double>
+                    get_internal(action_output.port_number);
+
+                if (port_number != null)
+                    return new OFActionOutput(port_number.intValue());
+            }
+        }
+
+        // copy_ttl_out
+        {
+            _InternalActionCopyTTLOut action_copy_ttl_out = 
+                RalphInternalValueRemover.<_InternalActionCopyTTLOut>
+                get_internal(action.copy_ttl_out);
+        
+            if (action_copy_ttl_out != null)
+                return new OFActionCopyTTLOut();
+        }
+
+        // copy_ttl_in
+        {
+            _InternalActionCopyTTLIn action_copy_ttl_in = 
+                RalphInternalValueRemover.<_InternalActionCopyTTLIn>
+                get_internal(action.copy_ttl_in);
+        
+            if (action_copy_ttl_in != null)
+                return new OFActionCopyTTLIn();
+        }
+
+        // set_mpls_ttl
+        {
+            _InternalActionSetMPLSTTL action_set_mpls_ttl = 
+                RalphInternalValueRemover.<_InternalActionSetMPLSTTL>
+                get_internal(action.set_mpls_ttl);
+        
+            if (action_set_mpls_ttl != null)
+            {
+                Double mpls_ttl =
+                    RalphInternalValueRemover.<Double>
+                    get_internal(action_set_mpls_ttl.mpls_ttl);
+            
+                return new OFActionSetMPLSTTL(mpls_ttl.byteValue());
+            }
+        }
+
+        // decrement_mpls_ttl
+        {
+            _InternalActionDecrementMPLSTTL action_decrement_mpls_ttl =
+                RalphInternalValueRemover.<_InternalActionDecrementMPLSTTL>
+                get_internal(action.decrement_mpls_ttl);
+        
+            if (action_decrement_mpls_ttl != null)
+                return new OFActionDecrementMPLSTTL();
+        }
+
+        // push_vlan
+        {
+            _InternalActionPushVLAN action_push_vlan = 
+                RalphInternalValueRemover.<_InternalActionPushVLAN>
+                get_internal(action.push_vlan);
+        
+            if (action_push_vlan != null)
+            {
+                Double ethertype =
+                    RalphInternalValueRemover.<Double>
+                    get_internal(action_push_vlan.ethertype);
+            
+                return new OFActionSetMPLSTTL(ethertype.byteValue());
+            }
+        }
+
+        // pop_vlan
+        {
+            _InternalActionPopVLAN action_pop_vlan =
+                RalphInternalValueRemover.<_InternalActionPopVLAN>
+                get_internal(action.pop_vlan);
+        
+            if (action_pop_vlan != null)
+                return new OFActionPopVLAN();
+        }
+
+        // push_mpls
+        {
+            _InternalActionPushMPLS action_push_mpls = 
+                RalphInternalValueRemover.<_InternalActionPushMPLS>
+                get_internal(action.push_mpls);
+        
+            if (action_push_mpls != null)
+            {
+                Double ethertype =
+                    RalphInternalValueRemover.<Double>
+                    get_internal(action_push_mpls.ethertype);
+            
+                return new OFActionPushMPLS(ethertype.byteValue());
+            }
+        }
+
+        // pop_mpls
+        {
+            _InternalActionPopMPLS action_pop_mpls =
+                RalphInternalValueRemover.<_InternalActionPopMPLS>
+                get_internal(action.pop_mpls);
+        
+            if (action_pop_mpls != null)
+                return new OFActionPopMPLS();
+        }
+
+        // set_queue
+        {
+            _InternalActionSetQueue action_set_queue =
+                RalphInternalValueRemover.<_InternalActionSetQueue>
+                get_internal(action.set_queue);
+
+            if (action_set_queue != null)
+            {
+                Double queue_id =
+                    RalphInternalValueRemover.<Double>
+                    get_internal(action_set_queue.queue_id);
+
+                OFActionSetQueue to_return = new OFActionSetQueue();
+                to_return.setQueueId(queue_id.intValue());
+                return to_return;
+            }
+        }
+        
+        // group
+        {
+            _InternalActionGroup action_group =
+                RalphInternalValueRemover.<_InternalActionGroup>
+                get_internal(action.group);
+
+            if (action_group != null)
+            {
+                Double group_id =
+                    RalphInternalValueRemover.<Double>
+                    get_internal(action_group.group_id);
+
+                OFActionGroup to_return = new OFActionGroup();
+                to_return.setQueueId(group_id.intValue());
+                return to_return;
+            }
+        }
+
+        // set ip ttl
+        {
+            _InternalActionSetNWTTL action_set_nw_ttl = 
+                RalphInternalValueRemover.<_InternalActionSetNWTTL>
+                get_internal(action.set_nw_ttl);
+        
+            if (action_set_nw_ttl != null)
+            {
+                Double ttl =
+                    RalphInternalValueRemover.<Double>
+                    get_internal(action_set_nw_ttl.ttl);
+            
+                return new OFActionSetNwTTL(ttl.byteValue());
+            }
+        }
+
+        // decrement ip ttl
+        {
+            _InternalActionDecrementNWTTL action_decrement_nw_ttl =
+                RalphInternalValueRemover.<_InternalActionDecrementNWTTL>
+                get_internal(action.decrement_nw_ttl);
+        
+            if (action_decrement_nw_ttl != null)
+                return new OFActionDecrementNwTTL();
+        }
+
+        // set field
+        {
+            _InternalActionSetField action_set_field = 
+                RalphInternalValueRemover.<_InternalActionSetField>
+                get_internal(action.set_field);
+        
+            if (action_set_field != null)
+            {
+                String field_name =
+                    RalphInternalValueRemover.<String>
+                    get_internal(action_set_field.field_name);
+                String value =
+                    RalphInternalValueRemover.<String>
+                    get_internal(action_set_field.value);
+
+                // FIXME: must finish set field action
+                System.out.println("\n\nMust finish set field\n\n");
+                assert(false);
+            }
+        }
+
+        // push pbb
+        {
+            _InternalActionPushPBB action_push_pbb =
+                RalphInternalValueRemover.<_InternalActionPushPBB>
+                get_internal(action.push_pbb);
+
+            if (action_push_pbb != null)
+            {
+                Double ethertype =
+                    RalphInternalValueRemover.<Double>
+                    get_internal(action_push_pbb.ethertype);
+
+                return new OFActionPushPBB(ethertype.shortValue());
+            }
+        }
+
+        // pop pbb
+        {
+            _InternalActionPopPBB action_pop_pbb =
+                RalphInternalValueRemover.<_InternalActionPopPBB>
+                get_internal(action.pop_pbb);
+        
+            if (action_pop_pbb != null)
+                return new OFActionPopPBB();
+        }
+        
+        return null;
     }
 }

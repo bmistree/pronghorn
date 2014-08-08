@@ -2,6 +2,7 @@ package pronghorn.ft_ops;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.nio.charset.Charset;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,8 +34,10 @@ import org.openflow.protocol.action.OFActionPushPBB;
 import org.openflow.protocol.action.OFActionPopPBB;
 
 import org.openflow.protocol.OFOXMFieldType;
+import org.openflow.protocol.OFOXMField;
 
-
+import net.floodlightcontroller.packet.IPv4;
+import net.floodlightcontroller.packet.Ethernet;
 
 import RalphExtended.IHardwareStateSupplier;
 import ralph.ActiveEvent;
@@ -408,6 +411,10 @@ public class DeltaListStateSupplier
     private OFAction action_from_internal_action(_InternalAction action)
     {
         // output action
+        // note: additional curly braces scope internal
+        // variables... did this because writing this code involved a
+        // lot of copy-paste and wanted to ensure that wasn't
+        // accidentally reusing variable declared above.
         {
             _InternalActionOutput action_output =
                 RalphInternalValueRemover.<_InternalActionOutput>
@@ -634,96 +641,279 @@ public class DeltaListStateSupplier
         return null;
     }
 
-
+    // helper methods
+    private short get_short(String str)
+    {
+        return (short)(int)Integer.decode(str);
+    }
+    private int get_int(String str)
+    {
+        return (int)Integer.decode(str);
+    }
+    private long get_long(String str)
+    {
+        return (long)Long.decode(str);
+    }
+    private byte get_byte(String str)
+    {
+        return (byte)Byte.decode(str);
+    }
+    
+    
     /**
        Application writers specify field type for set_field actions
        using strings.  This method converts that string into proper
-       floodlight enum-d field type.
+       floodlight OFOXMField.
      */
-    private OFOXMFieldType ralph_field_type_to_floodlight_field_type(
-        String field_name)
+    private OFOXMField ralph_set_field_to_floodlight_field(
+        String field_name, String field_value)
     {
         if (field_name.equals(OFOXMFieldType.IN_PORT.getName()))
-            return OFOXMFieldType.IN_PORT;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.IN_PORT,
+                get_int(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.IN_PHY_PORT.getName()))
-            return OFOXMFieldType.IN_PHY_PORT;            
+        {
+            return new OFOXMField(
+                OFOXMFieldType.IN_PHY_PORT,
+                get_int(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.METADATA.getName()))
-            return OFOXMFieldType.METADATA;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.METADATA,
+                get_long(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ETH_DST.getName()))
-            return OFOXMFieldType.ETH_DST;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ETH_DST,
+                Ethernet.toMACAddress(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ETH_SRC.getName()))
-            return OFOXMFieldType.ETH_SRC;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ETH_SRC,
+                Ethernet.toMACAddress(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ETH_TYPE.getName()))
-            return OFOXMFieldType.ETH_TYPE;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ETH_TYPE,
+                get_short(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.VLAN_VID.getName()))
-            return OFOXMFieldType.VLAN_VID;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.VLAN_VID,
+                get_short(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.VLAN_PCP.getName()))
-            return OFOXMFieldType.VLAN_PCP;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.VLAN_PCP,
+                get_short(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.IP_DSCP.getName()))
-            return OFOXMFieldType.IP_DSCP;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.IP_DSCP,
+                field_value.getBytes(Charset.forName("UTF-8")));
+        }
         if (field_name.equals(OFOXMFieldType.IP_ECN.getName()))
-            return OFOXMFieldType.IP_ECN;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.IP_ECN,
+                get_short(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.IP_PROTO.getName()))
-            return OFOXMFieldType.IP_PROTO;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.IP_PROTO,
+                get_byte(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.IPV4_SRC.getName()))
-            return OFOXMFieldType.IPV4_SRC;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.IPV4_SRC,
+                IPv4.toIPv4Address(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.IPV4_DST.getName()))
-            return OFOXMFieldType.IPV4_DST;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.IPV4_DST,
+                IPv4.toIPv4Address(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.TCP_SRC.getName()))
-            return OFOXMFieldType.TCP_SRC;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.TCP_SRC,
+                get_short(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.TCP_DST.getName()))
-            return OFOXMFieldType.TCP_DST;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.TCP_DST,
+                get_short(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.UDP_SRC.getName()))
-            return OFOXMFieldType.UDP_SRC;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.UDP_SRC,
+                get_short(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.UDP_DST.getName()))
-            return OFOXMFieldType.UDP_DST;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.UDP_DST,
+                get_short(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.SCTP_SRC.getName()))
-            return OFOXMFieldType.SCTP_SRC;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.SCTP_SRC,
+                get_short(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.SCTP_DST.getName()))
-            return OFOXMFieldType.SCTP_DST;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.SCTP_DST,
+                get_short(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ICMPV4_TYPE.getName()))
-            return OFOXMFieldType.ICMPV4_TYPE;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ICMPV4_TYPE,
+                get_byte(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ICMPV4_CODE.getName()))
-            return OFOXMFieldType.ICMPV4_CODE;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ICMPV4_CODE,
+                get_byte(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ARP_OP.getName()))
-            return OFOXMFieldType.ARP_OP;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ARP_OP,
+                get_short(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ARP_SPA.getName()))
-            return OFOXMFieldType.ARP_SPA;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ARP_SPA,
+                get_int(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ARP_TPA.getName()))
-            return OFOXMFieldType.ARP_TPA;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ARP_TPA,
+                get_int(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ARP_SHA.getName()))
-            return OFOXMFieldType.ARP_SHA;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ARP_SHA,
+                Ethernet.toMACAddress(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ARP_THA.getName()))
-            return OFOXMFieldType.ARP_THA;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ARP_THA,
+                Ethernet.toMACAddress(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.IPV6_SRC.getName()))
-            return OFOXMFieldType.IPV6_SRC;
+        {
+            // FIXME: no real support for ipv6 address parsing yet.
+            // Just using raw bytes.
+            return new OFOXMField(
+                OFOXMFieldType.IPV6_SRC,    
+                field_value.getBytes(Charset.forName("UTF-8")));
+        }
         if (field_name.equals(OFOXMFieldType.IPV6_DST.getName()))
-            return OFOXMFieldType.IPV6_DST;
+        {
+            // FIXME: no real support for ipv6 address parsing yet.
+            // Just using raw bytes.
+            return new OFOXMField(
+                OFOXMFieldType.IPV6_DST,
+                field_value.getBytes(Charset.forName("UTF-8")));
+        }
         if (field_name.equals(OFOXMFieldType.IPV6_FLABEL.getName()))
-            return OFOXMFieldType.IPV6_FLABEL;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.IPV6_FLABEL,
+                get_int(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ICMPV6_TYPE.getName()))
-            return OFOXMFieldType.ICMPV6_TYPE;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ICMPV6_TYPE,
+                get_byte(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.ICMPV6_CODE.getName()))
-            return OFOXMFieldType.ICMPV6_CODE;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.ICMPV6_CODE,
+                get_byte(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.IPV6_ND_TARGET.getName()))
-            return OFOXMFieldType.IPV6_ND_TARGET;
+        {
+            // FIXME: no real support for ipv6 address parsing yet.
+            // Just using raw bytes.
+            return new OFOXMField(
+                OFOXMFieldType.IPV6_ND_TARGET,
+                field_value.getBytes(Charset.forName("UTF-8")));
+        }
         if (field_name.equals(OFOXMFieldType.IPV6_ND_SLL.getName()))
-            return OFOXMFieldType.IPV6_ND_SLL;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.IPV6_ND_SLL,
+                Ethernet.toMACAddress(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.IPV6_ND_TLL.getName()))
-            return OFOXMFieldType.IPV6_ND_TLL;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.IPV6_ND_TLL,
+                Ethernet.toMACAddress(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.MPLS_LABEL.getName()))
-            return OFOXMFieldType.MPLS_LABEL;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.MPLS_LABEL,
+                get_int(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.MPLS_TC.getName()))
-            return OFOXMFieldType.MPLS_TC;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.MPLS_TC,
+                get_byte(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.MPLS_BOS.getName()))
-            return OFOXMFieldType.MPLS_BOS;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.MPLS_BOS,
+                get_byte(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.PBB_ISID.getName()))
-            return OFOXMFieldType.PBB_ISID;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.PBB_ISID,
+                get_int(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.TUNNEL_ID.getName()))
-            return OFOXMFieldType.TUNNEL_ID;
+        {
+            return new OFOXMField(
+                OFOXMFieldType.TUNNEL_ID,
+                get_long(field_value));
+        }
         if (field_name.equals(OFOXMFieldType.IPV6_EXTHDR.getName()))
-            return OFOXMFieldType.IPV6_EXTHDR;
-
+        {
+            return new OFOXMField(
+                OFOXMFieldType.IPV6_EXTHDR,
+                get_short(field_value));
+        }
         // FIXME: Handle case of incorrectly specified field type.
         log.error("Incorrect field type specified for set field.");
         assert(false);

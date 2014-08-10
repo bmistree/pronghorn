@@ -182,42 +182,10 @@ Service WrappedSwitch
         if (not access_control.allow_writes)
             return False;
 
-        // first check whitelist: only allowed to remove entries in whitelist
-        if (access_control.whitelist_ip_src_write_list != null)
-        {
-            TrueFalse in_list = in_helper(
-                ft_entry.match.src_ip,
-                access_control.whitelist_ip_src_write_list);
-            if (not in_list)
-                return False;
-        }
-        if (access_control.whitelist_ip_dst_write_list != null)
-        {
-            TrueFalse in_list = in_helper(
-                ft_entry.match.dst_ip,
-                access_control.whitelist_ip_dst_write_list);
-
-            if (not in_list)
-                return False;
-        }
-        // check blacklist: not allowed to remove entries in blacklist
-        if (access_control.blacklist_ip_src_write_list != null)
-        {
-            TrueFalse in_list = in_helper(
-                ft_entry.match.src_ip,
-                access_control.blacklist_ip_src_write_list);
-            if (not in_list)
-                return False;
-        }
-        if (access_control.blacklist_ip_dst_write_list != null)
-        {
-            TrueFalse in_list = in_helper(
-                ft_entry.match.dst_ip,
-                access_control.blacklist_ip_dst_write_list);
-            
-            if (not in_list)
-                return False;
-        }
+        /**
+           FIXME: changed match fields to be more general than just ip src and
+           ip dst.  Should add logic to more generally check inserted entry.
+         */
         return True;
     }
     

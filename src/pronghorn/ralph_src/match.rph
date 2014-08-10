@@ -1,10 +1,19 @@
 
+Struct MatchField
+{
+    // Eg., in_port, in_phy_port, etc.
+
+    /**
+       FIXME: include some form of enum or global constants to make this easier.
+     */
+    TVar Text field_name = null;
+    TVar Text value = null;
+}
+
+
 Struct Match
 {
-    TVar Text src_ip = null;
-    TVar Text dst_ip = null;
-
-    // FIXME: should add more match types.
+    TVar List (element: Struct MatchField) all_matches;
 }
 
 Service MatchUtil
@@ -15,8 +24,14 @@ Service MatchUtil
             return null;
 
         Struct Match to_return;
-        to_return.src_ip = to_copy.src_ip;
-        to_return.dst_ip = to_copy.dst_ip;
+        for (Struct MatchField field in to_copy.all_matches)
+        {
+            Struct MatchField new_field;
+            new_field.field_name = field.field_name;
+            new_field.value = field.value;
+
+            to_return.all_matches.append(new_field);
+        }
         return to_return;
     }
 }

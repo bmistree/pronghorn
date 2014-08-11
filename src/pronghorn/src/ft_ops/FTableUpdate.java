@@ -16,8 +16,7 @@ import net.floodlightcontroller.packet.IPv4;
 
 public class FTableUpdate
 {
-    final private String src_ip;
-    final private String dst_ip;
+    final private OFMatch match;
     final private List<OFInstruction> instructions;
     /**
        true if this is an insertion flow mod.  false if it's a
@@ -30,11 +29,10 @@ public class FTableUpdate
         LoggerFactory.getLogger(FTableUpdate.class);
     
     public static FTableUpdate create_insert_update(
-        String src_ip, String dst_ip,
-        List<OFInstruction> instructions)
+        OFMatch match, List<OFInstruction> instructions)
     {
         FTableUpdate to_return = new FTableUpdate(
-            src_ip,dst_ip,instructions,true);
+            match,instructions,true);
         return to_return;
     }
 
@@ -46,11 +44,10 @@ public class FTableUpdate
        That is why we have the additional parameter below.
      */
     public static FTableUpdate create_remove_update(
-        String src_ip, String dst_ip,
-        List<OFInstruction> instructions)
+        OFMatch match, List<OFInstruction> instructions)
     {
         FTableUpdate to_return = new FTableUpdate(
-            src_ip,dst_ip,instructions,false);
+            match,instructions,false);
         return to_return;
     }
 
@@ -69,13 +66,7 @@ public class FTableUpdate
         else
             to_return.setCommand(OFFlowMod.OFPFC_DELETE_STRICT);
 
-        
         // handle matches
-        OFMatch match = new OFMatch();
-        if (src_ip != null)
-            match.setNetworkSource(IPv4.toIPv4Address(src_ip));
-        if (dst_ip != null)
-            match.setNetworkDestination(IPv4.toIPv4Address(dst_ip));
         to_return.setMatch(match);
         
         // add operations for insertions
@@ -94,7 +85,7 @@ public class FTableUpdate
      */
     public FTableUpdate create_undo()
     {
-        return new FTableUpdate(src_ip,dst_ip,instructions,! insertion);
+        return new FTableUpdate(match,instructions,! insertion);
     }
     
     /**
@@ -102,11 +93,10 @@ public class FTableUpdate
        and remove updates.
      */
     private FTableUpdate(
-        String _src_ip,String _dst_ip, List<OFInstruction> _instructions,
+        OFMatch _match, List<OFInstruction> _instructions,
         boolean _insertion)
     {
-        src_ip = _src_ip;
-        dst_ip = _dst_ip;
+        match = _match;
         instructions = _instructions;
         insertion = _insertion;
     }

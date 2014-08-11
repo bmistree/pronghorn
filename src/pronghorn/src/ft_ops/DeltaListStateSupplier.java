@@ -7,6 +7,8 @@ import java.nio.charset.Charset;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.openflow.protocol.OFMatch;
+
 import org.openflow.protocol.instruction.OFInstruction;
 import org.openflow.protocol.instruction.OFInstructionGotoTable;
 import org.openflow.protocol.instruction.OFInstructionWriteMetaData;
@@ -53,6 +55,7 @@ import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
 import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
 import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.MatchJava._InternalMatch;
+import pronghorn.MatchJava._InternalMatchField;
 import pronghorn.InstructionsJava._InternalInstructions;
 import pronghorn.InstructionsJava._InternalInstructionGotoTable;
 import pronghorn.InstructionsJava._InternalInstructionWriteMetadata;
@@ -180,7 +183,7 @@ public class DeltaListStateSupplier
         {
             _InternalFlowTableDelta flow_table_delta = null;
             _InternalFlowTableEntry entry = null;
-            _InternalMatch match = null;
+            _InternalMatch internal_match = null;
 
             try
             {
@@ -200,10 +203,10 @@ public class DeltaListStateSupplier
                     break;
                 }
 
-                match =
+                internal_match =
                     RalphInternalValueRemover.<_InternalMatch>
                     get_internal(entry.match);
-                if (match == null)
+                if (internal_match == null)
                 {
                     // see above note about entry.
                     break;
@@ -218,19 +221,18 @@ public class DeltaListStateSupplier
                     ex.toString());
                 assert(false);
             }
-            
 
+            // FIXME: lock tvar and don't continue in case that get
+            // backout.
+            
             // non tvar, therefore has different val.val access pattern.
             boolean insertion =
                 flow_table_delta.inserted.val.val.booleanValue();
-
-            // FIXME: double check that match cannot change out from
-            // under us during this process.
-            String src_ip =
-                RalphInternalValueRemover.<String>get_internal(match.src_ip);
-            String dst_ip =
-                RalphInternalValueRemover.<String>get_internal(match.dst_ip);
-
+            
+            OFMatch match = match_from_internal_match(internal_match);
+            if (match == null)
+                break;
+            
             _InternalInstructions instructions = 
                 RalphInternalValueRemover.<_InternalInstructions>
                 get_internal(entry.instructions);
@@ -238,25 +240,17 @@ public class DeltaListStateSupplier
             List<OFInstruction> instruction_list =
                 instruction_list_from_internal_instructions(instructions);
             
-
-            // means that this change was backed out before could
-            // complete and src_ip or dst_ip was backed out and reset
-            // to default text value.  do not apply change (it will be
-            // backed out anyways).
-            if (dst_ip.equals("") || src_ip.equals(""))
-                break;
-
             
             FTableUpdate update_to_push =  null;
             if (insertion)
             {
                 update_to_push = FTableUpdate.create_insert_update(
-                    src_ip, dst_ip,instruction_list);
+                    match,instruction_list);
             }
             else
             {
                 update_to_push = FTableUpdate.create_remove_update(
-                    src_ip, dst_ip,instruction_list);
+                    match,instruction_list);
             }
             floodlight_updates.add(update_to_push);
         }
@@ -264,6 +258,61 @@ public class DeltaListStateSupplier
     }
 
 
+    /**
+       Generates a list of matches from ralph object
+     */
+    private OFMatch match_from_internal_match(
+        _InternalMatch match)
+    {
+        // grap internal list
+        AtomicListVariable<_InternalMatchField,_InternalMatchField> match_list =
+            match.all_matches;
+        AtomicInternalList<_InternalMatchField,_InternalMatchField>
+            ralph_internal_match_list = null;
+
+        ralph_internal_match_list =
+            RalphInternalValueRemover.<
+                AtomicInternalList<
+            _InternalMatchField,_InternalMatchField>,
+                _InternalMatchField>
+            list_get_internal(match_list);
+
+        if (ralph_internal_match_list == null)
+            return null;
+        
+        List<_InternalMatchField> internal_match_list = null;
+        internal_match_list = RalphInternalValueRemover.
+            <ArrayList<_InternalMatchField>> internal_list_get_internal(
+                ralph_internal_match_list);
+        List<OFMatch> to_return = new ArrayList<OFMatch>();
+        for (_InternalMatchField match_field : internal_match_list)
+        {
+            // FIXME: Am I parsing wildcards correctly here?
+            String field_name =
+                RalphInternalValueRemover.<String>
+                get_internal(match_field.field_name);
+
+            String value =
+                RalphInternalValueRemover.<String>
+                get_internal(match_field.value);
+            
+            OFOXMField field = ralph_set_field_to_floodlight_field(
+                field_name, value);
+
+
+            // FIXME: check what to do in case of incorrect
+            // fields/values
+            if (field == null)
+                continue;
+
+            
+            log.error(
+                "\nFIXME: Must finish actually setting match fields\n");
+        }
+        // TODO: Actually finish
+        return null;
+    }
+    
     /**
        Generates a list of floodlight instructions from ralph object.
      */

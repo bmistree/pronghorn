@@ -1,6 +1,7 @@
 package pronghorn.ft_ops;
 
 import ralph.AtomicValueVariable;
+import ralph.AtomicInternalList;
 
 /**
    Helper class.  Takes a ralph AtomicValueVariable and returns
@@ -40,6 +41,23 @@ class RalphInternalValueRemover
         else
             to_return = atomic_variable.val.val;
         atomic_variable._unlock();
+        return to_return;
+    }
+    
+    // This notation allows calling method statically.
+    public static <InternalType1>
+        InternalType1 internal_list_get_internal(
+            AtomicInternalList internal_list)
+    {
+        InternalType1 to_return = null;
+        internal_list._lock();
+
+        if (internal_list.dirty_val != null)
+            to_return = (InternalType1) internal_list.dirty_val.val;
+        else
+            to_return = (InternalType1) internal_list.val.val;
+        internal_list._unlock();
+        
         return to_return;
     }
     

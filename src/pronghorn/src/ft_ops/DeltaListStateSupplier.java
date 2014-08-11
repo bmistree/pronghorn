@@ -284,7 +284,7 @@ public class DeltaListStateSupplier
         internal_match_list = RalphInternalValueRemover.
             <ArrayList<_InternalMatchField>> internal_list_get_internal(
                 ralph_internal_match_list);
-        List<OFMatch> to_return = new ArrayList<OFMatch>();
+        String ofmatch_generator_string = "";
         for (_InternalMatchField match_field : internal_match_list)
         {
             // FIXME: Am I parsing wildcards correctly here?
@@ -296,21 +296,32 @@ public class DeltaListStateSupplier
                 RalphInternalValueRemover.<String>
                 get_internal(match_field.value);
             
-            OFOXMField field = ralph_set_field_to_floodlight_field(
-                field_name, value);
-
-
-            // FIXME: check what to do in case of incorrect
-            // fields/values
-            if (field == null)
+            if ((field_name == null) || (value == null))
                 continue;
 
-            
-            log.error(
-                "\nFIXME: Must finish actually setting match fields\n");
+            ofmatch_generator_string +=
+                field_name + "=" + value + ",";
         }
-        // TODO: Actually finish
-        return null;
+
+        if (ofmatch_generator_string.equals(""))
+            return null;
+
+        try
+        {
+            return OFMatch.fromString(ofmatch_generator_string);
+        }
+        catch(IllegalArgumentException ex)
+        {
+            log.error(
+                "User entered incorrect match arguments",
+                ex);
+
+            // FIXME: for incorrectly-generated user strings, don't
+            // throw exception to user, but do not apply change.
+            // Could lead to disagreement if not checking correct
+            // field and value insertion in ralph instead.
+            return null;
+        }
     }
     
     /**

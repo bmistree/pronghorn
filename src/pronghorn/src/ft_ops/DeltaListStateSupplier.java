@@ -266,7 +266,7 @@ public class DeltaListStateSupplier
     private OFMatch match_from_internal_match(
         _InternalMatch match)
     {
-        // grap internal list
+        // grab internal list
         AtomicListVariable<_InternalMatchField,_InternalMatchField> match_list =
             match.all_matches;
         AtomicInternalList<_InternalMatchField,_InternalMatchField>
@@ -282,28 +282,47 @@ public class DeltaListStateSupplier
         if (ralph_internal_match_list == null)
             return null;
         
-        List<_InternalMatchField> internal_match_list = null;
+        List<RalphObject<_InternalMatchField,_InternalMatchField>>
+            internal_match_list = null;
         internal_match_list = RalphInternalValueRemover.
-            <ArrayList<_InternalMatchField>> internal_list_get_internal(
+            <ArrayList<
+                RalphObject<
+                    _InternalMatchField,
+                    _InternalMatchField>>> internal_list_get_internal(
                 ralph_internal_match_list);
         String ofmatch_generator_string = "";
-        for (_InternalMatchField match_field : internal_match_list)
+        for (RalphObject ro : internal_match_list)
         {
-            // FIXME: Am I parsing wildcards correctly here?
-            String field_name =
-                RalphInternalValueRemover.<String>
-                get_internal(match_field.field_name);
+            try
+            {
+                _InternalMatchField match_field =
+                    (_InternalMatchField) (ro.get_val(null));
 
-            String value =
-                RalphInternalValueRemover.<String>
-                get_internal(match_field.value);
+                String field_name =
+                    RalphInternalValueRemover.<String>
+                    get_internal(match_field.field_name);
+
+                String value =
+                    RalphInternalValueRemover.<String>
+                    get_internal(match_field.value);
             
-            if ((field_name == null) || (value == null))
-                continue;
+                if ((field_name == null) || (value == null))
+                    continue;
 
-            ofmatch_generator_string +=
-                field_name + "=" + value + ",";
+                ofmatch_generator_string +=
+                    field_name + "=" + value + ",";
+                
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+                log.error(
+                    "Should always be able to cast to InternalMatchField",
+                    ex.toString());
+                assert(false);
+            }
         }
+
 
         if (ofmatch_generator_string.equals(""))
             return null;
@@ -443,17 +462,32 @@ public class DeltaListStateSupplier
             list_get_internal(actions_list);
 
 
-        List<_InternalAction> internal_actions_list = null;
+        List<RalphObject<_InternalAction,_InternalAction>>
+            internal_actions_list = null;
+        
         internal_actions_list = RalphInternalValueRemover.
-            <ArrayList<_InternalAction>> internal_list_get_internal(
-                ralph_internal_actions_list);
-
+            <ArrayList<RalphObject<_InternalAction,_InternalAction>>>
+                internal_list_get_internal(
+                    ralph_internal_actions_list);
 
         List<OFAction> floodlight_action_list = new ArrayList<OFAction>();
-        for (_InternalAction internal_action : internal_actions_list)
+        for (RalphObject ro : internal_actions_list)
         {
-            floodlight_action_list.add(
-                action_from_internal_action(internal_action));
+            try
+            {
+                _InternalAction internal_action =
+                    (_InternalAction) (ro.get_val(null));
+                floodlight_action_list.add(
+                    action_from_internal_action(internal_action));
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+                log.error(
+                    "Should always be able to cast to _InternalAction",
+                    ex.toString());
+                assert(false);
+            }
         }
         return new OFInstructionWriteActions(floodlight_action_list);
     }
@@ -482,17 +516,31 @@ public class DeltaListStateSupplier
             list_get_internal(actions_list);
 
 
-        List<_InternalAction> internal_actions_list = null;
+        List<RalphObject<_InternalAction,_InternalAction>>
+            internal_actions_list = null;
         internal_actions_list = RalphInternalValueRemover.
-            <ArrayList<_InternalAction>> internal_list_get_internal(
-                ralph_internal_actions_list);
-
+            <ArrayList<RalphObject<_InternalAction,_InternalAction>>>
+                internal_list_get_internal(
+                    ralph_internal_actions_list);
 
         List<OFAction> floodlight_action_list = new ArrayList<OFAction>();
-        for (_InternalAction internal_action : internal_actions_list)
+        for (RalphObject ro : internal_actions_list)
         {
-            floodlight_action_list.add(
-                action_from_internal_action(internal_action));
+            try
+            {
+                _InternalAction internal_action =
+                    (_InternalAction) (ro.get_val(null));
+                floodlight_action_list.add(
+                    action_from_internal_action(internal_action));
+            }
+            catch (Exception ex)
+            {
+                ex.printStackTrace();
+                log.error(
+                    "Should always be able to cast to _InternalAction",
+                    ex.toString());
+                assert(false);
+            }
         }
         return new OFInstructionApplyActions(floodlight_action_list);
     }

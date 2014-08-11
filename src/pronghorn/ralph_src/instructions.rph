@@ -20,12 +20,12 @@ Struct InstructionWriteMetadata
 
 Struct InstructionWriteActions
 {
-    List (element: Struct Action) actions;
+    TVar List (element: Struct Action) actions;
 }
 
 Struct InstructionApplyActions
 {
-    List (element: Struct Action) actions;
+    TVar List (element: Struct Action) actions;
 }
 
 Struct InstructionClearActions

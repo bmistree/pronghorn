@@ -61,6 +61,7 @@ import pronghorn.InstructionsJava._InternalInstructionGotoTable;
 import pronghorn.InstructionsJava._InternalInstructionWriteMetadata;
 import pronghorn.InstructionsJava._InternalInstructionClearActions;
 import pronghorn.InstructionsJava._InternalInstructionMeter;
+import pronghorn.InstructionsJava._InternalInstructionWriteActions;
 
 import pronghorn.ActionsJava._InternalAction;
 import pronghorn.ActionsJava._InternalActionOutput;
@@ -420,8 +421,40 @@ public class DeltaListStateSupplier
     private OFInstructionWriteActions produce_write_actions_from_internal(
         _InternalInstructions _instructions)
     {
-        // TODO: fill in stub method
-        return null;
+        _InternalInstructionWriteActions write_actions =
+            RalphInternalValueRemover.<_InternalInstructionWriteActions>
+            get_internal(_instructions.write_actions);
+
+        if (write_actions == null)
+            return null;
+
+        AtomicListVariable<_InternalAction,_InternalAction>
+            actions_list = write_actions.actions;
+        
+        AtomicInternalList<_InternalAction,_InternalAction>
+            ralph_internal_actions_list = null;
+
+        ralph_internal_actions_list =
+            RalphInternalValueRemover.<
+                AtomicInternalList<
+                    _InternalAction,_InternalAction>,
+                _InternalAction>
+            list_get_internal(actions_list);
+
+
+        List<_InternalAction> internal_actions_list = null;
+        internal_actions_list = RalphInternalValueRemover.
+            <ArrayList<_InternalAction>> internal_list_get_internal(
+                ralph_internal_actions_list);
+
+
+        List<OFAction> floodlight_action_list = new ArrayList<OFAction>();
+        for (_InternalAction internal_action : internal_actions_list)
+        {
+            floodlight_action_list.add(
+                action_from_internal_action(internal_action));
+        }
+        return new OFInstructionWriteActions(floodlight_action_list);
     }
     
     private OFInstructionApplyActions produce_apply_actions_from_internal(

@@ -69,45 +69,56 @@ Service OffOnApplication
 
     add_entry_all_switches(Text src_ip)
     {
-        for (Text switch_id in switch_map)
+        atomically
         {
-            Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
-            Struct FlowTableEntry to_add;
-            to_add.src_ip = src_ip;
-            to_add.dst_ip = '18.18.18.19';
-            // drop all packets
-            to_add.action = '';
-            target_switch.wrapped_switch.add_entry(to_add);            
+            for (Text switch_id in switch_map)
+                add_specific_entry_switch(switch_id,src_ip);
         }
     }
 
     add_specific_entry_switch(Text switch_id, Text src_ip)
     {
+        // Produce matches
+        Struct MatchField match_field_ip_src;
+        match_field_ip_src.field_name = 'nw_src';
+        match_field_ip_src.value = src_ip;
+
+        Struct MatchField match_field_ip_dst;
+        match_field_ip_dst.field_name = 'nw_dst';
+        match_field_ip_dst.value = '18.18.18.19';
+
+        Struct Match match;
+        match.all_matches.append(match_field_ip_src);
+        match.all_matches.append(match_field_ip_dst);
+
+        // add drop instruction
+        Struct InstructionApplyActions drop_action;
+        Struct Instructions instructions;
+        instructions.apply_actions = drop_action;
+
+        // genreate entry from matches and instruction
+        Struct FlowTableEntry entry_to_add;
+        entry_to_add.match = match;
+        entry_to_add.instructions = instructions;
+
+        // actually add the entry.
         Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
-        Struct FlowTableEntry to_add;
-        to_add.src_ip = src_ip;
-        to_add.dst_ip = '18.18.18.19';
-        // drop all packets
-        to_add.action = '';
+        target_switch.wrapped_switch.add_entry(entry_to_add);
+
+        // find the switch and add the entry to it.
+        Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
 
         atomically
         {
-            target_switch.wrapped_switch.add_entry(to_add);
+            target_switch.wrapped_switch.add_entry(entry_to_add);
         }
     }
     
     add_entry_switch(Text switch_id)
     {
-        atomically
-        {
-            Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
-            Struct FlowTableEntry to_add;
-            to_add.src_ip = '18.18.18.18';
-            to_add.dst_ip = '18.18.18.19';
-            // drop all packets
-            to_add.action = '';
-            target_switch.wrapped_switch.add_entry(to_add);            
-        }
+        // FIXME: do not hardcode this value.  Multiple calls can lead to
+        // duplicate rules on switch.
+        add_specific_entry_switch(switch_id,'18.18.18.18');
     }    
     
     single_op_coarse(Text switch_id) 
@@ -121,21 +132,8 @@ Service OffOnApplication
     
     block_traffic_all_switches()
     {
-        atomically
-        {
-            // insert a rule to block all traffic on all ports
-            for (Text switch_id in switch_map)
-            {
-                Struct FlowTableEntry to_add;
-                to_add.src_ip = '18.18.18.18';
-                to_add.dst_ip = '18.18.18.19';
-                // drop all packets
-                to_add.action = '';
-
-                Struct StructWrappedSwitch sws = switch_map.get(switch_id);
-                sws.wrapped_switch.add_entry(to_add);
-            }
-        }
+        // inserts a rule to block all traffic on all ports
+        add_entry_all_switches('18.18.18.18');
     }
 
     remove_first_entry_all_switches()

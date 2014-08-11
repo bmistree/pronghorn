@@ -10,6 +10,18 @@ alias Endpoint PronghornConnectionTunnels as 'experiments.PronghornConnectionTun
 alias Service ErrorApplication as 'experiments.ErrorApplicationJava.ErrorApplication';
 alias Interface IErrorApplication as 'experiments.IErrorApplicationJava.IErrorApplication';
 
+#include 'match.rph'
+alias Struct MatchField as 'pronghorn.MatchJava.MatchField';
+alias Struct Match as 'pronghorn.MatchJava.Match';
+
+#include 'instructions.rph'
+alias Struct InstructionApplyActions as 'pronghorn.InstructionsJava.InstructionApplyActions';
+alias Struct Instructions as 'pronghorn.InstructionsJava.Instructions';
+
+#include 'flow_table_entry.rph'
+alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
+
+
 
 Struct ConnectionWrapper
 {
@@ -110,15 +122,35 @@ Service MultiControllerTunnelsApp implements Interface IApplication
     {
         atomically
         {
+            // Produce matches
+            Struct MatchField match_field_ip_src;
+            match_field_ip_src.field_name = 'nw_src';
+            match_field_ip_src.value = '18.18.18.18';
+
+            Struct MatchField match_field_ip_dst;
+            match_field_ip_dst.field_name = 'nw_dst';
+            match_field_ip_dst.value = '18.18.18.19';
+
+            Struct Match match;
+            match.all_matches.append(match_field_ip_src);
+            match.all_matches.append(match_field_ip_dst);
+
+            // add drop instruction
+            Struct InstructionApplyActions drop_action;
+            Struct Instructions instructions;
+            instructions.apply_actions = drop_action;
+
+            // genreate entry from matches and instruction
+            Struct FlowTableEntry entry_to_add;
+            entry_to_add.match = match;
+            entry_to_add.instructions = instructions;
+
+            // actually add the entry
             Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
-            Struct FlowTableEntry to_add;
-            to_add.src_ip = '18.18.18.18';
-            to_add.dst_ip = '18.18.18.19';
-            // drop all packets
-            to_add.action = '';
-            target_switch.wrapped_switch.add_entry(to_add);            
+            target_switch.wrapped_switch.add_entry(entry_to_add);
         }
-    }    
+    }
+    
     remove_entry_switch(Text switch_id)
     {
         atomically

@@ -9,6 +9,18 @@ alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSw
 
 alias Interface IErrorApplication as 'experiments.IErrorApplicationJava.IErrorApplication';
 
+#include 'match.rph'
+alias Struct MatchField as 'pronghorn.MatchJava.MatchField';
+alias Struct Match as 'pronghorn.MatchJava.Match';
+
+#include 'instructions.rph'
+alias Struct InstructionApplyActions as 'pronghorn.InstructionsJava.InstructionApplyActions';
+alias Struct Instructions as 'pronghorn.InstructionsJava.Instructions';
+
+#include 'flow_table_entry.rph'
+alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
+
+
 Service ErrorApplication
     implements Interface IApplication, Interface IErrorApplication
 {

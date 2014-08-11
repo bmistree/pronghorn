@@ -49,14 +49,31 @@ Service ErrorApplication
             // insert a rule to block all traffic on all ports
             for (Text switch_id in switch_map)
             {
-                Struct FlowTableEntry to_add;
-                to_add.src_ip = '18.18.18.18';
-                to_add.dst_ip = '18.18.18.19';
-                // drop all packets
-                to_add.action = '';
+
+                Struct MatchField match_field_ip_src;
+                match_field_ip_src.field_name = 'nw_src';
+                match_field_ip_src.value = '18.18.18.18';
+
+                Struct MatchField match_field_ip_dst;
+                match_field_ip_dst.field_name = 'nw_dst';
+                match_field_ip_dst.value = '18.18.18.19';
+
+                Struct Match match;
+                match.all_matches.append(match_field_ip_src);
+                match.all_matches.append(match_field_ip_dst);
+
+                // add drop instruction
+                Struct InstructionApplyActions drop_action;
+                Struct Instructions instructions;
+                instructions.apply_actions = drop_action;
+
+                // genreate entry from matches and instruction
+                Struct FlowTableEntry entry_to_add;
+                entry_to_add.match = match;
+                entry_to_add.instructions = instructions;
 
                 Struct StructWrappedSwitch sws = switch_map.get(switch_id);
-                sws.wrapped_switch.add_entry(to_add);
+                sws.wrapped_switch.add_entry(entry_to_add);
             }
         }
     }

@@ -135,6 +135,8 @@ public class SingleControllerThroughput
         catch (Exception ex)
         {
             System.out.println("Unknown exception error.");
+            ex.printStackTrace();
+            System.out.println("\n\n");
             had_exception.set(true);
             assert(false);
         }

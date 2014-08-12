@@ -322,7 +322,6 @@ public class DeltaListStateSupplier
             }
         }
 
-        System.out.println(ofmatch_generator_string);
         if (ofmatch_generator_string.equals(""))
             return null;
 

@@ -128,9 +128,9 @@ public class SingleControllerThroughput
                 off_on_app_list.add(off_on_app);
             }
             // add some existing entries to all switches
-            off_on_app.add_entry_all_switches("1");
-            off_on_app.add_entry_all_switches("2");
-            off_on_app.add_entry_all_switches("3");
+            off_on_app.add_entry_all_switches("00:00:00:00:00:1");
+            off_on_app.add_entry_all_switches("00:00:00:00:00:2");
+            off_on_app.add_entry_all_switches("00:00:00:00:00:3");
         }
         catch (Exception ex)
         {
@@ -150,30 +150,30 @@ public class SingleControllerThroughput
         ConcurrentHashMap<String,List<Long>> warmup_results =
             new ConcurrentHashMap<String,List<Long>>();
 
-
-        int highest_subnet_byte = 0;
+        // start from 1 to prevent collisions with entries added above with 00.
+        int highest_dl_src_byte = 1;
         for (int i =0; i < switch_ids.size(); ++i)
         {
             String switch_id = switch_ids.get(i);
             OffOnApplication off_on_app = off_on_app_list.get(i);
             for (int j = 0; j < threads_per_switch; ++j)
             {
-                ++highest_subnet_byte;
+                ++highest_dl_src_byte;
                 ThroughputThread t =
                     new ThroughputThread(
                         switch_id, off_on_app, num_ops_to_run, results,coarse_locking,
-                        highest_subnet_byte);
+                        highest_dl_src_byte);
                 threads.add(t);
                 ThroughputThread wt =
                     new ThroughputThread(
                         switch_id, off_on_app, num_warmup_ops_to_run,
                         warmup_results,coarse_locking,
-                        highest_subnet_byte);
+                        highest_dl_src_byte);
                 warmup_threads.add(wt);
             }
         }
 
-        if (highest_subnet_byte > 256)
+        if (highest_dl_src_byte > 256)
         {
             System.out.println("Error: more threads than subnet bytes");
             System.exit(-1);
@@ -272,16 +272,16 @@ public class SingleControllerThroughput
         ConcurrentHashMap<String,List<Long>> results;
         boolean coarse_locking;
         String result_id = null;
-        
-        // Each thread adds entries from a unique range of high level
-        // ip addrs.  Eg., one thread would add entries for 18.*.*.*,
-        // another for 19.*.*.*, etc.
-        int highest_subnet_byte;
+
+        // Each thread adds entries from a unique range of high level dl_src-s.
+        // Eg., one thread would add entries for 01:*:*:*:*:* and another for
+        // 02:*:*:*:*:*, etc.
+        int highest_dl_src_byte;
         
         public ThroughputThread(
             String switch_id, OffOnApplication off_on_app, int num_ops_to_run,
             ConcurrentHashMap<String,List<Long>> results, boolean coarse_locking,
-            int highest_subnet_byte)
+            int highest_dl_src_byte)
         {
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
@@ -289,14 +289,25 @@ public class SingleControllerThroughput
             this.results = results;
             this.coarse_locking = coarse_locking;
             this.result_id = switch_id + atom_int.getAndIncrement();
-            this.highest_subnet_byte = highest_subnet_byte;
+            this.highest_dl_src_byte = highest_dl_src_byte;
     	}
 
     	public void run() {
             ArrayList<Long> completion_times = new ArrayList<Long>();
             for (int i = 0; i < num_ops_to_run; ++i)
             {
-                String tcp_src_port = Integer.toString(i % 65000);
+                // not using full ethernet addr space, but still should be
+                // plenty.
+                int b_byte = i >> 16;
+                int c_byte = (i << 8) >> 16;
+                int d_byte = (i << 16) >> 16;
+
+                String dl_src_to_add =
+                    Integer.toHexString(highest_dl_src_byte) + ":" +
+                    Integer.toHexString(b_byte) + ":" +
+                    Integer.toHexString(c_byte) + ":" +
+                    Integer.toHexString(d_byte) + ":00:00";
+
                 try
                 {
                     if (coarse_locking)
@@ -306,7 +317,7 @@ public class SingleControllerThroughput
                         if ((i%2) == 0)
                         {
                             off_on_app.add_specific_entry_switch(
-                                switch_id,tcp_src_port);
+                                switch_id,dl_src_to_add);
                         }
                         else
                             off_on_app.remove_entry_switch(switch_id);

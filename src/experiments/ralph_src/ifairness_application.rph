@@ -1,6 +1,6 @@
 
 Interface IFairnessApplication
 {
-    //add an entry with tcp src port tcp source to flow table.
-    single_add(Text tcp_src_port);
+    //add an entry that matches dl_src
+    single_add(Text dl_src);
 }

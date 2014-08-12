@@ -8,6 +8,8 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ThreadFactory;
 import java.io.IOException;
 
+import net.floodlightcontroller.util.MACAddress;
+
 import experiments.IFairnessApplicationJava.IFairnessApplication;
 
 public class FairnessUtil
@@ -149,11 +151,12 @@ public class FairnessUtil
 
         public void run ()
         {
-            Integer unique_src_port = unique_subnet_int.getAndIncrement();
-            String tcp_src_port = Integer.toString(unique_src_port % 65000);
+            Integer unique_dl_src = unique_subnet_int.getAndIncrement();
+            MACAddress mac_addr = MACAddress.valueOf(unique_dl_src.longValue());
+            String dl_src = mac_addr.toString();
             try
             {
-                app.single_add(tcp_src_port);
+                app.single_add(dl_src);
                 tsafe_queue.add(principal_id + "|" + System.nanoTime());
             }
             catch(Exception ex)

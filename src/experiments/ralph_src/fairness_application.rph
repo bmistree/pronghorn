@@ -46,31 +46,20 @@ Service FairnessApplication
 
     // @Override --- from IFairnessApplication interface; Add a rule with the
     // given ip_src to all switches.
-    single_add(Text tcp_src_port)
+    single_add(Text dl_src)
     {
         // Produce matches
         Struct MatchField match_field_ether_type;
         match_field_ether_type.field_name = 'dl_type';
         match_field_ether_type.value = '0x800';
 
-        Struct MatchField match_field_in_port;
-        match_field_in_port.field_name = 'in_port';
-        match_field_in_port.value = '5';
+        Struct MatchField match_field_dl_src;
+        match_field_dl_src.field_name = 'dl_src';
+        match_field_dl_src.value = '00:00:00:00:00:01';
 
-        Struct MatchField  match_field_nw_proto;
-        match_field_nw_proto.field_name = 'nw_proto';
-        match_field_nw_proto.value = '6';
-
-        Struct MatchField  match_field_tcp_src_port;
-        match_field_tcp_src_port.field_name = 'tp_src';
-        match_field_tcp_src_port.value = tcp_src_port;
-        
-        
         Struct Match match;
         match.all_matches.append(match_field_ether_type);
-        match.all_matches.append(match_field_in_port);
-        match.all_matches.append(match_field_nw_proto);
-        match.all_matches.append(match_field_tcp_src_port);
+        match.all_matches.append(match_field_dl_src);
         
         // add drop instruction
         Struct InstructionApplyActions drop_action;

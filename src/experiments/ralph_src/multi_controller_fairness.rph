@@ -56,7 +56,7 @@ Service MultiControllerFairnessApp
     }
 
     // @Override: from IFairnessApplication interface
-    single_add(Text tcp_src_port)
+    single_add(Text dl_src)
     {
         // Ask partner to perform action and perform action locally.
         atomically
@@ -65,7 +65,7 @@ Service MultiControllerFairnessApp
             for (Text switch_id in switch_map)
             {
                 if (should_write)
-                    fairness_app.single_add(tcp_src_port);
+                    fairness_app.single_add(dl_src);
                 else
                 {
                     Struct StructWrappedSwitch sws = switch_map.get(switch_id);
@@ -74,7 +74,7 @@ Service MultiControllerFairnessApp
             }
             // tell children to perform their reads/writes
             for (Struct ConnectionWrapper conn_wrap in children)
-                conn_wrap.child.single_add(tcp_src_port);
+                conn_wrap.child.single_add(dl_src);
         }
     }
 

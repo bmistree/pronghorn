@@ -34,15 +34,15 @@ Endpoint PronghornConnection
     }
 
     // called from off_on_app
-    insert_entry_on_all_switches_and_partners(Text tcp_src_port)
+    insert_entry_on_all_switches_and_partners(Text dl_src)
     {
         @partner.receive_insert_entry_on_all_switches_and_partners(
-            tcp_src_port);
+            dl_src);
     }
 
     // called exclusively from partner
-    receive_insert_entry_on_all_switches_and_partners(Text tcp_src_port)
+    receive_insert_entry_on_all_switches_and_partners(Text dl_src)
     {
-        off_on_app.insert_entry_on_all_switches_and_partners(tcp_src_port);
+        off_on_app.insert_entry_on_all_switches_and_partners(dl_src);
     }
 }

@@ -141,7 +141,6 @@ public class SingleControllerThroughput
             assert(false);
         }
         
-        
         /* Spawn thread per switch to operate on it */
         ArrayList<Thread> threads = new ArrayList<Thread>();
         ArrayList<Thread> warmup_threads = new ArrayList<Thread>();

@@ -242,7 +242,6 @@ public class DeltaListStateSupplier
             List<OFInstruction> instruction_list =
                 instruction_list_from_internal_instructions(instructions);
             
-            
             FTableUpdate update_to_push =  null;
             if (insertion)
             {
@@ -323,13 +322,14 @@ public class DeltaListStateSupplier
             }
         }
 
-
+        System.out.println(ofmatch_generator_string);
         if (ofmatch_generator_string.equals(""))
             return null;
 
         try
         {
-            return OFMatch.fromString(ofmatch_generator_string);
+            OFMatch to_return = OFMatch.fromString(ofmatch_generator_string);
+            return to_return;
         }
         catch(IllegalArgumentException ex)
         {

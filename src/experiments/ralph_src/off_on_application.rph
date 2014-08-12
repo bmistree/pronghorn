@@ -88,7 +88,7 @@ Service OffOnApplication
         }
     }
 
-    add_specific_entry_switch(Text switch_id, Text src_ip)
+    add_specific_entry_switch(Text switch_id, Text tcp_src_port)
     {
         // Produce matches
         Struct MatchField match_field_ether_type;
@@ -105,7 +105,7 @@ Service OffOnApplication
 
         Struct MatchField  match_field_tcp_src_port;
         match_field_tcp_src_port.field_name = 'tp_src';
-        match_field_tcp_src_port.value = '33';
+        match_field_tcp_src_port.value = tcp_src_port;
         
         
         Struct Match match;
@@ -142,7 +142,7 @@ Service OffOnApplication
     {
         // FIXME: do not hardcode this value.  Multiple calls can lead to
         // duplicate rules on switch.
-        add_specific_entry_switch(switch_id,'18.18.18.18');
+        add_specific_entry_switch(switch_id,'22');
     }    
     
     single_op_coarse(Text switch_id) 
@@ -157,7 +157,7 @@ Service OffOnApplication
     block_traffic_all_switches()
     {
         // inserts a rule to block all traffic on all ports
-        add_entry_all_switches('18.18.18.18');
+        add_entry_all_switches('22');
     }
 
     remove_first_entry_all_switches()

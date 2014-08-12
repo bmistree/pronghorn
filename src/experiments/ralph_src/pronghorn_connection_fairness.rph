@@ -10,13 +10,13 @@ Endpoint PronghornConnectionFairness
     }
 
     // called locally 
-    single_add(Text ip_src)
+    single_add(Text tcp_src_port)
     {
-        @partner.receive_single_add(ip_src);
+        @partner.receive_single_add(tcp_src_port);
     }
 
-    receive_single_add(Text ip_src)
+    receive_single_add(Text tcp_src_port)
     {
-        fairness_app.single_add(ip_src);
+        fairness_app.single_add(tcp_src_port);
     }
 }

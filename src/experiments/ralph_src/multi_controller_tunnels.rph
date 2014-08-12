@@ -123,17 +123,28 @@ Service MultiControllerTunnelsApp implements Interface IApplication
         atomically
         {
             // Produce matches
-            Struct MatchField match_field_ip_src;
-            match_field_ip_src.field_name = 'nw_src';
-            match_field_ip_src.value = '18.18.18.18';
+            Struct MatchField match_field_ether_type;
+            match_field_ether_type.field_name = 'dl_type';
+            match_field_ether_type.value = '0x800';
 
-            Struct MatchField match_field_ip_dst;
-            match_field_ip_dst.field_name = 'nw_dst';
-            match_field_ip_dst.value = '18.18.18.19';
+            Struct MatchField match_field_in_port;
+            match_field_in_port.field_name = 'in_port';
+            match_field_in_port.value = '5';
 
+            Struct MatchField  match_field_nw_proto;
+            match_field_nw_proto.field_name = 'nw_proto';
+            match_field_nw_proto.value = '6';
+
+            Struct MatchField  match_field_tcp_src_port;
+            match_field_tcp_src_port.field_name = 'tp_src';
+            match_field_tcp_src_port.value = '22';
+        
+        
             Struct Match match;
-            match.all_matches.append(match_field_ip_src);
-            match.all_matches.append(match_field_ip_dst);
+            match.all_matches.append(match_field_ether_type);
+            match.all_matches.append(match_field_in_port);
+            match.all_matches.append(match_field_nw_proto);
+            match.all_matches.append(match_field_tcp_src_port);
 
             // add drop instruction
             Struct InstructionApplyActions drop_action;

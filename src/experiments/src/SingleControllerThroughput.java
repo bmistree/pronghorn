@@ -128,9 +128,9 @@ public class SingleControllerThroughput
                 off_on_app_list.add(off_on_app);
             }
             // add some existing entries to all switches
-            off_on_app.add_entry_all_switches("43.31.1.3");
-            off_on_app.add_entry_all_switches("43.31.1.2");
-            off_on_app.add_entry_all_switches("43.31.1.1");
+            off_on_app.add_entry_all_switches("1");
+            off_on_app.add_entry_all_switches("2");
+            off_on_app.add_entry_all_switches("3");
         }
         catch (Exception ex)
         {
@@ -296,14 +296,7 @@ public class SingleControllerThroughput
             ArrayList<Long> completion_times = new ArrayList<Long>();
             for (int i = 0; i < num_ops_to_run; ++i)
             {
-                int b_subnet_byte = i >> 16;
-                int c_subnet_byte = (i << 8) >> 16;
-                int d_subnet_byte = (i << 16) >> 16;
-                
-                String ip_src_to_add = highest_subnet_byte + "." +
-                    b_subnet_byte + "." + c_subnet_byte + "." +
-                    d_subnet_byte;
-                
+                String tcp_src_port = Integer.toString(i % 65000);
                 try
                 {
                     if (coarse_locking)
@@ -313,7 +306,7 @@ public class SingleControllerThroughput
                         if ((i%2) == 0)
                         {
                             off_on_app.add_specific_entry_switch(
-                                switch_id,ip_src_to_add);
+                                switch_id,tcp_src_port);
                         }
                         else
                             off_on_app.remove_entry_switch(switch_id);

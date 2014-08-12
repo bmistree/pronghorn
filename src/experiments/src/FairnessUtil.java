@@ -135,7 +135,7 @@ public class FairnessUtil
         private final ConcurrentLinkedQueue<String> tsafe_queue;
 
         private final static AtomicInteger unique_subnet_int =
-            new AtomicInteger(0);
+            new AtomicInteger(1);
         
         public PrincipalTask(
             IFairnessApplication _app, String _principal_id, String _switch_id,
@@ -149,13 +149,11 @@ public class FairnessUtil
 
         public void run ()
         {
-            Integer unique_subnet = unique_subnet_int.getAndDecrement();
-            int c_subnet = unique_subnet /256;
-            int d_subnet = unique_subnet % 256;
-            String ip_addr = "18.18." + c_subnet + "." + d_subnet;
+            Integer unique_src_port = unique_subnet_int.getAndIncrement();
+            String tcp_src_port = Integer.toString(unique_src_port % 65000);
             try
             {
-                app.single_add(ip_addr);
+                app.single_add(tcp_src_port);
                 tsafe_queue.add(principal_id + "|" + System.nanoTime());
             }
             catch(Exception ex)

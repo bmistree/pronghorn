@@ -294,19 +294,21 @@ public class SingleControllerThroughput
 
     	public void run() {
             ArrayList<Long> completion_times = new ArrayList<Long>();
-            for (int i = 0; i < num_ops_to_run; ++i)
+            for (long i = 0; i < num_ops_to_run; ++i)
             {
-                // not using full ethernet addr space, but still should be
-                // plenty.
-                int b_byte = i >> 16;
-                int c_byte = (i << 8) >> 16;
-                int d_byte = (i << 16) >> 16;
-
+                int b_byte = (int) ((long)(i & 0xff00000000L) >> 32);
+                int c_byte = (int) ((long)(i & 0xff000000L) >> 24);
+                int d_byte = (int) ((long)(i & 0xff0000L) >> 16);
+                int e_byte = (int) ((long)(i & 0xff00L) >> 8);
+                int f_byte = (int) ((long)(i & 0xffL));
+                
                 String dl_src_to_add =
                     Integer.toHexString(highest_dl_src_byte) + ":" +
                     Integer.toHexString(b_byte) + ":" +
                     Integer.toHexString(c_byte) + ":" +
-                    Integer.toHexString(d_byte) + ":00:00";
+                    Integer.toHexString(d_byte) + ":" +
+                    Integer.toHexString(e_byte) + ":" +
+                    Integer.toHexString(f_byte);
 
                 try
                 {

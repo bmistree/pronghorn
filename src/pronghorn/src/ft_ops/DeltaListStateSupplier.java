@@ -56,6 +56,7 @@ import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
 import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.MatchJava._InternalMatch;
 import pronghorn.MatchJava._InternalMatchField;
+import pronghorn.MatchJava.MatchFieldName;
 import pronghorn.InstructionsJava._InternalInstructions;
 import pronghorn.InstructionsJava._InternalInstructionGotoTable;
 import pronghorn.InstructionsJava._InternalInstructionWriteMetadata;
@@ -289,28 +290,30 @@ public class DeltaListStateSupplier
                     _InternalMatchField,
                     _InternalMatchField>>> internal_list_get_internal(
                 ralph_internal_match_list);
-        String ofmatch_generator_string = "";
+
+        String ofmatch_comb_str = "";
         for (RalphObject ro : internal_match_list)
         {
             try
             {
                 _InternalMatchField match_field =
                     (_InternalMatchField) (ro.get_val(null));
-
-                String field_name =
-                    RalphInternalValueRemover.<String>
+                
+                MatchFieldName match_field_name =
+                    RalphInternalValueRemover.<MatchFieldName>
                     get_internal(match_field.field_name);
 
                 String value =
                     RalphInternalValueRemover.<String>
                     get_internal(match_field.value);
-            
-                if ((field_name == null) || (value == null))
+                
+                if ((match_field_name == null) || (value == null))
                     continue;
 
-                ofmatch_generator_string +=
-                    field_name + "=" + value + ",";
-                
+                String match_field_name_str =
+                    match_field_name_to_string(match_field_name);
+
+                ofmatch_comb_str += match_field_name_str + "=" + value + ",";
             }
             catch (Exception ex)
             {
@@ -321,27 +324,120 @@ public class DeltaListStateSupplier
                 assert(false);
             }
         }
-
-        if (ofmatch_generator_string.equals(""))
+        
+        // means that got backout in midst of running.
+        if (ofmatch_comb_str.equals(""))
             return null;
 
         try
         {
-            OFMatch to_return = OFMatch.fromString(ofmatch_generator_string);
+            OFMatch to_return = OFMatch.fromString(ofmatch_comb_str);
             return to_return;
         }
-        catch(IllegalArgumentException ex)
+        catch (IllegalArgumentException ex)
         {
-            log.error(
-                "User entered incorrect match arguments",
-                ex);
-
-            // FIXME: for incorrectly-generated user strings, don't
-            // throw exception to user, but do not apply change.
-            // Could lead to disagreement if not checking correct
-            // field and value insertion in ralph instead.
-            return null;
+            log.error("Malformed match in DeltaListStateSupplier.java",ex);
+            assert(false);
         }
+        return null;
+    }
+    
+
+    /**
+       match_field_name must not be null.
+     */
+    private String match_field_name_to_string(MatchFieldName match_field_name)
+    {
+        switch (match_field_name)
+        {
+        case IN_PORT:
+            return OFOXMFieldType.IN_PORT.getName();
+        case IN_PHY_PORT:
+            return OFOXMFieldType.IN_PHY_PORT.getName();
+        case METADATA:
+            return OFOXMFieldType.METADATA.getName();
+        case ETH_DST:
+            return OFOXMFieldType.ETH_DST.getName();
+        case ETH_SRC:
+            return OFOXMFieldType.ETH_SRC.getName();
+        case ETH_TYPE:
+            return OFOXMFieldType.ETH_TYPE.getName();
+        case VLAN_VID:
+            return OFOXMFieldType.VLAN_VID.getName();
+        case VLAN_PCP:
+            return OFOXMFieldType.VLAN_PCP.getName();
+        case IP_DSCP:
+            return OFOXMFieldType.IP_DSCP.getName();
+        case IP_ECN:
+            return OFOXMFieldType.IP_ECN.getName();
+        case IP_PROTO:
+            return OFOXMFieldType.IP_PROTO.getName();
+        case IPV4_SRC:
+            return OFOXMFieldType.IPV4_SRC.getName();
+        case IPV4_DST:
+            return OFOXMFieldType.IPV4_DST.getName();
+        case TCP_SRC:
+            return OFOXMFieldType.TCP_SRC.getName();
+        case TCP_DST:
+            return OFOXMFieldType.TCP_DST.getName();
+        case UDP_SRC:
+            return OFOXMFieldType.UDP_SRC.getName();
+        case UDP_DST:
+            return OFOXMFieldType.UDP_DST.getName();
+        case SCTP_SRC:
+            return OFOXMFieldType.SCTP_SRC.getName();
+        case SCTP_DST:
+            return OFOXMFieldType.SCTP_DST.getName();
+        case ICMPV4_TYPE:
+            return OFOXMFieldType.ICMPV4_TYPE.getName();
+        case ICMPV4_CODE:
+            return OFOXMFieldType.ICMPV4_CODE.getName();
+        case ARP_OP:
+            return OFOXMFieldType.ARP_OP.getName();
+        case ARP_SPA:
+            return OFOXMFieldType.ARP_SPA.getName();
+        case ARP_TPA:
+            return OFOXMFieldType.ARP_TPA.getName();
+        case ARP_SHA:
+            return OFOXMFieldType.ARP_SHA.getName();
+        case ARP_THA:
+            return OFOXMFieldType.ARP_THA.getName();
+        case IPV6_SRC:
+            return OFOXMFieldType.IPV6_SRC.getName();
+        case IPV6_DST:
+            return OFOXMFieldType.IPV6_DST.getName();
+        case IPV6_FLABEL:
+            return OFOXMFieldType.IPV6_FLABEL.getName();
+        case ICMPV6_TYPE:
+            return OFOXMFieldType.ICMPV6_TYPE.getName();
+        case ICMPV6_CODE:
+            return OFOXMFieldType.ICMPV6_CODE.getName();
+        case IPV6_ND_TARGET:
+            return OFOXMFieldType.IPV6_ND_TARGET.getName();
+        case IPV6_ND_SLL:
+            return OFOXMFieldType.IPV6_ND_SLL.getName();
+        case IPV6_ND_TLL:
+            return OFOXMFieldType.IPV6_ND_TLL.getName();
+        case MPLS_LABEL:
+            return OFOXMFieldType.MPLS_LABEL.getName();
+        case MPLS_TC:
+            return OFOXMFieldType.MPLS_TC.getName();
+        case MPLS_BOS:
+            return OFOXMFieldType.MPLS_BOS.getName();
+        case PBB_ISID:
+            return OFOXMFieldType.PBB_ISID.getName();
+        case TUNNEL_ID:
+            return OFOXMFieldType.TUNNEL_ID.getName();
+        case IPV6_EXTHDR:
+            return OFOXMFieldType.IPV6_EXTHDR.getName();
+        }
+
+        if (match_field_name != null)
+        {
+            log.error("Error unknown match field name in DeltalListStateSupplier.");
+            assert(false);
+        }
+        return null;
     }
     
     /**
@@ -833,8 +929,7 @@ public class DeltaListStateSupplier
     {
         return (byte)Byte.decode(str);
     }
-    
-    
+
     /**
        Application writers specify field type for set_field actions
        using strings.  This method converts that string into proper

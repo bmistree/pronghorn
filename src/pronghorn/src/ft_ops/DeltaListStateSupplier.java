@@ -869,16 +869,24 @@ public class DeltaListStateSupplier
         
             if (action_set_field != null)
             {
-                String field_name =
-                    RalphInternalValueRemover.<String>
+                MatchFieldName field_name =
+                    RalphInternalValueRemover.<MatchFieldName>
                     get_internal(action_set_field.field_name);
+                
+                if (field_name == null)
+                    return null;
+                String field_name_str = match_field_name_to_string(field_name);
+                
                 String value =
                     RalphInternalValueRemover.<String>
                     get_internal(action_set_field.value);
 
+                if (value == null)
+                    return null;
+                
                 OFOXMField field =
                     ralph_set_field_to_floodlight_field(
-                        field_name,value);
+                        field_name_str,value);
                 return new OFActionSetField(field);
             }
         }

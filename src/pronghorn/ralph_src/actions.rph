@@ -1,3 +1,6 @@
+#include 'match.rph'
+alias Enum MatchFieldName as 'pronghorn.MatchJava.MatchFieldName';
+
 Struct ActionOutput
 {
     TVar Number port_number = null;
@@ -63,12 +66,7 @@ Struct ActionDecrementNWTTL
 
 Struct ActionSetField
 {
-    // Eg., in_port, in_phy_port, etc.
-
-    /**
-       FIXME: include some form of enum or global constants to make this easier.
-     */
-    TVar Text field_name = null;
+    TVar Enum MatchFieldName field_name = null;
     TVar Text value = null;
 }
 

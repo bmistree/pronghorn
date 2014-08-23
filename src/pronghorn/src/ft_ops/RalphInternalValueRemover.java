@@ -29,7 +29,6 @@ class RalphInternalValueRemover
         return to_return;
     }
 
-
     // This notation allows calling method statically.
     public static <InternalType1,InternalType2> InternalType1 list_get_internal(
         AtomicValueVariable<InternalType1,InternalType2> atomic_variable)

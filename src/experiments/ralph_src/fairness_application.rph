@@ -10,6 +10,7 @@ alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSw
 alias Interface IFairnessApplication as 'experiments.IFairnessApplicationJava.IFairnessApplication';
 
 #include 'match.rph'
+alias Enum MatchFieldName as 'pronghorn.MatchJava.MatchFieldName';
 alias Struct MatchField as 'pronghorn.MatchJava.MatchField';
 alias Struct Match as 'pronghorn.MatchJava.Match';
 
@@ -50,11 +51,11 @@ Service FairnessApplication
     {
         // Produce matches
         Struct MatchField match_field_ether_type;
-        match_field_ether_type.field_name = 'dl_type';
+        match_field_ether_type.field_name = MatchFieldName.ETH_TYPE;
         match_field_ether_type.value = '0x800';
-
+        
         Struct MatchField match_field_dl_src;
-        match_field_dl_src.field_name = 'dl_src';
+        match_field_dl_src.field_name = MatchFieldName.ETH_SRC;
         match_field_dl_src.value = '00:00:00:00:00:01';
 
         Struct Match match;

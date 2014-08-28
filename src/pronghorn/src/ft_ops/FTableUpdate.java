@@ -31,7 +31,8 @@ public class FTableUpdate
 
     protected static final Logger log =
         LoggerFactory.getLogger(FTableUpdate.class);
-    
+
+    // FIXME: unclear why not just using constructor.
     public static FTableUpdate create_insert_update(
         OFMatch match, List<OFInstruction> instructions)
     {
@@ -55,6 +56,37 @@ public class FTableUpdate
         return to_return;
     }
 
+
+    public static FTableUpdate deserialize(SingleFTableUpdate ft_update)
+    {
+        boolean insertion = ft_update.getInsertion();
+
+        OFMatch match = null;
+        if (ft_update.hasOfMatch())
+        {
+            ByteString of_match_bytestring = ft_update.getOfMatch();
+            ByteBuffer of_match_bytebuffer =
+                of_match_bytestring.asReadOnlyByteBuffer();
+            match = new OFMatch();
+            match.readFrom(of_match_bytebuffer);
+        }
+
+        List<OFInstruction> instructions = new ArrayList<OFInstruction>();
+        for (ByteString of_instruction_bytestring :
+                 ft_update.getOfInstructionsList())
+        {
+            ByteBuffer of_instruction_bytebuffer =
+                of_instruction_bytestring.asReadOnlyByteBuffer();
+            OFInstruction instruction = new OFInstruction();
+            instruction.readFrom(of_instruction_bytebuffer);
+            instructions.add(instruction);
+        }
+
+        if (insertion)
+            return create_insert_update(match,instructions);
+        return create_remove_update(match,instructions);
+    }
+    
     public static FTableUpdates.Builder serialize_update_list(
         List<FTableUpdate> update_list)
     {
@@ -87,7 +119,7 @@ public class FTableUpdate
         
         return to_return;
     }
-
+    
     public SingleFTableUpdate.Builder serialize()
     {
         SingleFTableUpdate.Builder to_return =

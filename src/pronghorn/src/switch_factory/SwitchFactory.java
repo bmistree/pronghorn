@@ -7,6 +7,8 @@ import java.util.concurrent.ThreadFactory;
 
 import ralph.RalphGlobals;
 
+import RalphVersions.IVersionListener;
+
 import pronghorn.FTable;
 import pronghorn.FTable._InternalFlowTableEntry;
 import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
@@ -36,6 +38,7 @@ public class SwitchFactory implements ISwitchFactory
     private AtomicInteger atomic_switch_id = new AtomicInteger(0);
     private final static String SWITCH_PREFIX_TO_ID_SEPARATOR = ".";
 
+    private final IVersionListenerFactory version_listener_factory;
 
     /**
        Use a separate thread for each switch to send message to switch
@@ -68,11 +71,13 @@ public class SwitchFactory implements ISwitchFactory
 
     public SwitchFactory(
         RalphGlobals _ralph_globals,boolean _speculate,
-        int _collect_statistics_period_ms)
+        int _collect_statistics_period_ms,
+        IVersionListenerFactory _version_listener_factory)
     {
         ralph_globals = _ralph_globals;
         speculate = _speculate;
         collect_statistics_period_ms = _collect_statistics_period_ms;
+        version_listener_factory = _version_listener_factory;
     }
 
     /**
@@ -128,6 +133,9 @@ public class SwitchFactory implements ISwitchFactory
 
         SwitchSpeculateListener switch_speculate_listener =
             new SwitchSpeculateListener();
+
+        IVersionListener version_listener =
+            version_listener_factory.construct(new_switch_id);
         
         // override switch_lock variable: switch_lock variable serves
         // as a guard for both port_deltas and ft_deltas.
@@ -136,7 +144,7 @@ public class SwitchFactory implements ISwitchFactory
                 ralph_globals,new_switch_id,speculate,
                 to_handle_pushing_changes,
                 new DeltaListStateSupplier(switch_delta),
-                switch_speculate_listener);
+                switch_speculate_listener, version_listener);
 
         switch_delta.switch_lock = switch_guard_num_var;
         switch_speculate_listener.init(

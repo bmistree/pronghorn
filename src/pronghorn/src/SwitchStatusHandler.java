@@ -22,6 +22,7 @@ import pronghorn.PortJava._InternalPort;
 import pronghorn.PortJava;
 
 import pronghorn.switch_factory.ISwitchFactory;
+import pronghorn.switch_factory.IVersionListenerFactory;
 import pronghorn.switch_factory.SwitchFactory;
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FlowTableToHardware;
@@ -70,7 +71,8 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
         IFloodlightShim shim,
         Instance prong,
         IFlowTableToHardwareFactory ftable_to_hardware_factory,
-        boolean speculate,int collect_statistics_period_ms)
+        boolean speculate,int collect_statistics_period_ms,
+        IVersionListenerFactory version_listener_factory)
     {
         this.shim = shim;
         this.prong = prong;
@@ -80,7 +82,8 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
         
         switch_factory =
             new SwitchFactory(
-                prong.ralph_globals,speculate,collect_statistics_period_ms);
+                prong.ralph_globals,speculate,collect_statistics_period_ms,
+                version_listener_factory);
         switch_factory.init(UNIQUE_SWITCH_FACTORY_PREFIX);
     }
 

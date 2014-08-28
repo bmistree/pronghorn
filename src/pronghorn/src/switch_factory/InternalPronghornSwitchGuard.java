@@ -12,6 +12,8 @@ import ralph.ActiveEvent;
 import ralph.ICancellableFuture;
 import ralph.SpeculativeFuture;
 
+import RalphVersions.IVersionListener;
+
 import RalphExtended.ISpeculateListener;
 import RalphExtended.ExtendedHardwareOverrides;
 
@@ -48,7 +50,11 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         // initializes extended_hardware_overrides.  Using this call,
         // notifies switch guard, ftable_deltas, etc., that they can
         // speculate.
-        SwitchSpeculateListener speculate_listener)
+        SwitchSpeculateListener speculate_listener,
+        
+        // can be null, in which case, don't keep track of versions.
+        // otherwise, logs all writes to switch variables.
+        IVersionListener version_listener)
     {
         super(false,new Double(0),ralph_globals);
         ralph_internal_switch_id = _ralph_internal_switch_id;
@@ -57,9 +63,7 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         extended_hardware_overrides =
             new ExtendedHardwareOverrides<List<FTableUpdate>>(
                 hardware_applier,hardware_state_supplier,speculate_listener,
-                null, // for now, not keeping track of versions for
-                      // this switch
-                should_speculate,ralph_globals);
+                version_listener,should_speculate,ralph_globals);
         extended_hardware_overrides.set_controlling_object(this);
     }
 

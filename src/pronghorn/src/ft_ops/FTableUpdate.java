@@ -16,7 +16,7 @@ import org.openflow.protocol.instruction.OFInstruction;
 import net.floodlightcontroller.packet.IPv4;
 
 import ft_ops.serialized_update.SingleFTableUpdateProto.SingleFTableUpdate;
-
+import ft_ops.serialized_update.FTableUpdatesProto.FTableUpdates;
 
 public class FTableUpdate
 {
@@ -55,6 +55,14 @@ public class FTableUpdate
         return to_return;
     }
 
+    public static FTableUpdates.Builder serialize_update_list(
+        List<FTableUpdate> update_list)
+    {
+        FTableUpdates.Builder to_return = FTableUpdates.newBuilder();
+        for (FTableUpdate ft_update : update_list)
+            to_return.addUpdates(ft_update.serialize());
+        return to_return;
+    }
 
     /**
        Takes update and generates a flow mod out of it, which

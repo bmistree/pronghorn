@@ -27,7 +27,7 @@
       location="${lib_build_path}/classes/"/>
   <property
       name="proto_class_path"
-      location="${lib_build_path}/../protobuf-java-2.4.1.jar"/>
+      location="${lib_build_path}/../protobuf-java-2.5.0.jar"/>
   <property
       name="ralph_compiler_py"
       location="${pronghorn_libs_build_dir}/../../emit_file.py"/>

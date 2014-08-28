@@ -2,9 +2,12 @@ package pronghorn.ft_ops;
 
 import java.util.List;
 import java.util.ArrayList;
+import java.nio.ByteBuffer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.protobuf.ByteString;
 
 import org.openflow.protocol.OFFlowMod;
 import org.openflow.protocol.OFMatch;
@@ -12,6 +15,7 @@ import org.openflow.protocol.instruction.OFInstruction;
 
 import net.floodlightcontroller.packet.IPv4;
 
+import ft_ops.serialized_update.SingleFTableUpdateProto.SingleFTableUpdate;
 
 
 public class FTableUpdate
@@ -76,7 +80,34 @@ public class FTableUpdate
         return to_return;
     }
 
+    public SingleFTableUpdate.Builder serialize()
+    {
+        SingleFTableUpdate.Builder to_return =
+            SingleFTableUpdate.newBuilder();
 
+        to_return.setInsertion(insertion);
+
+        if (match != null)
+        {
+            ByteBuffer bb = ByteBuffer.allocate(match.getLengthU());
+            match.writeTo(bb);
+            bb.rewind();
+            to_return.setOfMatch(ByteString.copyFrom(bb));
+        }
+        
+        for (OFInstruction instruction : instructions)
+        {
+            ByteBuffer bb = ByteBuffer.allocate(instruction.getLengthU());
+            match.writeTo(bb);
+            instruction.writeTo(bb);
+            bb.rewind();
+            to_return.addOfInstructions(ByteString.copyFrom(bb));
+        }
+        return to_return;
+    }
+    
+
+    
     /**
        Takes current flow mod instruction and creates an FTableUpdate
        that is the opposite of it.  If we run an FTableUpdate and then

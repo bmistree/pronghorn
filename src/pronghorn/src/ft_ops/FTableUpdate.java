@@ -96,6 +96,19 @@ public class FTableUpdate
         return to_return;
     }
 
+    public static List<FTableUpdate> deserialize_update_list(
+        FTableUpdates to_deserialize)
+    {
+        List<FTableUpdate> to_return = new ArrayList<FTableUpdate>();
+        for (SingleFTableUpdate ftable_update_msg :
+                 to_deserialize.getUpdatesList())
+        {
+            FTableUpdate update = deserialize(ftable_update_msg);
+            to_return.add(update);
+        }
+        return to_return;
+    }
+    
     /**
        Takes update and generates a flow mod out of it, which
        floodlight sends to switch.

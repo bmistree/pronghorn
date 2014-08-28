@@ -1,0 +1,9 @@
+option java_package = "ft_ops.serialized_update";
+option java_outer_classname = "FTableUpdatesProto";
+
+import "singleFTableUpdate.proto";
+
+message FTableUpdates
+{
+    repeated SingleFTableUpdate updates = 1;
+}

@@ -57,6 +57,8 @@ public class InternalPronghornSwitchGuard extends AtomicNumberVariable
         extended_hardware_overrides =
             new ExtendedHardwareOverrides<List<FTableUpdate>>(
                 hardware_applier,hardware_state_supplier,speculate_listener,
+                null, // for now, not keeping track of versions for
+                      // this switch
                 should_speculate,ralph_globals);
         extended_hardware_overrides.set_controlling_object(this);
     }

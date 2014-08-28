@@ -1,0 +1,16 @@
+option java_package = "ft_ops.serialized_update";
+option java_outer_classname = "SingleFTableUpdateProto";
+
+message SingleFTableUpdate
+{
+    // whether or not this is an insertion or a deletion
+    required bool insertion = 1;
+
+    // Generated from the writeTo method of OFMatch.  Regenerate
+    // OFMatch using OFMatch.readFrom.
+    optional bytes of_match = 2;
+
+    // Generated from the writeTo method of OFInstruction.  Regenerate
+    // each instruction separately using OFInstruction.readFrom.
+    repeated bytes of_instructions = 3;
+}

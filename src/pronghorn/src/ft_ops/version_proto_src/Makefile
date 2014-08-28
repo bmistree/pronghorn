@@ -1,7 +1,7 @@
 
 PROTOCOL_FILES := $(wildcard *.proto)
 JAVA_GENERATED_FILES := $(PROTOCOL_FILES:.proto=_pb2.java)
-JAVA_COMPILE_FOLDER := ../
+JAVA_COMPILE_FOLDER := ../../
 
 .PHONY : java_proto
 java_proto : $(JAVA_GENERATED_FILES)

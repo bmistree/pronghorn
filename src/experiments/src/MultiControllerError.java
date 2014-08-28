@@ -15,11 +15,15 @@ import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 
+import RalphVersions.IVersionListener;
+
 import pronghorn.FloodlightShim;
 import pronghorn.SwitchStatusHandler;
 
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
+import pronghorn.switch_factory.IVersionListenerFactory;
+import pronghorn.switch_factory.NoLogVersionFactory;
 
 import experiments.Util.HostPortPair;
 import experiments.Util;
@@ -113,7 +117,8 @@ public class MultiControllerError
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                false,collect_statistics_period_ms);
+                false,collect_statistics_period_ms,
+                new NoLogVersionFactory());
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -145,13 +150,14 @@ public class MultiControllerError
             }
         }
 
-        
+        IVersionListenerFactory version_factory = new NoLogVersionFactory();
         // wait for first switch to connect
         Util.wait_on_switches(num_switches_app);
         String faulty_switch_id = "some_switch";
         ErrorUtil.add_faulty_switch(
             ralph_globals,faulty_switch_id, SHOULD_SPECULATE,
-            failure_probability,prong);
+            failure_probability,prong,
+            version_factory.construct(faulty_switch_id));
         List<String> switch_id_list =
             Util.get_switch_id_list (num_switches_app);
 

@@ -21,6 +21,8 @@ import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
+import pronghorn.switch_factory.NoLogVersionFactory;
+
 import experiments.Util.HostPortPair;
 import experiments.Util;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
@@ -102,7 +104,9 @@ public class MultiControllerSpeculationThroughput
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                should_speculate,collect_statistics_period_ms);
+                should_speculate,collect_statistics_period_ms,
+                new NoLogVersionFactory());
+
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

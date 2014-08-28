@@ -13,6 +13,8 @@ import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
+import pronghorn.switch_factory.NoLogVersionFactory;
+
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.ReadOnlyThroughputJava.ReadOnly;
 import experiments.Util;
@@ -77,7 +79,8 @@ public class ReadOnlyThroughput
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                true,collect_statistics_period_ms);
+                true,collect_statistics_period_ms,
+                new NoLogVersionFactory());
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

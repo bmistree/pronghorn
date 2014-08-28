@@ -13,8 +13,9 @@ import pronghorn.FloodlightShim;
 import pronghorn.SwitchStatusHandler;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
-import experiments.OffOnApplicationJava.OffOnApplication;
+import pronghorn.switch_factory.NoLogVersionFactory;
 
+import experiments.OffOnApplicationJava.OffOnApplication;
 
 
 public class SingleHost
@@ -52,7 +53,8 @@ public class SingleHost
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                true,COLLECT_STATISTICS_PERIOD_MS);
+                true,COLLECT_STATISTICS_PERIOD_MS,
+                new NoLogVersionFactory());
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         boolean block_traffic = true;

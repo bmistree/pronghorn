@@ -56,6 +56,30 @@ public class FTableUpdate
         return to_return;
     }
 
+    @Override
+    public boolean equals(Object obj)
+    {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+
+        if (!(obj instanceof FTableUpdate))
+            return false;
+
+        FTableUpdate other = (FTableUpdate) obj;
+
+        if (other.insertion != insertion)
+            return false;
+
+        if (!other.match.equals(match))
+            return false;
+        
+        if (! other.instructions.equals(instructions))
+            return false;
+
+        return true;
+    }
 
     public static FTableUpdate deserialize(SingleFTableUpdate ft_update)
     {

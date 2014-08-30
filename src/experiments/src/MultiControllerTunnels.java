@@ -19,7 +19,8 @@ import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
-import pronghorn.switch_factory.NoLogVersionFactory;
+import RalphVersions.IVersionListener;
+import pronghorn.switch_factory.IVersionListenerFactory;
 
 import experiments.Util.HostPortPair;
 import experiments.Util;
@@ -36,7 +37,7 @@ public class MultiControllerTunnels
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 2;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
-
+    public static final int VERSION_LISTENER_ARG_INDEX = 5;
     
     public static Instance prong = null;
     public static MultiControllerTunnelsApp mc_tunnels_app = null;
@@ -50,7 +51,7 @@ public class MultiControllerTunnels
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 6)
         {
             print_usage();
             return;
@@ -76,6 +77,9 @@ public class MultiControllerTunnels
 
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
+        IVersionListenerFactory version_listener_factory =
+            VersionListenerFactoryArgs.produce_factory(
+                args[VERSION_LISTENER_ARG_INDEX]);
         
         /* Start up pronghorn */
         try
@@ -103,7 +107,7 @@ public class MultiControllerTunnels
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 true,collect_statistics_period_ms,
-                new NoLogVersionFactory());
+                version_listener_factory);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

@@ -21,7 +21,8 @@ import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
-import pronghorn.switch_factory.NoLogVersionFactory;
+import RalphVersions.IVersionListener;
+import pronghorn.switch_factory.IVersionListenerFactory;
 
 import experiments.Util.HostPortPair;
 import experiments.Util;
@@ -39,7 +40,8 @@ public class MultiControllerSpeculationThroughput
     public static final int SPECULATION_ON_ARG_INDEX = 3;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 4;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 5;
-
+    public static final int VERSION_LISTENER_ARG_INDEX = 6;
+    
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
 
@@ -52,7 +54,7 @@ public class MultiControllerSpeculationThroughput
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 6)
+        if (args.length != 7)
         {
             print_usage();
             return;
@@ -79,6 +81,10 @@ public class MultiControllerSpeculationThroughput
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
+        IVersionListenerFactory version_listener_factory =
+            VersionListenerFactoryArgs.produce_factory(
+                args[VERSION_LISTENER_ARG_INDEX]);
+        
         int threads_per_switch = 1;
 
         /* Start up pronghorn */
@@ -105,7 +111,7 @@ public class MultiControllerSpeculationThroughput
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 should_speculate,collect_statistics_period_ms,
-                new NoLogVersionFactory());
+                version_listener_factory);
 
 
         shim.subscribe_switch_status_handler(switch_status_handler);

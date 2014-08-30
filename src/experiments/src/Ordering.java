@@ -19,7 +19,7 @@ import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 import pronghorn.ft_ops.FTableUpdate;
 
-import pronghorn.switch_factory.NoLogVersionFactory;
+import pronghorn.switch_factory.IVersionListenerFactory;
 
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.OffOnApplicationJava.OffOnApplication;
@@ -50,7 +50,7 @@ public class Ordering
     private static final int ENSURE_ORDERING_ARG_INDEX = 2;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
     private static final int RESULT_FILENAME_ARG_INDEX = 4;
-
+    public static final int VERSION_LISTENER_ARG_INDEX = 5;
     
     // wait this long for pronghorn to add all switches
     private static final int SETTLING_TIME_WAIT = 1000;
@@ -58,9 +58,9 @@ public class Ordering
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 6)
         {
-            System.out.println("\nExpected 5 arguments.\n");
+            System.out.println("\nExpected 6 arguments.\n");
             print_usage();
             return;
         }
@@ -82,6 +82,11 @@ public class Ordering
 
         System.out.println(
             "\nEnsure ordering " + Boolean.toString(ensure_ordering));
+
+        IVersionListenerFactory version_listener_factory =
+            VersionListenerFactoryArgs.produce_factory(
+                args[VERSION_LISTENER_ARG_INDEX]);
+
         
         /* Start up pronghorn */
         Instance prong = null;
@@ -116,7 +121,7 @@ public class Ordering
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 true,collect_statistics_period_ms,
-                new NoLogVersionFactory());
+                version_listener_factory);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

@@ -23,7 +23,8 @@ import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
-import pronghorn.switch_factory.NoLogVersionFactory;
+import RalphVersions.IVersionListener;
+import pronghorn.switch_factory.IVersionListenerFactory;
 
 import experiments.Util.HostPortPair;
 import experiments.Util;
@@ -40,7 +41,8 @@ public class MultiControllerThroughput
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 2;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
-
+    public static final int VERSION_LISTENER_ARG_INDEX = 5;
+    
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
 
@@ -53,7 +55,7 @@ public class MultiControllerThroughput
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 6)
         {
             print_usage();
             return;
@@ -76,7 +78,10 @@ public class MultiControllerThroughput
             Integer.parseInt(args[COLLECT_STATISTICS_ARG_INDEX]);
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
-
+        IVersionListenerFactory version_listener_factory =
+            VersionListenerFactoryArgs.produce_factory(
+                args[VERSION_LISTENER_ARG_INDEX]);
+        
         int threads_per_switch = 1;
 
         /* Start up pronghorn */
@@ -103,7 +108,7 @@ public class MultiControllerThroughput
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 true,collect_statistics_period_ms,
-                new NoLogVersionFactory());
+                version_listener_factory);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

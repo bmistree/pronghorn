@@ -15,7 +15,7 @@ import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
-import pronghorn.switch_factory.NoLogVersionFactory;
+import pronghorn.switch_factory.IVersionListenerFactory;
 
 import experiments.Util.HostPortPair;
 import experiments.Util;
@@ -31,14 +31,15 @@ public class SingleControllerLatency
     public static final int NUMBER_THREADS_ARG_INDEX = 2;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
-
+    public static final int VERSION_LISTENER_ARG_INDEX = 5;
+    
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
     
     public static void main (String[] args) 
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 6)
         {
             print_usage();
             return;
@@ -58,6 +59,9 @@ public class SingleControllerLatency
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
+        IVersionListenerFactory version_listener_factory =
+            VersionListenerFactoryArgs.produce_factory(
+                args[VERSION_LISTENER_ARG_INDEX]);
         
         /* Start up pronghorn */
         Instance prong = null;
@@ -87,7 +91,7 @@ public class SingleControllerLatency
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 true,collect_statistics_period_ms,
-                new NoLogVersionFactory());
+                version_listener_factory);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

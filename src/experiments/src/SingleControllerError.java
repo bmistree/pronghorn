@@ -57,16 +57,17 @@ public class SingleControllerError
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
+        RalphGlobals ralph_globals = new RalphGlobals();
+        
         IVersionListenerFactory version_listener_factory =
             VersionListenerFactoryArgs.produce_factory(
-                args[VERSION_LISTENER_ARG_INDEX]);
+                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
 
         
         /* Start up pronghorn */
         Instance prong = null;
         GetNumberSwitches num_switches_app = null;
         ErrorApplication error_app = null;
-        RalphGlobals ralph_globals = new RalphGlobals();
         try
         {
             prong = new Instance(

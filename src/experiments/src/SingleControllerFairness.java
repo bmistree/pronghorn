@@ -58,17 +58,13 @@ public class SingleControllerFairness
         
         String result_filename = args[OUTPUT_FILENAME_INDEX];
 
-        IVersionListenerFactory version_listener_factory =
-            VersionListenerFactoryArgs.produce_factory(
-                args[VERSION_LISTENER_ARG_INDEX]);
-
         
         /* Start up pronghorn */
         Instance prong = null;
         GetNumberSwitches num_switches_app = null;
+        RalphGlobals ralph_globals = null;
         try
         {
-            RalphGlobals ralph_globals = null;
             if (use_wound_wait)
             {
                 RalphGlobals.Parameters rg_params =
@@ -100,6 +96,10 @@ public class SingleControllerFairness
             return;
         }
 
+        IVersionListenerFactory version_listener_factory =
+            VersionListenerFactoryArgs.produce_factory(
+                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
+        
         FloodlightShim shim = new FloodlightShim();
         
         SwitchStatusHandler switch_status_handler =

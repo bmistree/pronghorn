@@ -59,9 +59,11 @@ public class SingleControllerLatency
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
+        RalphGlobals ralph_globals = new RalphGlobals();
+        
         IVersionListenerFactory version_listener_factory =
             VersionListenerFactoryArgs.produce_factory(
-                args[VERSION_LISTENER_ARG_INDEX]);
+                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
         
         /* Start up pronghorn */
         Instance prong = null;
@@ -69,7 +71,6 @@ public class SingleControllerLatency
         OffOnApplication off_on_app = null;
         try
         {
-            RalphGlobals ralph_globals = new RalphGlobals();
             prong = new Instance(
                 ralph_globals,new SingleSideConnection());
             num_switches_app = new GetNumberSwitches(

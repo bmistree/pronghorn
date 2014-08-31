@@ -92,7 +92,7 @@ public class MultiControllerError
         
         IVersionListenerFactory version_listener_factory =
             VersionListenerFactoryArgs.produce_factory(
-                args[VERSION_LISTENER_ARG_INDEX]);
+                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
         
         /* Start up pronghorn */
         GetNumberSwitches num_switches_app = null;

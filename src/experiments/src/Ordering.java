@@ -83,9 +83,10 @@ public class Ordering
         System.out.println(
             "\nEnsure ordering " + Boolean.toString(ensure_ordering));
 
+        RalphGlobals ralph_globals = new RalphGlobals();
         IVersionListenerFactory version_listener_factory =
             VersionListenerFactoryArgs.produce_factory(
-                args[VERSION_LISTENER_ARG_INDEX]);
+                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
 
         
         /* Start up pronghorn */
@@ -94,7 +95,6 @@ public class Ordering
         OffOnApplication off_on_app = null;
         try
         {
-            RalphGlobals ralph_globals = new RalphGlobals();
             prong = new Instance(
                 ralph_globals,new SingleSideConnection());
             num_switches_app = new GetNumberSwitches(

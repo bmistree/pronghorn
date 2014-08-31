@@ -122,10 +122,6 @@ public class MultiControllerFairness
             Integer.parseInt(args[COLLECT_STATISTICS_ARG_INDEX]);
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
-
-        IVersionListenerFactory version_listener_factory =
-            VersionListenerFactoryArgs.produce_factory(
-                args[VERSION_LISTENER_ARG_INDEX]);
         
         if (use_wound_wait)
         {
@@ -140,6 +136,10 @@ public class MultiControllerFairness
             System.out.println("\nRalph-scheduling\n");
             ralph_globals = new RalphGlobals();
         }
+
+        IVersionListenerFactory version_listener_factory =
+            VersionListenerFactoryArgs.produce_factory(
+                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
 
         /* Start up pronghorn */
         try

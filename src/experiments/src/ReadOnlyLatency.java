@@ -56,10 +56,11 @@ public class ReadOnlyLatency
             Integer.parseInt(args[COLLECT_STATISTICS_ARG_INDEX]);
 
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
-
+        
+        RalphGlobals ralph_globals = new RalphGlobals();
         IVersionListenerFactory version_listener_factory =
             VersionListenerFactoryArgs.produce_factory(
-                args[VERSION_LISTENER_ARG_INDEX]);
+                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
 
         
         /* Start up pronghorn */
@@ -68,7 +69,6 @@ public class ReadOnlyLatency
         ReadOnly read_only_app = null;
         try
         {
-            RalphGlobals ralph_globals = new RalphGlobals();
             prong = new Instance(
                 ralph_globals,new SingleSideConnection());
             num_switches_app = new GetNumberSwitches(

@@ -50,7 +50,6 @@ public class VersionedFTableUpdatesWithMetadata
             // just reference staged values from previous update.
             ftable_updates = null;
         }
-
     }
 
     private static List<FTableUpdate> produce_ftable_updates_from_update_msg(

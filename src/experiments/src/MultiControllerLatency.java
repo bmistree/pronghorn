@@ -210,6 +210,9 @@ public class MultiControllerLatency
 
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
+        
+        // VERSION_LISTENER_ARG_INDEX
+        usage_string += VersionListenerFactoryArgs.usage_string();
 
         System.out.println(usage_string);
     }

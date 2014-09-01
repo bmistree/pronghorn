@@ -21,6 +21,17 @@ public enum VersionListenerFactoryArgs
         name = _name;
     }
 
+    /**
+       @returns A string that can be used as part of usage message to
+       say what arguments this expects.
+     */
+    public static String usage_string()
+    {
+        return "\n\t<String>: version listener factory type.  Either " +
+            NO_LISTENER_FACTORY.name + " for no version listener or " +
+            SWITCH_LISTENER_FACTORY.name + " for a version listener.\n";
+    }
+    
     public static IVersionListenerFactory produce_factory(
         String factory_name,RalphGlobals ralph_globals)
     {

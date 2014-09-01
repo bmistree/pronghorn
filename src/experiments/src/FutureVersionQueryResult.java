@@ -7,17 +7,19 @@ import java.util.concurrent.locks.Condition;
 import java.util.concurrent.TimeUnit;
 
 import pronghorn.ft_ops.FTableUpdate;
+import pronghorn.ft_ops.VersionedFTableUpdatesWithMetadata;
 
 public class FutureVersionQueryResult
-    implements Future<List<FTableUpdate>>
+    implements Future<List<VersionedFTableUpdatesWithMetadata>>
 {
-    private List<FTableUpdate> result = null;
+    private List<VersionedFTableUpdatesWithMetadata> result = null;
     private boolean result_set = false;
     private ReentrantLock mutex = new ReentrantLock();
     private Condition condition = mutex.newCondition();
     
     
-    public void put_result(List<FTableUpdate> _result)
+    public void put_result(
+        List<VersionedFTableUpdatesWithMetadata> _result)
     {
         mutex.lock();
         result = _result;
@@ -41,7 +43,7 @@ public class FutureVersionQueryResult
        retrieves its result.
      */
     @Override
-    public List<FTableUpdate> get()
+    public List<VersionedFTableUpdatesWithMetadata> get()
     {
         mutex.lock();
         try
@@ -69,7 +71,7 @@ public class FutureVersionQueryResult
        available.
     */
     @Override
-    public List<FTableUpdate> get(long timeout, TimeUnit unit)
+    public List<VersionedFTableUpdatesWithMetadata> get(long timeout, TimeUnit unit)
     {
         // FIXME: should never call.
         System.err.println(

@@ -17,7 +17,7 @@ public class VersionUpdateSerializer
         implements IDeviceSpecificUpdateSerializer<List<FTableUpdate>>
     {
         @Override
-            public ByteString serialize(List<FTableUpdate> to_serialize)
+        public ByteString serialize(List<FTableUpdate> to_serialize)
         {
             FTableUpdates.Builder table_builder =
                 FTableUpdate.serialize_update_list(to_serialize);

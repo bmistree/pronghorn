@@ -7,6 +7,9 @@ alias Struct Switch as 'pronghorn.SwitchJava.Switch';
 #include 'port_stats.rph'
 alias Struct PortStats as 'pronghorn.PortStatsJava.PortStats';
 
+#include 'port.rph'
+alias Service PortUtil as 'pronghorn.PortJava.PortUtil';
+
 alias Service FlowTableUtil as 'pronghorn.FTable.FlowTableUtil';
 alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
 
@@ -16,6 +19,7 @@ Service Instance
     // This is switch map that gets passed to root user.
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
     Service FlowTableUtil shared_ft_util;
+    Service PortUtil shared_port_util;
     Number ROOT_PRINCIPAL_ID = 0;
     
     // called from external code
@@ -28,7 +32,7 @@ Service Instance
 
         
         Service WrappedSwitch ws;
-        ws.init(to_add,shared_ft_util,ac);
+        ws.init(to_add,shared_ft_util,shared_port_util,ac);
         
         Struct StructWrappedSwitch sws;
         sws.wrapped_switch = ws;
@@ -105,7 +109,9 @@ Service Instance
                         // switch.  add it to principal's switch map
                         Struct StructWrappedSwitch sws_to_add;
                         Service WrappedSwitch ws;
-                        ws.init(internal_switch,shared_ft_util,acl);
+                        ws.init(
+                            internal_switch,shared_ft_util,
+                            shared_port_util,acl);
                         sws.wrapped_switch = ws;
                         to_return.set(switch_id,sws_to_add);
                     }

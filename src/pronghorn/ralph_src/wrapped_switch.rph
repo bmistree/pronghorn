@@ -1,12 +1,18 @@
 #include 'switch.rph'
 alias Struct Switch as 'pronghorn.SwitchJava.Switch';
+
 #include 'switch_delta.rph'
-#include 'flow_table_entry.rph'
 alias Struct FlowTableDelta as 'pronghorn.SwitchDeltaJava.FlowTableDelta';
+alias Struct PortDelta as 'pronghorn.SwitchDeltaJava.PortDelta';
+
+#include 'flow_table_entry.rph'
 alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
 
 alias Service FlowTableUtil as 'pronghorn.FTable.FlowTableUtil';
 alias Service WrappedSwitch as 'pronghorn.WrappedSwitchJava.WrappedSwitch';
+
+#include 'port.rph'
+alias Service PortUtil as 'pronghorn.PortJava.PortUtil';
 
 #include 'port_stats.rph'
 alias Struct PortStats as 'pronghorn.PortStatsJava.PortStats';
@@ -24,7 +30,8 @@ Service WrappedSwitch
 {
     Struct Switch wrapped_switch = null;
     Service FlowTableUtil ft_util = null;
-
+    Service PortUtil port_util = null;
+    
     // Applications interact with a wrapped switch.  access_control should be
     // checked to ensure operations application makes are valid.
     Struct AccessControl access_control = null;
@@ -32,10 +39,11 @@ Service WrappedSwitch
     // called by root instance only.  
     init(
         Struct Switch wrapped_switch_, Service FlowTableUtil ft_util_,
-        Struct AccessControl access_control_)
+        Service PortUtil port_util_, Struct AccessControl access_control_)
     {
         wrapped_switch = wrapped_switch_;
         ft_util = ft_util_;
+        port_util = port_util_;
         access_control = access_control_;
     }
     // called by root instance only
@@ -137,8 +145,14 @@ Service WrappedSwitch
 
     set_available_port (Number port_number, Struct Port to_add)
     {
-        write_lock_available_ports();
-        wrapped_switch.available_ports.set(port_number,to_add);
+        Struct PortDelta port_delta;
+        atomically
+        {
+            write_lock_available_ports();
+            port_delta.entry = port_util.copy(to_add);
+            wrapped_switch.available_ports.set(port_number,to_add);
+            wrapped_switch.delta.port_deltas.append(port_delta);
+        }
     }
 
     get_available_port(Number port_number) returns Struct Port

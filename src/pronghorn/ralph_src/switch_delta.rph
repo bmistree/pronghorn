@@ -6,7 +6,7 @@ alias Struct Port as 'pronghorn.PortJava.Port';
 
 Struct PortDelta
 {
-    // empty for now.
+    Struct Port entry = null;
 }
 
 Struct FlowTableDelta

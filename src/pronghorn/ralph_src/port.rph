@@ -19,3 +19,19 @@ Struct Port
     // change any of the port's 
     TVar TrueFalse other_end_available;
 }
+
+Service PortUtil
+{
+    copy (Struct Port to_copy) returns Struct Port
+    {
+        Struct Port to_return;
+        to_return.local_switch_id = to_copy.local_switch_id;
+        to_return.local_port_number = to_copy.local_port_number;
+        to_return.remote_switch_id = to_copy.remote_switch_id;
+        to_return.remote_port_number = to_copy.remote_port_number;
+        to_return.port_up = to_copy.port_up;
+        to_return.other_end_available = to_copy.other_end_available;
+        
+        return to_return;
+    }    
+}

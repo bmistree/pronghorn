@@ -27,7 +27,7 @@ Struct Switch
     TVar Map (from: Number, to: Struct Port) available_ports;
 
     Struct SwitchDelta delta = null;
-
+    
     // initialize all port stats to 0.
     Map (from: Number, to: Struct PortStats) port_stats;
 

@@ -123,6 +123,18 @@ Service WrappedSwitch
     {
         wrapped_switch.delta.switch_lock;
     }
+
+    // @see notes for read_lock_switch, except for available_ports field
+    read_lock_available_ports()
+    {
+        wrapped_switch.delta.available_ports_lock;
+    }
+    // @see notes for write_lock_switch, except for available_ports field
+    write_lock_available_ports()
+    {
+        wrapped_switch.delta.available_ports_lock = 55;
+    }
+
     
     add_entry(Struct FlowTableEntry to_add) returns TrueFalse
     {

@@ -25,6 +25,7 @@ Struct SwitchDelta
     // note: invariant is that before performing any writes to port_deltas,
     // ft_deltas, or ftable (in Struct Switch), will write to switch_lock first.
     TVar Number switch_lock = 0;
+    TVar Number available_ports_lock = 0;
     TVar List(element: Struct PortDelta) port_deltas;
     TVar List(element: Struct FlowTableDelta) ft_deltas;
 }

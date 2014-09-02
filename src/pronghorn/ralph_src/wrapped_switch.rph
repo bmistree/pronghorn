@@ -135,6 +135,17 @@ Service WrappedSwitch
         wrapped_switch.delta.available_ports_lock = 55;
     }
 
+    set_available_port (Number port_number, Struct Port to_add)
+    {
+        write_lock_available_ports();
+        wrapped_switch.available_ports.set(port_number,to_add);
+    }
+
+    get_available_port(Number port_number) returns Struct Port
+    {
+        read_lock_available_ports();
+        return wrapped_switch.available_ports.get(port_number);
+    }
     
     add_entry(Struct FlowTableEntry to_add) returns TrueFalse
     {

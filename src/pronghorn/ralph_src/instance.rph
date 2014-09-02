@@ -127,20 +127,27 @@ Service Instance
                 {
                     Struct StructWrappedSwitch sws = null;
                     sws = switch_map.get(local_switch_id);
+                    Service WrappedSwitch wrapped_switch = null;
+                    wrapped_switch = sws.wrapped_switch;
                     {
                         Struct Switch internal_switch =
-                            sws.wrapped_switch.get_switch();
+                            wrapped_switch.get_switch();
+
+                        Struct Port existing_port =
+                            wrapped_switch.get_available_port(
+                                local_port_number);
 
                         // filter out ports we already have
-                        if (not internal_switch.available_ports.contains(local_port_number))
-                            internal_switch.available_ports.set(local_port_number,port);
-                        else
+                        if (existing_port == null)
                         {
-                            Struct Port existing_port =
-                                internal_switch.available_ports.get(local_port_number);
-                            
-                            if (existing_port.remote_switch_id != port.remote_switch_id)
-                                internal_switch.available_ports.set(local_port_number,port);
+                            wrapped_switch.set_available_port(
+                                local_port_number,port);
+                        }
+                        elif (existing_port.remote_switch_id !=
+                            port.remote_switch_id)
+                        {
+                            wrapped_switch.set_available_port(
+                                local_port_number,port);
                         }
                     }
                 }

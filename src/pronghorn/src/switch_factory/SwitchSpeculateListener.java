@@ -37,47 +37,20 @@ public class SwitchSpeculateListener implements ISpeculateListener
         switch_guard = _switch_guard;
     }
 
-
     @Override
     public void speculate(ActiveEvent active_event)
     {
         AtomicInternalList<_InternalFlowTableEntry,_InternalFlowTableEntry>
             internal_ft_list = get_internal_ft_list();
-        AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
-            internal_ft_deltas_list = get_internal_ft_deltas_list();
-
         internal_ft_list.speculate(active_event);
 
-        // NOTE: speculate for internal_ft_deltas_list called in
-        // DeltaListStateSupplier.  This is because when we speculate
-        // we overwrite dirty_val, which DeltaListStateSupplier
-        // actually needs.  See Issue #10.
+        // NOTE: speculate for internal value of internal_ft_list is
+        // called in DeltaListStateSupplier.  This is because when we
+        // speculate we overwrite dirty_val, which
+        // DeltaListStateSupplier actually needs.  See Issue #10.
         switch_guard.speculate(active_event);
     }
 
-
-    private AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
-        get_internal_ft_deltas_list()
-    {
-        // these accesses are safe, because we assume the invariant
-        // that will only receive changes on PronghornSwitchGuard
-        // if no other event is writing to them.
-
-        // grabbing ft_deltas to actually get changes made to hardware.
-        AtomicListVariable<_InternalFlowTableDelta,_InternalFlowTableDelta>
-            ft_deltas_list = switch_delta.ft_deltas;
-        AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
-            internal_ft_deltas_list = null;
-
-        ft_deltas_list._lock();
-        if (ft_deltas_list.dirty_val != null)
-            internal_ft_deltas_list = ft_deltas_list.dirty_val.val;
-        else
-            internal_ft_deltas_list = ft_deltas_list.val.val;
-        ft_deltas_list._unlock();
-        
-        return internal_ft_deltas_list;
-    }
 
     private AtomicInternalList<_InternalFlowTableEntry,_InternalFlowTableEntry>
         get_internal_ft_list()

@@ -2,22 +2,22 @@ Struct Port
 {
     // Not making these tvars because expectation is that these are
     // write-once variables.
-    Text local_switch_id;
-    Number local_port_number;
+    Text local_switch_id = null;
+    Number local_port_number = null;
 
-    Text remote_switch_id;
-    Number remote_port_number;
+    Text remote_switch_id = null;
+    Number remote_port_number = null;
 
     // User's modulating bringing the link between two switches down
     // or bring it up.  True if port is up, false if it is not.
-    TVar TrueFalse port_up;
+    TVar TrueFalse port_up = null;
 
     // If have two, connected switches join the network
     // simultaneously, then when one comes up it will announce all of
     // its ports, including a connection to a switch that does not yet
     // exist in the network.  In this case, user should not be able to
     // change any of the port's 
-    TVar TrueFalse other_end_available;
+    TVar TrueFalse other_end_available = null;
 }
 
 Service PortUtil

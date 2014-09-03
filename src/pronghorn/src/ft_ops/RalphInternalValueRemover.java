@@ -13,7 +13,7 @@ import ralph.AtomicInternalList;
      Double table_id =
         RalphInternalValueRemover.<Double>get_internal(goto_table.table_id);
 */
-class RalphInternalValueRemover
+public class RalphInternalValueRemover
 {
     // This notation allows calling method statically.
     public static <InternalType> InternalType get_internal(

@@ -73,7 +73,5 @@ public class SwitchSpeculateListener implements ISpeculateListener
         ft_list._unlock();
         
         return internal_ft_list;
-    }
-
-    
+    }    
 }

@@ -90,8 +90,12 @@ public class MultiControllerError
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
         
-        IVersionListenerFactory version_listener_factory =
-            VersionListenerFactoryArgs.produce_factory(
+        IVersionListenerFactory ft_version_listener_factory =
+            VersionListenerFactoryArgs.produce_flow_table_factory(
+                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
+
+        IVersionListenerFactory port_version_listener_factory =
+            VersionListenerFactoryArgs.produce_ports_factory(
                 args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
         
         /* Start up pronghorn */
@@ -121,7 +125,7 @@ public class MultiControllerError
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 false,collect_statistics_period_ms,
-                version_listener_factory);
+                ft_version_listener_factory,port_version_listener_factory);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -153,14 +157,16 @@ public class MultiControllerError
             }
         }
 
-        IVersionListenerFactory version_factory = version_listener_factory;
+        IVersionListenerFactory ft_version_factory = ft_version_listener_factory;
+        IVersionListenerFactory port_version_factory = port_version_listener_factory;
         // wait for first switch to connect
         Util.wait_on_switches(num_switches_app);
         String faulty_switch_id = "some_switch";
         ErrorUtil.add_faulty_switch(
             ralph_globals,faulty_switch_id, SHOULD_SPECULATE,
             failure_probability,prong,
-            version_factory.construct(faulty_switch_id));
+            ft_version_factory.construct(faulty_switch_id),
+            port_version_factory.construct(faulty_switch_id));
         List<String> switch_id_list =
             Util.get_switch_id_list (num_switches_app);
 

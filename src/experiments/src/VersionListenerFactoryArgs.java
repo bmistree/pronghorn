@@ -32,7 +32,7 @@ public enum VersionListenerFactoryArgs
             SWITCH_LISTENER_FACTORY.name + " for a version listener.\n";
     }
     
-    public static IVersionListenerFactory produce_factory(
+    public static IVersionListenerFactory produce_flow_table_factory(
         String factory_name,RalphGlobals ralph_globals)
     {
         if (factory_name.equals(NO_LISTENER_FACTORY.name))
@@ -45,7 +45,15 @@ public enum VersionListenerFactoryArgs
                 DEFAULT_TCP_VERSION_SERVER_IP_ADDRESS,
                 DEFAULT_TCP_VERSION_SERVER_PORT,ralph_globals);
         }
-        
         return null;
     }
+
+    public static IVersionListenerFactory produce_ports_factory(
+        String factory_name,RalphGlobals ralph_globals)
+    {
+        // FIXME: should eventually add other factories to listen to
+        // port changes.
+        return new NoLogVersionFactory();
+    }
+    
 }

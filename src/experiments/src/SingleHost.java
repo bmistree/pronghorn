@@ -54,6 +54,7 @@ public class SingleHost
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 true,COLLECT_STATISTICS_PERIOD_MS,
+                new NoLogVersionFactory(),
                 new NoLogVersionFactory());
 
         shim.subscribe_switch_status_handler(switch_status_handler);

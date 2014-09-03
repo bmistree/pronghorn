@@ -84,8 +84,11 @@ public class Ordering
             "\nEnsure ordering " + Boolean.toString(ensure_ordering));
 
         RalphGlobals ralph_globals = new RalphGlobals();
-        IVersionListenerFactory version_listener_factory =
-            VersionListenerFactoryArgs.produce_factory(
+        IVersionListenerFactory ft_version_listener_factory =
+            VersionListenerFactoryArgs.produce_flow_table_factory(
+                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
+        IVersionListenerFactory port_version_listener_factory =
+            VersionListenerFactoryArgs.produce_ports_factory(
                 args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
 
         
@@ -121,7 +124,7 @@ public class Ordering
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 true,collect_statistics_period_ms,
-                version_listener_factory);
+                ft_version_listener_factory,port_version_listener_factory);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

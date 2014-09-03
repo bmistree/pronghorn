@@ -59,10 +59,12 @@ public class SingleControllerError
 
         RalphGlobals ralph_globals = new RalphGlobals();
         
-        IVersionListenerFactory version_listener_factory =
-            VersionListenerFactoryArgs.produce_factory(
+        IVersionListenerFactory ft_version_listener_factory =
+            VersionListenerFactoryArgs.produce_flow_table_factory(
                 args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-
+        IVersionListenerFactory port_version_listener_factory =
+            VersionListenerFactoryArgs.produce_ports_factory(
+                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
         
         /* Start up pronghorn */
         Instance prong = null;
@@ -94,7 +96,7 @@ public class SingleControllerError
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
                 SHOULD_SPECULATE,collect_statistics_period_ms,
-                version_listener_factory);
+                ft_version_listener_factory, port_version_listener_factory);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -115,7 +117,8 @@ public class SingleControllerError
         ErrorUtil.add_faulty_switch(
             ralph_globals,faulty_switch_id, SHOULD_SPECULATE,
             failure_probability,prong,
-            version_listener_factory.construct(faulty_switch_id));
+            ft_version_listener_factory.construct(faulty_switch_id),
+            port_version_listener_factory.construct(faulty_switch_id));
         
         List<String> switch_id_list =
             Util.get_switch_id_list (num_switches_app);

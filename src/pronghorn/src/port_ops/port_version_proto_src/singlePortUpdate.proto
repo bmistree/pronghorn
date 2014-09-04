@@ -1,0 +1,12 @@
+option java_package = "port_ops.serialized_update";
+option java_outer_classname = "SinglePortUpdateProto";
+
+message SinglePortUpdate
+{
+    required string local_switch_id = 1;
+    required int32 local_port_number = 2;
+    required string remote_switch_id = 3;
+    required int32 remote_port_number = 4;
+    required bool port_up = 5;
+    required bool other_end_available = 6;
+}

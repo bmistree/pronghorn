@@ -1,0 +1,9 @@
+option java_package = "port_ops.serialized_update";
+option java_outer_classname = "PortUpdatesProto";
+
+import "singlePortUpdate.proto";
+
+message PortUpdates
+{
+    repeated SinglePortUpdate updates = 1;
+}

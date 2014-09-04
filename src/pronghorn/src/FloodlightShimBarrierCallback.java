@@ -1,5 +1,8 @@
 package pronghorn;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import net.floodlightcontroller.pronghornmodule.IPronghornBarrierCallback;
 
 import java.util.Set;
@@ -9,6 +12,10 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class FloodlightShimBarrierCallback implements IPronghornBarrierCallback
 {
+    protected static final Logger log =
+        LoggerFactory.getLogger(FloodlightShimBarrierCallback.class);
+
+    
     private Set<Integer> xids = new HashSet<Integer>();
     private Set<Integer> failed_xids = new HashSet<Integer>();
 
@@ -67,6 +74,9 @@ public class FloodlightShimBarrierCallback implements IPronghornBarrierCallback
     @Override
     public void barrier_failure()
     {
+        log.warn(
+            "Warning: received barrier failure from floodlight.  " +
+            "Could be timeout or genuine failure.");
         succeeded = false;
         synchronized(has_finished)
         {

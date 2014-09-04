@@ -157,8 +157,16 @@ Service WrappedSwitch
 
     get_available_port(Number port_number) returns Struct Port
     {
-        read_lock_available_ports();
-        return wrapped_switch.available_ports.get(port_number);
+        Struct Port port = null;
+        atomically
+        {
+            read_lock_available_ports();
+            TVar Map (from: Number, to: Struct Port) available_ports = null;
+            available_ports = wrapped_switch.available_ports;
+            if (available_ports.contains(port_number))
+                port = available_ports.get(port_number);
+        }
+        return port;
     }
     
     add_entry(Struct FlowTableEntry to_add) returns TrueFalse

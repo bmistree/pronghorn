@@ -8,6 +8,9 @@ import pronghorn.SwitchDeltaJava._InternalPortDelta;
 
 import pronghorn.ft_ops.RalphInternalValueRemover;
 
+import port_ops.serialized_update.SinglePortUpdateProto.SinglePortUpdate;
+import port_ops.serialized_update.PortUpdatesProto.PortUpdates;
+
 public class PortUpdate
 {
     public final String local_switch_id;
@@ -30,6 +33,30 @@ public class PortUpdate
         other_end_available = _other_end_available;
     }
 
+    public SinglePortUpdate.Builder serialize()
+    {
+        SinglePortUpdate.Builder to_return =
+            SinglePortUpdate.newBuilder();
+
+        to_return.setLocalSwitchId(local_switch_id);
+        to_return.setLocalPortNumber(local_port_number);
+        to_return.setRemoteSwitchId(remote_switch_id);
+        to_return.setRemotePortNumber(remote_port_number);
+        to_return.setPortUp(port_up);
+        to_return.setOtherEndAvailable(other_end_available);
+        return to_return;
+    }
+
+    public static PortUpdates.Builder serialize_update_list(
+        List<PortUpdate> update_list)
+    {
+        PortUpdates.Builder to_return = PortUpdates.newBuilder();
+        for (PortUpdate port_update : update_list)
+            to_return.addUpdates(port_update.serialize());
+        return to_return;
+    }
+    
+    
     /**
        Generate a port update from a single port update.
 

@@ -128,11 +128,28 @@ public class SingleControllerThroughput
         }        
 
         List<OffOnApplication> off_on_app_list =
+            create_off_on_app_list(num_switches,prong,ralph_globals);
+
+        run_experiments(
+            switch_ids,off_on_app_list,num_ops_to_run,
+            num_warmup_ops_to_run, coarse_locking,
+            threads_per_switch,output_filename,num_switches);
+        
+        // actually tell shims to stop.
+        shim.stop();
+
+        Util.force_shutdown();
+    }
+
+    public static List<OffOnApplication> create_off_on_app_list(
+        int num_switches,Instance prong, RalphGlobals ralph_globals)
+    {
+        List<OffOnApplication> off_on_app_list = 
             new ArrayList<OffOnApplication>();        
         try
         {
             OffOnApplication off_on_app = null;
-            
+
             for (int i = 0; i < num_switches; ++i)
             {
                 off_on_app = new OffOnApplication(
@@ -149,11 +166,18 @@ public class SingleControllerThroughput
         {
             System.out.println("Unknown exception error.");
             ex.printStackTrace();
-            System.out.println("\n\n");
             had_exception.set(true);
             assert(false);
+            System.exit(-1);
         }
-        
+        return off_on_app_list;
+    }
+
+    public static void run_experiments(
+        List<String>switch_ids, List<OffOnApplication> off_on_app_list,
+        int num_ops_to_run, int num_warmup_ops_to_run, boolean coarse_locking,
+        int threads_per_switch, String output_filename, int num_switches)
+    {
         /* Spawn thread per switch to operate on it */
         ArrayList<Thread> threads = new ArrayList<Thread>();
         ArrayList<Thread> warmup_threads = new ArrayList<Thread>();
@@ -207,12 +231,12 @@ public class SingleControllerThroughput
             had_exception.set(true);
             return;
         }
-        
+
         // do actual ops
         long start = System.nanoTime();
         for (Thread t: threads)
             t.start();
-        
+
         for (Thread t : threads) {
             try {
                 t.join();
@@ -223,7 +247,7 @@ public class SingleControllerThroughput
             }
         }
         long end = System.nanoTime();
-        long elapsedNano = end-start;
+        long elapsed_nano = end-start;
 
 
         // output results
@@ -231,17 +255,12 @@ public class SingleControllerThroughput
         String results_to_write = string_buffer.toString();
         if (had_exception.get())
             results_to_write = "HAD AN EXCEPTION";
-        
+
         Util.write_results_to_file(output_filename,results_to_write);
         Util.print_throughput_results(
-            num_switches,threads_per_switch,num_ops_to_run,elapsedNano);
-        
-        // actually tell shims to stop.
-        shim.stop();
-
-        Util.force_shutdown();
+            num_switches,threads_per_switch,num_ops_to_run,elapsed_nano);
     }
-
+    
     private static void print_usage()
     {
         String usage_string = "";

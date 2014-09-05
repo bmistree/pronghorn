@@ -115,13 +115,8 @@ Service OffOnApplication
         entry_to_add.match = match;
         entry_to_add.instructions = instructions;
 
-        // actually add the entry.
-        Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
-        target_switch.wrapped_switch.add_entry(entry_to_add);
-
         // find the switch and add the entry to it.
         Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
-
         atomically
         {
             target_switch.wrapped_switch.add_entry(entry_to_add);

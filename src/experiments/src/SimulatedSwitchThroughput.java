@@ -77,10 +77,16 @@ public class SimulatedSwitchThroughput
         
         /* Start up pronghorn */
         Instance prong = null;
+        GetNumberSwitches num_switches_app = null;
         try
         {
             prong = new Instance(
                 ralph_globals,new SingleSideConnection());
+
+            num_switches_app = new GetNumberSwitches(
+                ralph_globals,new SingleSideConnection());
+
+            prong.add_application(num_switches_app,Util.ROOT_APP_ID);            
         }
         catch (Exception _ex)
         {
@@ -134,13 +140,15 @@ public class SimulatedSwitchThroughput
             }
         }
 
-                
+        List<String> internal_switch_id_list =
+            Util.get_switch_id_list ( num_switches_app);
+        
         List<OffOnApplication> off_on_app_list =
             SingleControllerThroughput.create_off_on_app_list(
                 num_switches,prong,ralph_globals);
-        
+
         SingleControllerThroughput.run_experiments(
-            switch_ids,off_on_app_list,num_ops_to_run,
+            internal_switch_id_list,off_on_app_list,num_ops_to_run,
             num_warmup_ops_to_run, COARSE_LOCKING,
             THREADS_PER_SWITCH,output_filename,num_switches);
         

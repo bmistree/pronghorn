@@ -345,7 +345,7 @@
                multi_controller_error,ordering,
                single_controller_fairness,read_only,multi_controller_tunnels,
                multi_controller_speculation_throughput,read_only_throughput,
-               time_to_query_all"
+               time_to_query_all,simulated_switch_throughput"
       description="create jars for each type of experiment">
   </target>
 
@@ -387,6 +387,21 @@
     </antcall>
   </target>
 
+  <!-- Run pronghorn disconnected from floodlight/real switches -->
+  <property
+      name="simulated_switch_throughput_jar"
+      value="simulated_switch_throughput.jar"/>
+  <target
+      name="simulated_switch_throughput"
+      depends="compile_experiments"
+      description="Run a single pronghorn instance not connected to floodlight.">
+    <antcall target="make_jar">
+      <param name="main_class" value="SimulatedSwitchThroughput"/>
+      <param name="dest_jar" value="${simulated_switch_throughput_jar}"/>
+    </antcall>
+  </target>
+
+  
   
   <!-- Single controller latency jar -->
   <property
@@ -644,6 +659,8 @@
     <delete file="${multi_controller_tunnels_jar}"/>
     <delete file="${multi_controller_speculation_throughput_jar}"/>
     <delete file="${read_only_throughput_jar}"/>
+    <delete file="${time_to_query_all_jar}"/>
+    <delete file="${simulated_switch_throughput_jar}"/>
     
   </target>
 

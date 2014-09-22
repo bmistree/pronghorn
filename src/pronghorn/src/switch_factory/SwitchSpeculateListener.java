@@ -10,6 +10,7 @@ import ralph.AtomicInternalList;
 import ralph.Variables.AtomicListVariable;
 import ralph.ActiveEvent;
 import ralph.RalphObject;
+import ralph.IReference;
 
 import pronghorn.SwitchDeltaJava._InternalFlowTableDelta;
 import pronghorn.FTable._InternalFlowTableEntry;
@@ -40,7 +41,7 @@ public class SwitchSpeculateListener implements ISpeculateListener
     @Override
     public void speculate(ActiveEvent active_event)
     {
-        AtomicInternalList<_InternalFlowTableEntry,_InternalFlowTableEntry>
+        AtomicInternalList<_InternalFlowTableEntry,IReference>
             internal_ft_list = get_internal_ft_list();
         internal_ft_list.speculate(active_event);
 
@@ -52,7 +53,7 @@ public class SwitchSpeculateListener implements ISpeculateListener
     }
 
 
-    private AtomicInternalList<_InternalFlowTableEntry,_InternalFlowTableEntry>
+    private AtomicInternalList<_InternalFlowTableEntry,IReference>
         get_internal_ft_list()
     {
         // these accesses are safe, because we assume the invariant
@@ -60,9 +61,9 @@ public class SwitchSpeculateListener implements ISpeculateListener
         // if no other event is writing to them.
 
         // grabbing internal_ft_list in case we need to speculate on it.
-        AtomicListVariable<_InternalFlowTableEntry,_InternalFlowTableEntry>
+        AtomicListVariable<_InternalFlowTableEntry,IReference>
             ft_list = internal_switch.ftable;
-        AtomicInternalList<_InternalFlowTableEntry,_InternalFlowTableEntry>
+        AtomicInternalList<_InternalFlowTableEntry,IReference>
             internal_ft_list = null;
 
         ft_list._lock();

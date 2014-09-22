@@ -45,6 +45,7 @@ import net.floodlightcontroller.packet.Ethernet;
 import RalphExtended.IHardwareStateSupplier;
 import ralph.ActiveEvent;
 import ralph.RalphObject;
+import ralph.IReference;
 import ralph.AtomicObject;
 import ralph.AtomicInternalList;
 import ralph.Variables.AtomicListVariable;
@@ -106,7 +107,7 @@ public class DeltaListStateSupplier
     public List<FTableUpdate> get_state_to_push(ActiveEvent active_event)
     {
         // FIXME: ensure that this is a safe access.
-        AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
+        AtomicInternalList<_InternalFlowTableDelta,IReference>
             internal_ft_deltas_list = get_internal_ft_deltas_list();
 
         // We can get null here if the transaction has been backed
@@ -116,7 +117,7 @@ public class DeltaListStateSupplier
 
         // FIXME: ensure that this is a safe access.  May have to lock
         // internal_ft_deltas_list object first.
-        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> internal_list =
+        List<RalphObject<_InternalFlowTableDelta,IReference>> internal_list =
             null;
         internal_ft_deltas_list._lock();
         if (internal_ft_deltas_list.dirty_val != null)
@@ -124,7 +125,7 @@ public class DeltaListStateSupplier
         else
         {
             internal_list =
-                new ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>();
+                new ArrayList<RalphObject<_InternalFlowTableDelta,IReference>>();
         }
         internal_ft_deltas_list._unlock();
         
@@ -140,14 +141,14 @@ public class DeltaListStateSupplier
         internal_ft_deltas_list.force_speculate(
             active_event,
             // so that resets delta list
-            new ArrayList<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>>(),
+            new ArrayList<RalphObject<_InternalFlowTableDelta,IReference>>(),
             // forces update on internal val
             true);
 
         return to_return;
     }
     
-    private AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
+    private AtomicInternalList<_InternalFlowTableDelta,IReference>
         get_internal_ft_deltas_list()
     {
         // these accesses are safe, because we assume the invariant
@@ -155,17 +156,16 @@ public class DeltaListStateSupplier
         // if no other event is writing to them.
 
         // grabbing ft_deltas to actually get changes made to hardware.
-        AtomicListVariable<_InternalFlowTableDelta,_InternalFlowTableDelta>
+        AtomicListVariable<_InternalFlowTableDelta,IReference>
             ft_deltas_list = switch_delta.ft_deltas;
-        AtomicInternalList<_InternalFlowTableDelta,_InternalFlowTableDelta>
+        AtomicInternalList<_InternalFlowTableDelta,IReference>
             internal_ft_deltas_list = null;
 
         internal_ft_deltas_list =
-            RalphInternalValueRemover.<
-                AtomicInternalList<
-                    _InternalFlowTableDelta,_InternalFlowTableDelta>,
-                _InternalFlowTableDelta>
+            RalphInternalValueRemover.
+            <_InternalFlowTableDelta,IReference>
             list_get_internal(ft_deltas_list);
+        
         return internal_ft_deltas_list;
     }
 
@@ -177,7 +177,7 @@ public class DeltaListStateSupplier
        the list.
      */
     private List<FTableUpdate> produce_ftable_updates(
-        List<RalphObject<_InternalFlowTableDelta,_InternalFlowTableDelta>> dirty)
+        List<RalphObject<_InternalFlowTableDelta,IReference>> dirty)
     {
         List<FTableUpdate> floodlight_updates =
             new ArrayList<FTableUpdate>();
@@ -193,7 +193,7 @@ public class DeltaListStateSupplier
                 flow_table_delta = (_InternalFlowTableDelta) (ro.get_val(null));
                 entry =
                     RalphInternalValueRemover.<_InternalFlowTableEntry>
-                    get_internal(flow_table_delta.entry);
+                    get_internal_from_reference(flow_table_delta.entry);
 
                 if (entry == null)
                 {
@@ -208,7 +208,7 @@ public class DeltaListStateSupplier
 
                 internal_match =
                     RalphInternalValueRemover.<_InternalMatch>
-                    get_internal(entry.match);
+                    get_internal_from_reference(entry.match);
                 if (internal_match == null)
                 {
                     // see above note about entry.
@@ -238,7 +238,7 @@ public class DeltaListStateSupplier
             
             _InternalInstructions instructions = 
                 RalphInternalValueRemover.<_InternalInstructions>
-                get_internal(entry.instructions);
+                get_internal_from_reference(entry.instructions);
 
             List<OFInstruction> instruction_list =
                 instruction_list_from_internal_instructions(instructions);
@@ -267,29 +267,25 @@ public class DeltaListStateSupplier
         _InternalMatch match)
     {
         // grab internal list
-        AtomicListVariable<_InternalMatchField,_InternalMatchField> match_list =
+        AtomicListVariable<_InternalMatchField,IReference> match_list =
             match.all_matches;
-        AtomicInternalList<_InternalMatchField,_InternalMatchField>
+        AtomicInternalList<_InternalMatchField,IReference>
             ralph_internal_match_list = null;
-
+        
         ralph_internal_match_list =
-            RalphInternalValueRemover.<
-                AtomicInternalList<
-            _InternalMatchField,_InternalMatchField>,
-                _InternalMatchField>
+            RalphInternalValueRemover.
+                <_InternalMatchField,IReference>
             list_get_internal(match_list);
 
         if (ralph_internal_match_list == null)
             return null;
         
-        List<RalphObject<_InternalMatchField,_InternalMatchField>>
+        List<RalphObject<_InternalMatchField,IReference>>
             internal_match_list = null;
         internal_match_list = RalphInternalValueRemover.
-            <ArrayList<
-                RalphObject<
-                    _InternalMatchField,
-                    _InternalMatchField>>> internal_list_get_internal(
-                ralph_internal_match_list);
+            <_InternalMatchField,IReference>
+                internal_list_get_internal(
+                    ralph_internal_match_list);
 
         String ofmatch_comb_str = "";
         for (RalphObject ro : internal_match_list)
@@ -491,7 +487,7 @@ public class DeltaListStateSupplier
     {
         _InternalInstructionGotoTable goto_table =
             RalphInternalValueRemover.<_InternalInstructionGotoTable>
-            get_internal(_instructions.goto_table);
+            get_internal_from_reference(_instructions.goto_table);
 
         if (goto_table == null)
             return null;
@@ -510,7 +506,7 @@ public class DeltaListStateSupplier
     {
         _InternalInstructionWriteMetadata write_metadata =
             RalphInternalValueRemover.<_InternalInstructionWriteMetadata>
-            get_internal(_instructions.write_metadata);
+            get_internal_from_reference(_instructions.write_metadata);
 
         if (write_metadata == null)
             return null;
@@ -538,32 +534,30 @@ public class DeltaListStateSupplier
     {
         _InternalInstructionWriteActions write_actions =
             RalphInternalValueRemover.<_InternalInstructionWriteActions>
-            get_internal(_instructions.write_actions);
+            get_internal_from_reference(_instructions.write_actions);
 
         if (write_actions == null)
             return null;
 
-        AtomicListVariable<_InternalAction,_InternalAction>
+        AtomicListVariable<_InternalAction,IReference>
             actions_list = write_actions.actions;
         
-        AtomicInternalList<_InternalAction,_InternalAction>
+        AtomicInternalList<_InternalAction,IReference>
             ralph_internal_actions_list = null;
 
         ralph_internal_actions_list =
-            RalphInternalValueRemover.<
-                AtomicInternalList<
-                    _InternalAction,_InternalAction>,
-                _InternalAction>
+            RalphInternalValueRemover.
+                <_InternalAction,IReference>
             list_get_internal(actions_list);
 
 
-        List<RalphObject<_InternalAction,_InternalAction>>
+        List<RalphObject<_InternalAction,IReference>>
             internal_actions_list = null;
         
         internal_actions_list = RalphInternalValueRemover.
-            <ArrayList<RalphObject<_InternalAction,_InternalAction>>>
-                internal_list_get_internal(
-                    ralph_internal_actions_list);
+            <_InternalAction,IReference>
+            internal_list_get_internal(
+                ralph_internal_actions_list);
 
         List<OFAction> floodlight_action_list = new ArrayList<OFAction>();
         for (RalphObject ro : internal_actions_list)
@@ -592,29 +586,27 @@ public class DeltaListStateSupplier
     {
         _InternalInstructionApplyActions apply_actions =
             RalphInternalValueRemover.<_InternalInstructionApplyActions>
-            get_internal(_instructions.apply_actions);
+            get_internal_from_reference(_instructions.apply_actions);
 
         if (apply_actions == null)
             return null;
 
-        AtomicListVariable<_InternalAction,_InternalAction>
+        AtomicListVariable<_InternalAction,IReference>
             actions_list = apply_actions.actions;
         
-        AtomicInternalList<_InternalAction,_InternalAction>
+        AtomicInternalList<_InternalAction,IReference>
             ralph_internal_actions_list = null;
 
         ralph_internal_actions_list =
-            RalphInternalValueRemover.<
-                AtomicInternalList<
-                    _InternalAction,_InternalAction>,
-                _InternalAction>
+            RalphInternalValueRemover.
+                <_InternalAction,IReference>
             list_get_internal(actions_list);
 
 
-        List<RalphObject<_InternalAction,_InternalAction>>
+        List<RalphObject<_InternalAction,IReference>>
             internal_actions_list = null;
         internal_actions_list = RalphInternalValueRemover.
-            <ArrayList<RalphObject<_InternalAction,_InternalAction>>>
+            <_InternalAction,IReference>
                 internal_list_get_internal(
                     ralph_internal_actions_list);
 
@@ -645,7 +637,7 @@ public class DeltaListStateSupplier
     {
         _InternalInstructionClearActions clear_actions =
             RalphInternalValueRemover.<_InternalInstructionClearActions>
-            get_internal(_instructions.clear_actions);
+            get_internal_from_reference(_instructions.clear_actions);
         
         if (clear_actions == null)
             return null;
@@ -658,7 +650,7 @@ public class DeltaListStateSupplier
     {
         _InternalInstructionMeter meter =
             RalphInternalValueRemover.<_InternalInstructionMeter>
-            get_internal(_instructions.meter);
+            get_internal_from_reference(_instructions.meter);
 
         if (meter == null)
             return null;
@@ -688,7 +680,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionOutput action_output =
                 RalphInternalValueRemover.<_InternalActionOutput>
-                get_internal(action.output);
+                get_internal_from_reference(action.output);
 
             if (action_output != null)
             {
@@ -705,7 +697,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionCopyTTLOut action_copy_ttl_out = 
                 RalphInternalValueRemover.<_InternalActionCopyTTLOut>
-                get_internal(action.copy_ttl_out);
+                get_internal_from_reference(action.copy_ttl_out);
         
             if (action_copy_ttl_out != null)
                 return new OFActionCopyTTLOut();
@@ -715,7 +707,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionCopyTTLIn action_copy_ttl_in = 
                 RalphInternalValueRemover.<_InternalActionCopyTTLIn>
-                get_internal(action.copy_ttl_in);
+                get_internal_from_reference(action.copy_ttl_in);
         
             if (action_copy_ttl_in != null)
                 return new OFActionCopyTTLIn();
@@ -725,7 +717,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionSetMPLSTTL action_set_mpls_ttl = 
                 RalphInternalValueRemover.<_InternalActionSetMPLSTTL>
-                get_internal(action.set_mpls_ttl);
+                get_internal_from_reference(action.set_mpls_ttl);
         
             if (action_set_mpls_ttl != null)
             {
@@ -741,7 +733,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionDecrementMPLSTTL action_decrement_mpls_ttl =
                 RalphInternalValueRemover.<_InternalActionDecrementMPLSTTL>
-                get_internal(action.decrement_mpls_ttl);
+                get_internal_from_reference(action.decrement_mpls_ttl);
         
             if (action_decrement_mpls_ttl != null)
                 return new OFActionDecrementMPLSTTL();
@@ -751,7 +743,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionPushVLAN action_push_vlan = 
                 RalphInternalValueRemover.<_InternalActionPushVLAN>
-                get_internal(action.push_vlan);
+                get_internal_from_reference(action.push_vlan);
         
             if (action_push_vlan != null)
             {
@@ -767,7 +759,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionPopVLAN action_pop_vlan =
                 RalphInternalValueRemover.<_InternalActionPopVLAN>
-                get_internal(action.pop_vlan);
+                get_internal_from_reference(action.pop_vlan);
         
             if (action_pop_vlan != null)
                 return new OFActionPopVLAN();
@@ -777,7 +769,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionPushMPLS action_push_mpls = 
                 RalphInternalValueRemover.<_InternalActionPushMPLS>
-                get_internal(action.push_mpls);
+                get_internal_from_reference(action.push_mpls);
         
             if (action_push_mpls != null)
             {
@@ -793,7 +785,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionPopMPLS action_pop_mpls =
                 RalphInternalValueRemover.<_InternalActionPopMPLS>
-                get_internal(action.pop_mpls);
+                get_internal_from_reference(action.pop_mpls);
         
             if (action_pop_mpls != null)
                 return new OFActionPopMPLS();
@@ -803,7 +795,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionSetQueue action_set_queue =
                 RalphInternalValueRemover.<_InternalActionSetQueue>
-                get_internal(action.set_queue);
+                get_internal_from_reference(action.set_queue);
 
             if (action_set_queue != null)
             {
@@ -821,7 +813,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionGroup action_group =
                 RalphInternalValueRemover.<_InternalActionGroup>
-                get_internal(action.group);
+                get_internal_from_reference(action.group);
 
             if (action_group != null)
             {
@@ -839,7 +831,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionSetNWTTL action_set_nw_ttl = 
                 RalphInternalValueRemover.<_InternalActionSetNWTTL>
-                get_internal(action.set_nw_ttl);
+                get_internal_from_reference(action.set_nw_ttl);
         
             if (action_set_nw_ttl != null)
             {
@@ -855,7 +847,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionDecrementNWTTL action_decrement_nw_ttl =
                 RalphInternalValueRemover.<_InternalActionDecrementNWTTL>
-                get_internal(action.decrement_nw_ttl);
+                get_internal_from_reference(action.decrement_nw_ttl);
         
             if (action_decrement_nw_ttl != null)
                 return new OFActionDecrementNwTTL();
@@ -865,7 +857,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionSetField action_set_field = 
                 RalphInternalValueRemover.<_InternalActionSetField>
-                get_internal(action.set_field);
+                get_internal_from_reference(action.set_field);
         
             if (action_set_field != null)
             {
@@ -895,7 +887,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionPushPBB action_push_pbb =
                 RalphInternalValueRemover.<_InternalActionPushPBB>
-                get_internal(action.push_pbb);
+                get_internal_from_reference(action.push_pbb);
 
             if (action_push_pbb != null)
             {
@@ -911,7 +903,7 @@ public class DeltaListStateSupplier
         {
             _InternalActionPopPBB action_pop_pbb =
                 RalphInternalValueRemover.<_InternalActionPopPBB>
-                get_internal(action.pop_pbb);
+                get_internal_from_reference(action.pop_pbb);
         
             if (action_pop_pbb != null)
                 return new OFActionPopPBB();

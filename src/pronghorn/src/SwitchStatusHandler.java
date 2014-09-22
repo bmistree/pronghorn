@@ -14,9 +14,11 @@ import net.floodlightcontroller.core.IOFSwitch;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscoveryListener;
 import net.floodlightcontroller.linkdiscovery.ILinkDiscovery;
 
+import RalphAtomicWrappers.EnsureAtomicWrapper;
 import RalphExceptions.BackoutException;
 import ralph.Variables.AtomicTrueFalseVariable;
 import ralph.Variables.NonAtomicListVariable;
+import ralph.IReference;
 
 import pronghorn.PortJava._InternalPort;
 import pronghorn.PortJava;
@@ -102,9 +104,12 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
     @Override
     public void linkDiscoveryUpdate(List<LDUpdate> update_list)
     {
-        NonAtomicListVariable<_InternalPort,_InternalPort> ralph_update_list =
-            new NonAtomicListVariable<_InternalPort,_InternalPort>(
-                false,PortJava.STRUCT_LOCKED_MAP_WRAPPER__Port,prong.ralph_globals);
+        NonAtomicListVariable<_InternalPort,IReference> ralph_update_list =
+            new NonAtomicListVariable<_InternalPort,IReference>(
+                false,
+                PortJava.STRUCT_LOCKED_MAP_WRAPPER__Port,
+                _InternalPort.class,
+                prong.ralph_globals);
         boolean should_update_ralph = false;
         // only handle link up messages to start with
         for (LDUpdate update : update_list)

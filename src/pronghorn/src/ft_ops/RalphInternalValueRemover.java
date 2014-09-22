@@ -1,7 +1,14 @@
 package pronghorn.ft_ops;
 
+import java.util.List;
+
 import ralph.AtomicValueVariable;
 import ralph.AtomicInternalList;
+import ralph.RalphObject;
+import ralph.AtomicList;
+import ralph.AtomicReferenceVariable;
+import ralph.IReference;
+
 
 /**
    Helper class.  Takes a ralph AtomicValueVariable and returns
@@ -17,7 +24,7 @@ public class RalphInternalValueRemover
 {
     // This notation allows calling method statically.
     public static <InternalType> InternalType get_internal(
-        AtomicValueVariable<InternalType,InternalType> atomic_variable)
+        AtomicValueVariable<InternalType> atomic_variable)
     {
         InternalType to_return = null;
         atomic_variable._lock();
@@ -30,10 +37,10 @@ public class RalphInternalValueRemover
     }
 
     // This notation allows calling method statically.
-    public static <InternalType1,InternalType2> InternalType1 list_get_internal(
-        AtomicValueVariable<InternalType1,InternalType2> atomic_variable)
+    public static <InternalType extends IReference> InternalType get_internal_from_reference(
+        AtomicReferenceVariable<InternalType> atomic_variable)
     {
-        InternalType1 to_return = null;
+        InternalType to_return = null;
         atomic_variable._lock();
         if (atomic_variable.dirty_val != null)
             to_return = atomic_variable.dirty_val.val;
@@ -42,21 +49,50 @@ public class RalphInternalValueRemover
         atomic_variable._unlock();
         return to_return;
     }
+
     
     // This notation allows calling method statically.
-    public static <InternalType1>
-        InternalType1 internal_list_get_internal(
-            AtomicInternalList internal_list)
+    public static <ValueType, ValueDeltaType>
+        // return type
+        AtomicInternalList<ValueType,ValueDeltaType>
+        // method name and arguments
+        list_get_internal(
+            AtomicList<ValueType,ValueDeltaType> atomic_list)
     {
-        InternalType1 to_return = null;
+        AtomicInternalList<ValueType,ValueDeltaType> to_return = null;
+        atomic_list._lock();
+        if (atomic_list.dirty_val != null)
+            to_return = atomic_list.dirty_val.val;
+        else
+            to_return = atomic_list.val.val;
+        atomic_list._unlock();
+        return to_return;
+    }
+    
+    // This notation allows calling method statically.
+    public static <ValueType, ValueDeltaType>
+        // return type
+        List<RalphObject<ValueType,ValueDeltaType>>
+        // method name and arguments
+        internal_list_get_internal(
+            AtomicInternalList<ValueType,ValueDeltaType> internal_list)
+    {
+        List<RalphObject<ValueType,ValueDeltaType>> to_return = null;
         internal_list._lock();
 
         if (internal_list.dirty_val != null)
-            to_return = (InternalType1) internal_list.dirty_val.val;
+        {
+            to_return =
+                (List<RalphObject<ValueType,ValueDeltaType>>)
+                internal_list.dirty_val.val;
+        }
         else
-            to_return = (InternalType1) internal_list.val.val;
+        {
+            to_return =
+                (List<RalphObject<ValueType,ValueDeltaType>>)
+                internal_list.val.val;
+        }
         internal_list._unlock();
-        
         return to_return;
     }
     

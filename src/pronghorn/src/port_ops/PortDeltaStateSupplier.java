@@ -12,6 +12,7 @@ import ralph.ActiveEvent;
 import ralph.RalphObject;
 import ralph.AtomicObject;
 import ralph.AtomicInternalList;
+import ralph.IReference;
 import ralph.Variables.AtomicListVariable;
 
 import pronghorn.SwitchDeltaJava._InternalSwitchDelta;
@@ -39,7 +40,7 @@ public class PortDeltaStateSupplier
     public List<PortUpdate> get_state_to_push(ActiveEvent active_event)
     {
         // FIXME: ensure that this is a safe access.
-        AtomicInternalList<_InternalPortDelta,_InternalPortDelta>
+        AtomicInternalList<_InternalPortDelta,IReference>
             internal_port_deltas_list = get_internal_port_deltas_list();
 
         // We can get null here if the transaction has been backed
@@ -49,7 +50,7 @@ public class PortDeltaStateSupplier
 
         // FIXME: ensure that this is a safe access.  May have to lock
         // internal_ft_deltas_list object first.
-        List<RalphObject<_InternalPortDelta,_InternalPortDelta>> internal_list =
+        List<RalphObject<_InternalPortDelta,IReference>> internal_list =
             null;
         internal_port_deltas_list._lock();
         if (internal_port_deltas_list.dirty_val != null)
@@ -57,7 +58,7 @@ public class PortDeltaStateSupplier
         else
         {
             internal_list =
-                new ArrayList<RalphObject<_InternalPortDelta,_InternalPortDelta>>();
+                new ArrayList<RalphObject<_InternalPortDelta,IReference>>();
         }
         internal_port_deltas_list._unlock();
 
@@ -74,14 +75,14 @@ public class PortDeltaStateSupplier
         internal_port_deltas_list.force_speculate(
             active_event,
             // so that resets delta list
-            new ArrayList<RalphObject<_InternalPortDelta,_InternalPortDelta>>(),
+            new ArrayList<RalphObject<_InternalPortDelta,IReference>>(),
             // forces update on internal val
             true);
 
         return to_return;
     }
 
-    private AtomicInternalList<_InternalPortDelta,_InternalPortDelta>
+    private AtomicInternalList<_InternalPortDelta,IReference>
         get_internal_port_deltas_list()
     {
         // these accesses are safe, because we assume the invariant
@@ -89,23 +90,21 @@ public class PortDeltaStateSupplier
         // if no other event is writing to them.
 
         // grabbing ft_deltas to actually get changes made to hardware.
-        AtomicListVariable<_InternalPortDelta,_InternalPortDelta>
+        AtomicListVariable<_InternalPortDelta,IReference>
             port_deltas_list = switch_delta.port_deltas;
-        AtomicInternalList<_InternalPortDelta,_InternalPortDelta>
+        AtomicInternalList<_InternalPortDelta,IReference>
             internal_port_deltas_list = null;
 
         internal_port_deltas_list =
-            RalphInternalValueRemover.<
-                AtomicInternalList<
-                    _InternalPortDelta,_InternalPortDelta>,
-                _InternalPortDelta>
-            list_get_internal(port_deltas_list);
+            RalphInternalValueRemover.
+                <_InternalPortDelta,IReference>
+                    list_get_internal(port_deltas_list);
         return internal_port_deltas_list;
     }
 
 
     private List<PortUpdate> produce_port_updates(
-        List<RalphObject<_InternalPortDelta,_InternalPortDelta>> dirty)
+        List<RalphObject<_InternalPortDelta,IReference>> dirty)
     {
         List<PortUpdate> port_updates =
             new ArrayList<PortUpdate>();

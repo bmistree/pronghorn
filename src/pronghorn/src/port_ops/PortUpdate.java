@@ -73,7 +73,7 @@ public class PortUpdate
         
         _InternalPort internal_port =
             RalphInternalValueRemover.<_InternalPort>
-            get_internal(
+            get_internal_from_reference(
                 internal_port_delta.entry);
 
         if (internal_port == null)

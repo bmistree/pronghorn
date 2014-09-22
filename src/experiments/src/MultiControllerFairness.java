@@ -13,7 +13,7 @@ import ralph.Endpoint;
 import ralph.Ralph;
 import ralph.BoostedManager.DeadlockAvoidanceAlgorithm;
 import RalphConnObj.SingleSideConnection;
-import ralph.RalphGlobals;
+import ralph.RalphObject;
 import ralph.NonAtomicInternalList;
 
 import pronghorn.FloodlightShim;
@@ -335,6 +335,17 @@ public class MultiControllerFairness
                 assert(false);
             }
             return to_return;
+        }
+
+        @Override
+        public Endpoint construct(
+            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
+            List<RalphObject> obj_initializers)
+        {
+            System.err.println(
+                "Not performing replay on direct fairness experiment");
+            assert(false);
+            return null;
         }
     }
 }

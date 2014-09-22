@@ -14,6 +14,7 @@ import ralph.Ralph;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
+import ralph.RalphObject;
 
 import RalphVersions.IVersionListener;
 
@@ -263,6 +264,17 @@ public class MultiControllerError
                 assert(false);
             }
             return to_return;
+        }
+
+        @Override
+        public Endpoint construct(
+            RalphGlobals globals,RalphConnObj.ConnectionObj conn_obj,
+            List<RalphObject> internal_values_list)
+        {
+            System.err.println(
+                "Should never be constructing error object for replay.");
+            assert(false);
+            return null;
         }
     }
 }

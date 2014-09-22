@@ -13,6 +13,7 @@ import ralph.RalphGlobals;
 import ralph.EndpointConstructorObj;
 import ralph.Endpoint;
 import ralph.Ralph;
+import ralph.RalphObject;
 
 import pronghorn.FloodlightShim;
 import pronghorn.SwitchStatusHandler;
@@ -240,6 +241,16 @@ public class MultiControllerLatency
                 assert(false);
             }
             return to_return;
+        }
+        @Override
+        public Endpoint construct(
+            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
+            List<RalphObject> obj_initializers)
+        {
+            System.err.println(
+                "Not performing replay on direct fairness experiment");
+            assert(false);
+            return null;
         }
     }
 }

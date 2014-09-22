@@ -14,7 +14,7 @@ import ralph.EndpointConstructorObj;
 import ralph.Endpoint;
 import ralph.Ralph;
 import RalphConnObj.SingleSideConnection;
-import ralph.RalphGlobals;
+import ralph.RalphObject;
 
 import pronghorn.FloodlightShim;
 import pronghorn.SwitchStatusHandler;
@@ -301,6 +301,16 @@ public class MultiControllerSpeculationThroughput
                 assert(false);
             }
             return to_return;
+        }
+        @Override
+        public Endpoint construct(
+            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
+            List<RalphObject> obj_initializers)
+        {
+            System.err.println(
+                "Should not construct object from replay constructor.");
+            assert(false);
+            return null;
         }
     }
 }

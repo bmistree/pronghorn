@@ -483,7 +483,19 @@
       </antcall>
     </target>
 
-    
+    <property
+      name="in_memory_log_single_controller_throughput_jar"
+      value="in_memory_log_single_controller_throughput.jar"/>
+    <target
+      name="in_memory_log_single_controller_throughput"
+      depends="compile_libs,compile_experiments"
+      description="In memory logged single controller throughput">
+      <antcall target="make_jar">
+        <param name="main_class" value="SingleControllerThroughput"/>
+        <param name="dest_jar" value="${in_memory_log_single_controller_throughput_jar}"/>
+        <param name="config_properties" value="${in_memory_log_config}"/>
+      </antcall>
+    </target>
 
   <!--
       Ant for running test for throughput test with fine-grained
@@ -707,6 +719,7 @@
     <delete file="${time_to_query_all_jar}"/>
     <delete file="${simulated_switch_throughput_jar}"/>
     <delete file="${disk_log_single_controller_throughput_jar}"/>
+    <delete file="${in_memory_log_single_controller_throughput_jar}"/>
     
   </target>
 

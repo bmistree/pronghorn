@@ -38,6 +38,17 @@
       name="proto_class_path"
       location="${lib_build_path}/../protobuf-java-2.5.0.jar"/>
 
+  <!-- Logging config files -->
+  <property
+      name="no_log_config"
+      location="${lib_build_path}/no_log_config/config.properties"/>
+  <property
+      name="in_memory_log_config"
+      location="${lib_build_path}/in_memory_log_config/config.properties"/>
+  <property
+      name="disk_log_config"
+      location="${lib_build_path}/disk_log_config/config.properties"/>
+  
   <!-- Floodlight dependency -->
   <property
       name="floodlight_dep_dir"
@@ -50,6 +61,8 @@
   <property
       name="floodlight_class_path"
       location="${floodlight_dep_dir}/target/floodlight.jar"/>
+
+
   
   <!-- Pronghorn libraries -->
   <property
@@ -367,6 +380,7 @@
       <fileset dir="${lib_class_path}"/>
       <fileset dir="${pronghorn_libs_class_path}"/>
       <fileset dir="${experiments_build_classes_dir}"/>
+      <fileset file="${config_properties}"/>
       <zipgroupfileset dir="${proto_jar_dir}" includes="**/*.jar" />
       <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
     </jar>
@@ -384,6 +398,7 @@
     <antcall target="make_jar">
       <param name="main_class" value="SingleHost"/>
       <param name="dest_jar" value="${single_host_jar}"/>
+      <param name="config_properties" value="${no_log_config}"/>
     </antcall>
   </target>
 
@@ -398,6 +413,7 @@
     <antcall target="make_jar">
       <param name="main_class" value="SimulatedSwitchThroughput"/>
       <param name="dest_jar" value="${simulated_switch_throughput_jar}"/>
+      <param name="config_properties" value="${no_log_config}"/>
     </antcall>
   </target>
 
@@ -414,6 +430,7 @@
     <antcall target="make_jar">
       <param name="main_class" value="SingleControllerLatency"/>
       <param name="dest_jar" value="${single_controller_latency_jar}"/>
+      <param name="config_properties" value="${no_log_config}"/>
     </antcall>
   </target>
 
@@ -429,6 +446,7 @@
     <antcall target="make_jar">
       <param name="main_class" value="TimeToQueryAll"/>
       <param name="dest_jar" value="${time_to_query_all_jar}"/>
+      <param name="config_properties" value="${no_log_config}"/>
     </antcall>
   </target>
 
@@ -447,9 +465,25 @@
       <antcall target="make_jar">
         <param name="main_class" value="SingleControllerThroughput"/>
         <param name="dest_jar" value="${single_controller_throughput_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
     </target>
 
+    <property
+      name="disk_log_single_controller_throughput_jar"
+      value="disk_log_single_controller_throughput.jar"/>
+    <target
+      name="disk_log_single_controller_throughput"
+      depends="compile_libs,compile_experiments"
+      description="Disk logged single controller throughput">
+      <antcall target="make_jar">
+        <param name="main_class" value="SingleControllerThroughput"/>
+        <param name="dest_jar" value="${disk_log_single_controller_throughput_jar}"/>
+        <param name="config_properties" value="${disk_log_config}"/>
+      </antcall>
+    </target>
+
+    
 
   <!--
       Ant for running test for throughput test with fine-grained
@@ -466,6 +500,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="ReadOnlyLatency"/>
         <param name="dest_jar" value="${read_only_latency_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
   </target>
 
@@ -482,6 +517,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerLatency"/>
         <param name="dest_jar" value="${multi_controller_latency_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
   </target>
 
@@ -501,6 +537,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerThroughput"/>
         <param name="dest_jar" value="${multi_controller_throughput_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
   </target>
 
@@ -519,6 +556,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="Ordering"/>
         <param name="dest_jar" value="${ordering_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
   </target>
 
@@ -537,6 +575,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerFairness"/>
         <param name="dest_jar" value="${multi_controller_fairness_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
   </target>
 
@@ -554,6 +593,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="SingleControllerFairness"/>
         <param name="dest_jar" value="${single_controller_fairness_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
   </target>
 
@@ -569,6 +609,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="SingleControllerError"/>
         <param name="dest_jar" value="${single_controller_error_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
   </target>
 
@@ -585,6 +626,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerError"/>
         <param name="dest_jar" value="${multi_controller_error_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
   </target>
 
@@ -600,6 +642,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerTunnels"/>
         <param name="dest_jar" value="${multi_controller_tunnels_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
   </target>
 
@@ -615,6 +658,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerSpeculationThroughput"/>
         <param name="dest_jar" value="${multi_controller_speculation_throughput_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
   </target>
 
@@ -630,6 +674,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="ReadOnlyThroughput"/>
         <param name="dest_jar" value="${read_only_throughput_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
       </antcall>
   </target>
 
@@ -661,6 +706,7 @@
     <delete file="${read_only_throughput_jar}"/>
     <delete file="${time_to_query_all_jar}"/>
     <delete file="${simulated_switch_throughput_jar}"/>
+    <delete file="${disk_log_single_controller_throughput_jar}"/>
     
   </target>
 

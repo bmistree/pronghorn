@@ -12,8 +12,6 @@ import ralph.ActiveEvent;
 import ralph.ICancellableFuture;
 import ralph.SpeculativeFuture;
 
-import RalphVersions.IVersionListener;
-
 import RalphExtended.ISpeculateListener;
 import RalphExtended.ExtendedHardwareOverrides;
 
@@ -51,11 +49,7 @@ public class InternalPronghornAvailablePortsGuard extends AtomicNumberVariable
         // initializes extended_hardware_overrides.  Using this call,
         // notifies ports_available guard, port_deltas, etc., that
         // they can speculate.
-        PortsAvailableSpeculateListener speculate_listener,
-        
-        // can be null, in which case, don't keep track of versions.
-        // otherwise, logs all writes to switch variables.
-        IVersionListener version_listener)
+        PortsAvailableSpeculateListener speculate_listener)
     {
         super(false,new Double(0),ralph_globals);
         ralph_internal_switch_id = _ralph_internal_switch_id;
@@ -64,7 +58,7 @@ public class InternalPronghornAvailablePortsGuard extends AtomicNumberVariable
         extended_hardware_overrides =
             new ExtendedHardwareOverrides<List<PortUpdate>>(
                 hardware_applier,hardware_state_supplier,speculate_listener,
-                version_listener,should_speculate,ralph_globals);
+                should_speculate,ralph_globals);
         extended_hardware_overrides.set_controlling_object(this);
     }
 

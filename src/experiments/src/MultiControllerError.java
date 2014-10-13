@@ -16,14 +16,11 @@ import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 import ralph.RalphObject;
 
-import RalphVersions.IVersionListener;
-
 import pronghorn.FloodlightShim;
 import pronghorn.SwitchStatusHandler;
 
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
-import pronghorn.switch_factory.IVersionListenerFactory;
 
 import experiments.Util.HostPortPair;
 import experiments.Util;
@@ -43,7 +40,6 @@ public class MultiControllerError
     public static final int FAILURE_PROBABILITY_ARG_INDEX = 3;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 4;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 5;
-    public static final int VERSION_LISTENER_ARG_INDEX = 6;
 
     public static Instance prong = null;
     private static final int MAX_NUM_OPS_BEFORE_CHECK = 20;
@@ -60,7 +56,7 @@ public class MultiControllerError
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 7)
+        if (args.length != 6)
         {
             print_usage();
             return;
@@ -91,14 +87,6 @@ public class MultiControllerError
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
         
-        IVersionListenerFactory ft_version_listener_factory =
-            VersionListenerFactoryArgs.produce_flow_table_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-
-        IVersionListenerFactory port_version_listener_factory =
-            VersionListenerFactoryArgs.produce_ports_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-        
         /* Start up pronghorn */
         GetNumberSwitches num_switches_app = null;
         try
@@ -125,8 +113,7 @@ public class MultiControllerError
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                false,collect_statistics_period_ms,
-                ft_version_listener_factory,port_version_listener_factory);
+                false,collect_statistics_period_ms);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -158,16 +145,13 @@ public class MultiControllerError
             }
         }
 
-        IVersionListenerFactory ft_version_factory = ft_version_listener_factory;
-        IVersionListenerFactory port_version_factory = port_version_listener_factory;
         // wait for first switch to connect
         Util.wait_on_switches(num_switches_app);
         String faulty_switch_id = "some_switch";
         ErrorUtil.add_faulty_switch(
             ralph_globals,faulty_switch_id, SHOULD_SPECULATE,
-            failure_probability,prong,
-            ft_version_factory.construct(faulty_switch_id),
-            port_version_factory.construct(faulty_switch_id));
+            failure_probability,prong);
+
         List<String> switch_id_list =
             Util.get_switch_id_list (num_switches_app);
 
@@ -233,9 +217,6 @@ public class MultiControllerError
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
 
-        // VERSION_LISTENER_ARG_INDEX
-        usage_string += VersionListenerFactoryArgs.usage_string();
-        
         System.out.println(usage_string);
     }
 

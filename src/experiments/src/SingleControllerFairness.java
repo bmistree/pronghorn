@@ -11,8 +11,6 @@ import pronghorn.FloodlightShim;
 import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 
-import pronghorn.switch_factory.IVersionListenerFactory;
-
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.FairnessApplicationJava.FairnessApplication;
 
@@ -23,7 +21,6 @@ public class SingleControllerFairness
     public static final int NUM_EXTERNAL_CALLS_ARG_INDEX = 1;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 2;
     public static final int OUTPUT_FILENAME_INDEX = 3;
-    public static final int VERSION_LISTENER_ARG_INDEX = 4;
     
     // This queue keeps track of all the work in the system
     final static ConcurrentLinkedQueue<String> tsafe_queue =
@@ -37,7 +34,7 @@ public class SingleControllerFairness
 
     public static void main (String[] args)
     {
-        if (args.length != 5)
+        if (args.length != 4)
         {
             FairnessUtil.print_usage();
             return;
@@ -96,21 +93,13 @@ public class SingleControllerFairness
             return;
         }
 
-        IVersionListenerFactory ft_version_listener_factory =
-            VersionListenerFactoryArgs.produce_flow_table_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-        IVersionListenerFactory port_version_listener_factory =
-            VersionListenerFactoryArgs.produce_ports_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);        
-        
         FloodlightShim shim = new FloodlightShim();
         
         SwitchStatusHandler switch_status_handler =
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                true,collect_statistics_period_ms,
-                ft_version_listener_factory,port_version_listener_factory);
+                true,collect_statistics_period_ms);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();

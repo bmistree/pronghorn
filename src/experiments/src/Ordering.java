@@ -19,8 +19,6 @@ import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 import pronghorn.ft_ops.FTableUpdate;
 
-import pronghorn.switch_factory.IVersionListenerFactory;
-
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.OffOnApplicationJava.OffOnApplication;
 import experiments.Util.HostPortPair;
@@ -50,7 +48,6 @@ public class Ordering
     private static final int ENSURE_ORDERING_ARG_INDEX = 2;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
     private static final int RESULT_FILENAME_ARG_INDEX = 4;
-    public static final int VERSION_LISTENER_ARG_INDEX = 5;
     
     // wait this long for pronghorn to add all switches
     private static final int SETTLING_TIME_WAIT = 1000;
@@ -58,9 +55,8 @@ public class Ordering
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 6)
+        if (args.length != 5)
         {
-            System.out.println("\nExpected 6 arguments.\n");
             print_usage();
             return;
         }
@@ -84,13 +80,6 @@ public class Ordering
             "\nEnsure ordering " + Boolean.toString(ensure_ordering));
 
         RalphGlobals ralph_globals = new RalphGlobals();
-        IVersionListenerFactory ft_version_listener_factory =
-            VersionListenerFactoryArgs.produce_flow_table_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-        IVersionListenerFactory port_version_listener_factory =
-            VersionListenerFactoryArgs.produce_ports_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-
         
         /* Start up pronghorn */
         Instance prong = null;
@@ -123,8 +112,7 @@ public class Ordering
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                true,collect_statistics_period_ms,
-                ft_version_listener_factory,port_version_listener_factory);
+                true,collect_statistics_period_ms);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -194,9 +182,6 @@ public class Ordering
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
         
-        // VERSION_LISTENER_ARG_INDEX
-        usage_string += VersionListenerFactoryArgs.usage_string();
-
         System.out.println(usage_string);
     }
     

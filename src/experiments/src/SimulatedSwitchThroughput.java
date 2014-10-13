@@ -21,8 +21,6 @@ import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 import pronghorn.ft_ops.FlowTableToHardware;
 import pronghorn.ft_ops.FTableUpdate;
 
-import pronghorn.switch_factory.IVersionListenerFactory;
-import pronghorn.switch_factory.NoLogVersionFactory;
 import pronghorn.switch_factory.SwitchFactory;
 import pronghorn.switch_factory.PronghornInternalSwitch;
 
@@ -51,7 +49,7 @@ public class SimulatedSwitchThroughput
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 4)
+        if (args.length != 3)
         {
             print_usage();
             return;
@@ -69,11 +67,6 @@ public class SimulatedSwitchThroughput
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
         RalphGlobals ralph_globals = new RalphGlobals();
-        
-        IVersionListenerFactory ft_version_listener_factory =
-            new NoLogVersionFactory();
-        IVersionListenerFactory port_version_listener_factory =
-            new NoLogVersionFactory();
         
         /* Start up pronghorn */
         Instance prong = null;
@@ -107,16 +100,14 @@ public class SimulatedSwitchThroughput
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                SHOULD_SPECULATE,-1,
-                ft_version_listener_factory,port_version_listener_factory);
+                SHOULD_SPECULATE,-1);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
 
         SwitchFactory switch_factory =
             new SwitchFactory(
-                ralph_globals,SHOULD_SPECULATE,-1,
-                ft_version_listener_factory,port_version_listener_factory);
+                ralph_globals,SHOULD_SPECULATE,-1);
 
         SimulatedFlowTableToHardware simulated_flow_table_to_hardware =
             new SimulatedFlowTableToHardware();

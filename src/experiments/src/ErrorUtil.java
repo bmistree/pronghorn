@@ -11,8 +11,6 @@ import ralph.Variables.NonAtomicTextVariable;
 import RalphExtended.ExtendedHardwareOverrides;
 import RalphExtended.IHardwareChangeApplier;
 
-import RalphVersions.IVersionListener;
-
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FTableUpdate;
 import pronghorn.ft_ops.FlowTableToHardware;
@@ -121,16 +119,14 @@ public class ErrorUtil
 
     public static void add_faulty_switch(
         RalphGlobals ralph_globals,String faulty_switch_id, boolean should_speculate,
-        float failure_probability, Instance prong,
-        IVersionListener ft_version_listener,IVersionListener port_version_listener)
+        float failure_probability, Instance prong)
     {
         try
         {
             _InternalSwitch internal_switch =
                 create_faulty_switch(
                     ralph_globals,faulty_switch_id,should_speculate,
-                    failure_probability,ft_version_listener,
-                    port_version_listener);
+                    failure_probability);
             prong.add_switch(internal_switch);
         }
         catch(Exception ex)
@@ -262,8 +258,7 @@ public class ErrorUtil
     
     static _InternalSwitch create_faulty_switch(
         RalphGlobals ralph_globals,String new_switch_id, boolean speculate,
-        float error_probability, IVersionListener ft_version_listener,
-        IVersionListener port_version_listener)
+        float error_probability)
     {
         _InternalSwitch internal_switch = new _InternalSwitch(ralph_globals);
         FaultyHardwareChangeApplier to_handle_pushing_changes =
@@ -286,7 +281,7 @@ public class ErrorUtil
                 // gets internal switch delta.  note this is safe, but
                 // ugly.
                 new DeltaListStateSupplier(internal_switch_delta),
-                switch_speculate_listener, ft_version_listener);
+                switch_speculate_listener);
         to_handle_pushing_changes.set_hardware_overrides(
             faulty_switch_guard_num_var.extended_hardware_overrides);
 

@@ -20,8 +20,6 @@ import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
-import pronghorn.switch_factory.IVersionListenerFactory;
-
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.MultiControllerOffOnJava.MultiControllerOffOn;
 import experiments.PronghornConnectionJava.PronghornConnection;
@@ -37,7 +35,6 @@ public class MultiControllerLatency
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 2;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
-    public static final int VERSION_LISTENER_ARG_INDEX = 5;
     
     public static Instance prong = null;
     public static MultiControllerOffOn mc_off_on_app = null;
@@ -51,7 +48,7 @@ public class MultiControllerLatency
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 6)
+        if (args.length != 5)
         {
             print_usage();
             return;
@@ -77,15 +74,6 @@ public class MultiControllerLatency
 
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
-        IVersionListenerFactory ft_version_listener_factory =
-            VersionListenerFactoryArgs.produce_flow_table_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-
-        IVersionListenerFactory port_version_listener_factory =
-            VersionListenerFactoryArgs.produce_ports_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-
-        
         /* Start up pronghorn */
         try
         {
@@ -111,8 +99,7 @@ public class MultiControllerLatency
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                true,collect_statistics_period_ms,
-                ft_version_listener_factory,port_version_listener_factory);
+                true,collect_statistics_period_ms);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -218,9 +205,6 @@ public class MultiControllerLatency
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
         
-        // VERSION_LISTENER_ARG_INDEX
-        usage_string += VersionListenerFactoryArgs.usage_string();
-
         System.out.println(usage_string);
     }
 

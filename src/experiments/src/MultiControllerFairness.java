@@ -21,8 +21,6 @@ import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
-import pronghorn.switch_factory.IVersionListenerFactory;
-
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.MultiControllerFairnessJava.MultiControllerFairnessApp;
 import experiments.PronghornConnectionFairnessJava.PronghornConnectionFairness;
@@ -71,7 +69,6 @@ public class MultiControllerFairness
     public static final int USE_WOUND_WAIT_ARG_INDEX = 4;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 5;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 6;
-    public static final int VERSION_LISTENER_ARG_INDEX = 7;
     
     public static Instance prong = null;
     /**
@@ -90,7 +87,7 @@ public class MultiControllerFairness
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 8)
+        if (args.length != 7)
         {
             print_usage();
             return;
@@ -137,14 +134,6 @@ public class MultiControllerFairness
             ralph_globals = new RalphGlobals();
         }
 
-        IVersionListenerFactory ft_version_listener_factory =
-            VersionListenerFactoryArgs.produce_flow_table_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-
-        IVersionListenerFactory port_version_listener_factory =
-            VersionListenerFactoryArgs.produce_ports_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-        
         /* Start up pronghorn */
         try
         {
@@ -183,10 +172,8 @@ public class MultiControllerFairness
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                true,collect_statistics_period_ms,
-                ft_version_listener_factory,
-                port_version_listener_factory);
-
+                true,collect_statistics_period_ms);
+        
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
 
@@ -304,9 +291,6 @@ public class MultiControllerFairness
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
 
-        // VERSION_LISTENER_ARG_INDEX
-        usage_string += VersionListenerFactoryArgs.usage_string();
-        
         System.out.println(usage_string);
     }
 

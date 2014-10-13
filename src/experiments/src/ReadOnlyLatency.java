@@ -15,8 +15,6 @@ import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
-import pronghorn.switch_factory.IVersionListenerFactory;
-
 import experiments.Util;
 import experiments.Util.LatencyThread;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
@@ -29,7 +27,6 @@ public class ReadOnlyLatency
     public static final int NUMBER_OPS_TO_WARMUP_ARG_INDEX = 1;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 2;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
-    public static final int VERSION_LISTENER_ARG_INDEX = 4;
     
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -37,9 +34,8 @@ public class ReadOnlyLatency
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 4)
         {
-            System.out.println("\nExpecting 5 arguments.\n");
             print_usage();
             return;
         }
@@ -58,13 +54,6 @@ public class ReadOnlyLatency
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
         
         RalphGlobals ralph_globals = new RalphGlobals();
-        IVersionListenerFactory ft_version_listener_factory =
-            VersionListenerFactoryArgs.produce_flow_table_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-        IVersionListenerFactory port_version_listener_factory =
-            VersionListenerFactoryArgs.produce_ports_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);        
-
         
         /* Start up pronghorn */
         Instance prong = null;
@@ -95,8 +84,7 @@ public class ReadOnlyLatency
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                true,collect_statistics_period_ms,
-                ft_version_listener_factory,port_version_listener_factory);
+                true,collect_statistics_period_ms);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -171,9 +159,6 @@ public class ReadOnlyLatency
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
         
-        // VERSION_LISTENER_ARG_INDEX
-        usage_string += VersionListenerFactoryArgs.usage_string();
-
         System.out.println(usage_string);
     }
 }

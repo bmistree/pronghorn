@@ -15,8 +15,6 @@ import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 import pronghorn.SwitchJava._InternalSwitch;
 
-import pronghorn.switch_factory.IVersionListenerFactory;
-
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.ErrorApplicationJava.ErrorApplication;
 import experiments.Util.HostPortPair;
@@ -30,7 +28,6 @@ public class SingleControllerError
     public static final int FAILURE_PROBABILITY_ARG_INDEX = 1;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 2;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
-    public static final int VERSION_LISTENER_ARG_INDEX = 4;
     
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -40,7 +37,7 @@ public class SingleControllerError
     public static void main (String[] args) 
     {
         /* Grab arguments */
-        if (args.length != 5)
+        if (args.length != 4)
         {
             print_usage();
             return;
@@ -58,13 +55,6 @@ public class SingleControllerError
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
         RalphGlobals ralph_globals = new RalphGlobals();
-        
-        IVersionListenerFactory ft_version_listener_factory =
-            VersionListenerFactoryArgs.produce_flow_table_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-        IVersionListenerFactory port_version_listener_factory =
-            VersionListenerFactoryArgs.produce_ports_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
         
         /* Start up pronghorn */
         Instance prong = null;
@@ -95,8 +85,7 @@ public class SingleControllerError
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                SHOULD_SPECULATE,collect_statistics_period_ms,
-                ft_version_listener_factory, port_version_listener_factory);
+                SHOULD_SPECULATE,collect_statistics_period_ms);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -116,9 +105,7 @@ public class SingleControllerError
         String faulty_switch_id = "some_switch";
         ErrorUtil.add_faulty_switch(
             ralph_globals,faulty_switch_id, SHOULD_SPECULATE,
-            failure_probability,prong,
-            ft_version_listener_factory.construct(faulty_switch_id),
-            port_version_listener_factory.construct(faulty_switch_id));
+            failure_probability,prong);
         
         List<String> switch_id_list =
             Util.get_switch_id_list (num_switches_app);
@@ -156,9 +143,6 @@ public class SingleControllerError
         
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
-        
-        // VERSION_LISTENER_ARG_INDEX
-        usage_string += VersionListenerFactoryArgs.usage_string();
 
         System.out.println(usage_string);
     }

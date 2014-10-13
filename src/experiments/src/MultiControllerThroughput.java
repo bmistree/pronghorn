@@ -23,9 +23,6 @@ import pronghorn.SwitchStatusHandler;
 import pronghorn.InstanceJava.Instance;
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
-import RalphVersions.IVersionListener;
-import pronghorn.switch_factory.IVersionListenerFactory;
-
 import experiments.Util.HostPortPair;
 import experiments.Util;
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
@@ -41,7 +38,6 @@ public class MultiControllerThroughput
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 2;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
-    public static final int VERSION_LISTENER_ARG_INDEX = 5;
     
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
@@ -55,7 +51,7 @@ public class MultiControllerThroughput
     public static void main (String[] args)
     {
         /* Grab arguments */
-        if (args.length != 6)
+        if (args.length != 5)
         {
             print_usage();
             return;
@@ -79,15 +75,6 @@ public class MultiControllerThroughput
         
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
-        IVersionListenerFactory ft_version_listener_factory =
-            VersionListenerFactoryArgs.produce_flow_table_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-
-        IVersionListenerFactory port_version_listener_factory =
-            VersionListenerFactoryArgs.produce_ports_factory(
-                args[VERSION_LISTENER_ARG_INDEX],ralph_globals);
-
-        
         int threads_per_switch = 1;
 
         /* Start up pronghorn */
@@ -113,8 +100,7 @@ public class MultiControllerThroughput
             new SwitchStatusHandler(
                 shim,prong,
                 FloodlightFlowTableToHardware.FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY,
-                true,collect_statistics_period_ms,
-                ft_version_listener_factory,port_version_listener_factory);
+                true,collect_statistics_period_ms);
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
@@ -228,9 +214,6 @@ public class MultiControllerThroughput
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
         
-        // VERSION_LISTENER_ARG_INDEX
-        usage_string += VersionListenerFactoryArgs.usage_string();
-
         System.out.println(usage_string);
     }
     

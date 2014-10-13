@@ -358,7 +358,7 @@
                multi_controller_error,ordering,
                single_controller_fairness,read_only,multi_controller_tunnels,
                multi_controller_speculation_throughput,read_only_throughput,
-               time_to_query_all,simulated_switch_throughput"
+               simulated_switch_throughput"
       description="create jars for each type of experiment">
   </target>
 
@@ -430,22 +430,6 @@
     <antcall target="make_jar">
       <param name="main_class" value="SingleControllerLatency"/>
       <param name="dest_jar" value="${single_controller_latency_jar}"/>
-      <param name="config_properties" value="${no_log_config}"/>
-    </antcall>
-  </target>
-
-  <!-- time_to_query_all -->
-  <property
-      name="time_to_query_all_jar"
-      value="time_to_query_all.jar"/>
-  <target
-      name="time_to_query_all"
-      depends="compile_libs,compile_experiments"
-      description="Measure how long it takes to query a command line specified
-                   list of controllers for their full version information.">
-    <antcall target="make_jar">
-      <param name="main_class" value="TimeToQueryAll"/>
-      <param name="dest_jar" value="${time_to_query_all_jar}"/>
       <param name="config_properties" value="${no_log_config}"/>
     </antcall>
   </target>
@@ -716,7 +700,6 @@
     <delete file="${multi_controller_tunnels_jar}"/>
     <delete file="${multi_controller_speculation_throughput_jar}"/>
     <delete file="${read_only_throughput_jar}"/>
-    <delete file="${time_to_query_all_jar}"/>
     <delete file="${simulated_switch_throughput_jar}"/>
     <delete file="${disk_log_single_controller_throughput_jar}"/>
     <delete file="${in_memory_log_single_controller_throughput_jar}"/>

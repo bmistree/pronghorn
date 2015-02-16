@@ -3,7 +3,6 @@ package experiments;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import ralph.BoostedManager.DeadlockAvoidanceAlgorithm;
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 
 import pronghorn.ft_ops.FloodlightFlowTableToHardware;
@@ -74,14 +73,13 @@ public class SingleControllerFairness
             else
                 ralph_globals = new RalphGlobals();
 
-            prong = new Instance(
-                ralph_globals,new SingleSideConnection());
-            num_switches_app = new GetNumberSwitches(
-                ralph_globals,new SingleSideConnection());
-            fairness_app_a = new FairnessApplication(
-                ralph_globals,new SingleSideConnection());
-            fairness_app_b = new FairnessApplication(
-                ralph_globals,new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
+            num_switches_app =
+                GetNumberSwitches.create_single_sided(ralph_globals);
+            fairness_app_a =
+                FairnessApplication.create_single_sided(ralph_globals);
+            fairness_app_b =
+                FairnessApplication.create_single_sided(ralph_globals);
             
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);
             prong.add_application(fairness_app_a,Util.ROOT_APP_ID);

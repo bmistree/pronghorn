@@ -120,7 +120,7 @@ public class SwitchFactory implements ISwitchFactory
 
         // Create the switch delta struct
         _InternalSwitchDelta switch_delta =
-            new _InternalSwitchDelta(ralph_globals);
+            new _InternalSwitchDelta(ralph_globals,null,null);
 
         // Create the new switch and return it
         PronghornInternalSwitch internal_switch =

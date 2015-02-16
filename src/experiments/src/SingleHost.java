@@ -5,7 +5,6 @@ import java.lang.Thread;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 
 import pronghorn.InstanceJava.Instance;
@@ -32,11 +31,9 @@ public class SingleHost
         try
         {
             RalphGlobals ralph_globals = new RalphGlobals();
-            prong = new Instance(
-                ralph_globals,new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
 
-            app = new OffOnApplication(
-                ralph_globals,new SingleSideConnection());
+            app = OffOnApplication.create_single_sided(ralph_globals);
         }
         catch (Exception _ex)
         {

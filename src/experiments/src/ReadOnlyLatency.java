@@ -6,7 +6,6 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
 
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 
@@ -61,12 +60,11 @@ public class ReadOnlyLatency
         ReadOnly read_only_app = null;
         try
         {
-            prong = new Instance(
-                ralph_globals,new SingleSideConnection());
-            num_switches_app = new GetNumberSwitches(
-                ralph_globals,new SingleSideConnection());
-            read_only_app = new ReadOnly(
-                ralph_globals,new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
+            num_switches_app =
+                GetNumberSwitches.create_single_sided(ralph_globals);
+            read_only_app =
+                ReadOnly.create_single_sided(ralph_globals);
             
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);
             prong.add_application(read_only_app,Util.ROOT_APP_ID);

@@ -9,7 +9,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 
@@ -70,11 +69,10 @@ public class SingleControllerThroughput
         GetNumberSwitches num_switches_app = null;
         try
         {
-            prong = new Instance(
-                ralph_globals,new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
 
-            num_switches_app = new GetNumberSwitches(
-                ralph_globals,new SingleSideConnection());
+            num_switches_app =
+                GetNumberSwitches.create_single_sided(ralph_globals);
 
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);            
         } catch (Exception _ex) {
@@ -140,8 +138,8 @@ public class SingleControllerThroughput
 
             for (int i = 0; i < num_switches; ++i)
             {
-                off_on_app = new OffOnApplication(
-                    ralph_globals,new SingleSideConnection());
+                off_on_app =
+                    OffOnApplication.create_single_sided(ralph_globals);
                 prong.add_application(off_on_app,Util.ROOT_APP_ID);
                 off_on_app_list.add(off_on_app);
             }

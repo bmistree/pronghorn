@@ -260,14 +260,15 @@ public class ErrorUtil
         RalphGlobals ralph_globals,String new_switch_id, boolean speculate,
         float error_probability)
     {
-        _InternalSwitch internal_switch = new _InternalSwitch(ralph_globals);
+        _InternalSwitch internal_switch =
+            new _InternalSwitch(ralph_globals,null,null);
         FaultyHardwareChangeApplier to_handle_pushing_changes =
             new FaultyHardwareChangeApplier(error_probability);
         SwitchSpeculateListener switch_speculate_listener =
             new SwitchSpeculateListener();
         
         _InternalSwitchDelta internal_switch_delta =
-            new _InternalSwitchDelta(ralph_globals);
+            new _InternalSwitchDelta(ralph_globals,null,null);
         SwitchDelta switch_delta =
             new SwitchDelta (
                 false,internal_switch_delta,ralph_globals);

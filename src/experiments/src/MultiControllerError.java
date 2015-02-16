@@ -11,10 +11,11 @@ import ralph.RalphGlobals;
 import ralph.EndpointConstructorObj;
 import ralph.Endpoint;
 import ralph.Ralph;
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 import ralph.RalphObject;
+import RalphDurability.IDurabilityContext;
+import RalphDurability.DurabilityReplayContext;
 
 import pronghorn.FloodlightShim;
 import pronghorn.SwitchStatusHandler;
@@ -91,14 +92,12 @@ public class MultiControllerError
         GetNumberSwitches num_switches_app = null;
         try
         {
-            prong = new Instance(
-                ralph_globals,new SingleSideConnection());
-            
-            mc_error_app = new MultiControllerErrorApp(
-                ralph_globals,new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
+            mc_error_app =
+                MultiControllerErrorApp.create_single_sided(ralph_globals);
             prong.add_application(mc_error_app,Util.ROOT_APP_ID);
-            num_switches_app = new GetNumberSwitches(
-                ralph_globals,new SingleSideConnection());
+            num_switches_app =
+                GetNumberSwitches.create_single_sided(ralph_globals);
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);
         }
         catch (Exception _ex)
@@ -224,9 +223,14 @@ public class MultiControllerError
     private static class DummyConnectionConstructor
         implements EndpointConstructorObj
     {
+        private final static String canonical_name =
+            DummyConnectionConstructor.class.getName();
+        
         @Override
         public Endpoint construct(
-            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj)
+            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
+            IDurabilityContext durability_log_context,
+            DurabilityReplayContext durability_replay_context)
         {
             PronghornConnectionError to_return = null;
             System.out.println("\nBuilt a connection\n\n");
@@ -236,7 +240,8 @@ public class MultiControllerError
                 // fairness app for single principal, a.  head nodes
                 // tcp connect and do not accept connections.
                 to_return =
-                    new PronghornConnectionError(ralph_globals,conn_obj);
+                    PronghornConnectionError.external_create(
+                        ralph_globals,conn_obj);
                 to_return.set_error_app(mc_error_app);
             }
             catch (Exception _ex)
@@ -248,9 +253,16 @@ public class MultiControllerError
         }
 
         @Override
+        public String get_canonical_name()
+        {
+            return canonical_name;
+        }
+        
+        @Override
         public Endpoint construct(
             RalphGlobals globals,RalphConnObj.ConnectionObj conn_obj,
-            List<RalphObject> internal_values_list)
+            List<RalphObject> internal_values_list,
+            IDurabilityContext durability_log_context)
         {
             System.err.println(
                 "Should never be constructing error object for replay.");

@@ -174,7 +174,8 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
             int src_port_num = update.getSrcPort();
             int dst_port_num = update.getDstPort();
 
-            _InternalPort to_return = new _InternalPort (prong.ralph_globals);
+            _InternalPort to_return =
+                new _InternalPort (prong.ralph_globals,null,null);
 
             // FIXME: assume as soon as a switch gets updated with a port
             // that we can use that port.

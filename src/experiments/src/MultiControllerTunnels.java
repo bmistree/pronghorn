@@ -6,13 +6,14 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
 
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 import ralph.RalphObject;
 import ralph.EndpointConstructorObj;
 import ralph.Endpoint;
 import ralph.Ralph;
+import RalphDurability.IDurabilityContext;
+import RalphDurability.DurabilityReplayContext;
 
 import pronghorn.FloodlightShim;
 import pronghorn.SwitchStatusHandler;
@@ -76,12 +77,11 @@ public class MultiControllerTunnels
         /* Start up pronghorn */
         try
         {
-            prong = new Instance(
-                ralph_globals,new SingleSideConnection());
-            mc_tunnels_app = new MultiControllerTunnelsApp(
-                ralph_globals,new SingleSideConnection());
-            num_switches_app = new GetNumberSwitches(
-                ralph_globals,new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
+            mc_tunnels_app =
+                MultiControllerTunnelsApp.create_single_sided(ralph_globals);
+            num_switches_app =
+                GetNumberSwitches.create_single_sided(ralph_globals);
             
             prong.add_application(mc_tunnels_app,Util.ROOT_APP_ID);
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);
@@ -209,18 +209,35 @@ public class MultiControllerTunnels
     }
 
 
-    private static class DummyConnectionConstructor implements EndpointConstructorObj
+    private static class DummyConnectionConstructor
+        implements EndpointConstructorObj
     {
+        private final static String canonical_name =
+            DummyConnectionConstructor.class.getName();
+        
+        @Override
+        public String get_canonical_name()
+        {
+            return canonical_name;
+        }
+        
         @Override
         public Endpoint construct(
-            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj)
+            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
+            IDurabilityContext durability_log_context,
+            DurabilityReplayContext durability_replay_context)
         {
             PronghornConnectionTunnels to_return = null;
             System.out.println("\nBuilt a connection\n\n");
-            try {
-                to_return = new PronghornConnectionTunnels(ralph_globals,conn_obj);
+            try
+            {
+                to_return =
+                    PronghornConnectionTunnels.external_create(
+                        ralph_globals,conn_obj);
                 to_return.set_tunnels_app(mc_tunnels_app);
-            } catch (Exception _ex) {
+            }
+            catch (Exception _ex)
+            {
                 _ex.printStackTrace();
                 assert(false);
             }
@@ -230,7 +247,8 @@ public class MultiControllerTunnels
         @Override
         public Endpoint construct(
             RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
-            List<RalphObject> obj_initializers)
+            List<RalphObject> obj_initializers,
+            IDurabilityContext durability_log_context)
         {
             System.err.println(
                 "Should not construct object from replay constructor.");

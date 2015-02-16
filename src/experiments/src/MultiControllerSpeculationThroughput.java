@@ -15,6 +15,8 @@ import ralph.Endpoint;
 import ralph.Ralph;
 import RalphConnObj.SingleSideConnection;
 import ralph.RalphObject;
+import RalphDurability.IDurabilityContext;
+import RalphDurability.DurabilityReplayContext;
 
 import pronghorn.FloodlightShim;
 import pronghorn.SwitchStatusHandler;
@@ -81,13 +83,12 @@ public class MultiControllerSpeculationThroughput
 
         /* Start up pronghorn */
         try {
-            prong = new Instance(
-                ralph_globals, new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
 
-            mc_speculation_app = new MultiControllerSpeculation(
-                ralph_globals,new SingleSideConnection());
-            num_switches_app = new GetNumberSwitches(
-                ralph_globals,new SingleSideConnection());
+            mc_speculation_app =
+                MultiControllerSpeculation.create_single_sided(ralph_globals);
+            num_switches_app =
+                GetNumberSwitches.create_single_sided(ralph_globals);
             
             prong.add_application(mc_speculation_app,Util.ROOT_APP_ID);
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);
@@ -267,18 +268,29 @@ public class MultiControllerSpeculationThroughput
     }
 
     
-    private static class DummyConnectionConstructor implements EndpointConstructorObj
+    private static class DummyConnectionConstructor
+        implements EndpointConstructorObj
     {
+        private final static String canonical_name =
+            DummyConnectionConstructor.class.getName();
+        
         @Override
         public Endpoint construct(
-            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj)
+            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
+            IDurabilityContext durability_log_context,
+            DurabilityReplayContext durability_replay_context)
         {
             PronghornConnectionSpeculation to_return = null;
             System.out.println("\nBuilt a connection\n\n");
-            try {
-                to_return = new PronghornConnectionSpeculation(ralph_globals,conn_obj);
+            try
+            {
+                to_return =
+                    PronghornConnectionSpeculation.external_create(
+                        ralph_globals,conn_obj);
                 to_return.set_speculation_app(mc_speculation_app);
-            } catch (Exception _ex) {
+            }
+            catch (Exception _ex)
+            {
                 _ex.printStackTrace();
                 assert(false);
             }
@@ -287,12 +299,19 @@ public class MultiControllerSpeculationThroughput
         @Override
         public Endpoint construct(
             RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
-            List<RalphObject> obj_initializers)
+            List<RalphObject> obj_initializers,
+            IDurabilityContext durability_log_context)
         {
             System.err.println(
                 "Should not construct object from replay constructor.");
             assert(false);
             return null;
+        }
+
+        @Override
+        public String get_canonical_name()
+        {
+            return canonical_name;
         }
     }
 }

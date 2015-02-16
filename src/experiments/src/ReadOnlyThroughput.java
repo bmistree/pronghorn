@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 
 import pronghorn.FloodlightShim;
@@ -61,11 +60,10 @@ public class ReadOnlyThroughput
         GetNumberSwitches num_switches_app = null;
         try
         {
-            prong = new Instance(
-                ralph_globals,new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
 
-            num_switches_app = new GetNumberSwitches(
-                ralph_globals,new SingleSideConnection());
+            num_switches_app =
+                GetNumberSwitches.create_single_sided(ralph_globals);
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
@@ -97,8 +95,8 @@ public class ReadOnlyThroughput
             {
                 for (int i = 0; i < threads_per_switch; ++i)
                 {
-                    ReadOnly read_only = new ReadOnly(
-                        ralph_globals,new SingleSideConnection());
+                    ReadOnly read_only =
+                        ReadOnly.create_single_sided(ralph_globals);
                     prong.add_application(read_only,Util.ROOT_APP_ID);
                     if (! read_only.set_switch(switch_id).booleanValue())
                     {

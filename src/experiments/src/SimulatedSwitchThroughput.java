@@ -9,7 +9,6 @@ import java.util.concurrent.locks.ReentrantLock;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 
@@ -73,11 +72,10 @@ public class SimulatedSwitchThroughput
         GetNumberSwitches num_switches_app = null;
         try
         {
-            prong = new Instance(
-                ralph_globals,new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
 
-            num_switches_app = new GetNumberSwitches(
-                ralph_globals,new SingleSideConnection());
+            num_switches_app =
+                GetNumberSwitches.create_single_sided(ralph_globals);
 
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);            
         }

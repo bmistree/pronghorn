@@ -10,7 +10,8 @@ public class OFStatsMessageParser
     public static _InternalPortStats of_port_stats_to_ralph(
         OFPortStatisticsReply of_port_stats,RalphGlobals ralph_globals)
     {
-        _InternalPortStats to_return = new _InternalPortStats(ralph_globals);
+        _InternalPortStats to_return =
+            new _InternalPortStats(ralph_globals,null,null);
         to_return.port_number = new NonAtomicNumberVariable (
             false,new Double(of_port_stats.getPortNumber()),ralph_globals);
         to_return.tx_dropped = new NonAtomicNumberVariable (

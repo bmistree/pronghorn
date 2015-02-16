@@ -9,7 +9,6 @@ import java.util.Set;
 import java.lang.Thread;
 import java.util.ArrayList;
 
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 
@@ -87,12 +86,10 @@ public class Ordering
         OffOnApplication off_on_app = null;
         try
         {
-            prong = new Instance(
-                ralph_globals,new SingleSideConnection());
-            num_switches_app = new GetNumberSwitches(
-                ralph_globals,new SingleSideConnection());
-            off_on_app = new OffOnApplication(
-                ralph_globals,new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
+            num_switches_app =
+                GetNumberSwitches.create_single_sided(ralph_globals);
+            off_on_app = OffOnApplication.create_single_sided(ralph_globals);
             
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);
             prong.add_application(off_on_app,Util.ROOT_APP_ID);

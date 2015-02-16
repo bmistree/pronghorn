@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 
@@ -62,12 +61,11 @@ public class SingleControllerError
         ErrorApplication error_app = null;
         try
         {
-            prong = new Instance(
-                ralph_globals,new SingleSideConnection());
-            num_switches_app = new GetNumberSwitches(
-                ralph_globals,new SingleSideConnection());
-            error_app = new ErrorApplication(
-                ralph_globals,new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
+            num_switches_app =
+                GetNumberSwitches.create_single_sided(ralph_globals);
+            error_app =
+                ErrorApplication.create_single_sided(ralph_globals);
             prong.add_application(num_switches_app,Util.ROOT_APP_ID);
             prong.add_application(error_app,Util.ROOT_APP_ID);
                         

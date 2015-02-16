@@ -50,7 +50,7 @@ public class PronghornInternalSwitch
         int _collect_statistics_period_ms, IFloodlightShim _shim,
         String _floodlight_switch_id,StatisticsUpdater _stats_updater)
     {
-        super(_ralph_globals);
+        super(_ralph_globals,null,null);
         ralph_globals = _ralph_globals;
         ralph_internal_switch_id = _ralph_internal_switch_id;
         delta = new SwitchDelta (

@@ -12,9 +12,11 @@ import ralph.EndpointConstructorObj;
 import ralph.Endpoint;
 import ralph.Ralph;
 import ralph.BoostedManager.DeadlockAvoidanceAlgorithm;
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphObject;
 import ralph.NonAtomicInternalList;
+
+import RalphDurability.IDurabilityContext;
+import RalphDurability.DurabilityReplayContext;
 
 import pronghorn.FloodlightShim;
 import pronghorn.SwitchStatusHandler;
@@ -137,10 +139,10 @@ public class MultiControllerFairness
         /* Start up pronghorn */
         try
         {
-            prong = new Instance(
-                ralph_globals,new SingleSideConnection());
-            mc_fairness_app_principal_a = new MultiControllerFairnessApp(
-                ralph_globals,new SingleSideConnection());
+            prong = Instance.create_single_sided(ralph_globals);
+            mc_fairness_app_principal_a =
+                MultiControllerFairnessApp.create_single_sided(
+                    ralph_globals);
             mc_fairness_app_principal_a.set_should_write(should_write);
             prong.add_application(
                 mc_fairness_app_principal_a,Util.ROOT_APP_ID);
@@ -149,14 +151,15 @@ public class MultiControllerFairness
             {
                 // only head node has two principals.  body nodes just
                 // have one.
-                mc_fairness_app_principal_b = new MultiControllerFairnessApp(
-                    ralph_globals,new SingleSideConnection());
+                mc_fairness_app_principal_b =
+                    MultiControllerFairnessApp.create_single_sided(
+                        ralph_globals);
                 prong.add_application(
                     mc_fairness_app_principal_b,Util.ROOT_APP_ID);
                 mc_fairness_app_principal_b.set_should_write(should_write);
             }
-            num_switches_app = new GetNumberSwitches(
-                ralph_globals,new SingleSideConnection());
+            num_switches_app =
+                GetNumberSwitches.create_single_sided(ralph_globals);
             prong.add_application(
                 num_switches_app,Util.ROOT_APP_ID);
         }
@@ -298,9 +301,14 @@ public class MultiControllerFairness
     private static class DummyConnectionConstructor
         implements EndpointConstructorObj
     {
+        private final static String canonical_name =
+            DummyConnectionConstructor.class.getName();
+        
         @Override
         public Endpoint construct(
-            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj)
+            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
+            IDurabilityContext durability_log_context,
+            DurabilityReplayContext durability_replay_context)
         {
             PronghornConnectionFairness to_return = null;
             System.out.println("\nBuilt a connection\n\n");
@@ -310,7 +318,8 @@ public class MultiControllerFairness
                 // fairness app for single principal, a.  head nodes
                 // tcp connect and do not accept connections.
                 to_return =
-                    new PronghornConnectionFairness(ralph_globals,conn_obj);
+                    PronghornConnectionFairness.external_create(
+                        ralph_globals,conn_obj);
                 to_return.set_fairness_app(mc_fairness_app_principal_a);
             }
             catch (Exception _ex)
@@ -322,9 +331,16 @@ public class MultiControllerFairness
         }
 
         @Override
+        public String get_canonical_name()
+        {
+            return canonical_name;
+        }
+        
+        @Override
         public Endpoint construct(
             RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
-            List<RalphObject> obj_initializers)
+            List<RalphObject> obj_initializers,
+            IDurabilityContext durability_log_context)
         {
             System.err.println(
                 "Not performing replay on direct fairness experiment");

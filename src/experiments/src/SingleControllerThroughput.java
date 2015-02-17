@@ -144,9 +144,13 @@ public class SingleControllerThroughput
                 off_on_app_list.add(off_on_app);
             }
             // add some existing entries to all switches
+            System.out.println("\nGot into top 1\n");
             off_on_app.add_entry_all_switches("00:00:00:00:00:1");
+            System.out.println("\nGot into top 2\n");
             off_on_app.add_entry_all_switches("00:00:00:00:00:2");
+            System.out.println("\nGot into top 3\n");
             off_on_app.add_entry_all_switches("00:00:00:00:00:3");
+            System.out.println("\nGot into top 4\n");
         }
         catch (Exception ex)
         {
@@ -173,33 +177,30 @@ public class SingleControllerThroughput
         ConcurrentHashMap<String,List<Long>> warmup_results =
             new ConcurrentHashMap<String,List<Long>>();
 
-        // start from 1 to prevent collisions with entries added above with 00.
-        int highest_dl_src_byte = 1;
+        // start from 1 to prevent collisions with entries added above
+        // with 00.
         for (int i =0; i < switch_ids.size(); ++i)
         {
             String switch_id = switch_ids.get(i);
             OffOnApplication off_on_app = off_on_app_list.get(i);
             for (int j = 0; j < threads_per_switch; ++j)
             {
-                ++highest_dl_src_byte;
+                int total_num_threads = i*switch_ids.size() + j;
+                int highest_dl_src_byte = total_num_threads/256 + 1;
+                int second_highest_dl_src_byte = total_num_threads % 256;
+                
                 ThroughputThread t =
                     new ThroughputThread(
                         switch_id, off_on_app, num_ops_to_run, results,coarse_locking,
-                        highest_dl_src_byte);
+                        highest_dl_src_byte, second_highest_dl_src_byte);
                 threads.add(t);
                 ThroughputThread wt =
                     new ThroughputThread(
                         switch_id, off_on_app, num_warmup_ops_to_run,
                         warmup_results,coarse_locking,
-                        highest_dl_src_byte);
+                        highest_dl_src_byte, second_highest_dl_src_byte);
                 warmup_threads.add(wt);
             }
-        }
-
-        if (highest_dl_src_byte > 256)
-        {
-            System.out.println("Error: more threads than subnet bytes");
-            System.exit(-1);
         }
 
         // do warmup
@@ -295,11 +296,12 @@ public class SingleControllerThroughput
         // Eg., one thread would add entries for 01:*:*:*:*:* and another for
         // 02:*:*:*:*:*, etc.
         int highest_dl_src_byte;
+        int second_highest_dl_src_byte;
         
         public ThroughputThread(
             String switch_id, OffOnApplication off_on_app, int num_ops_to_run,
             ConcurrentHashMap<String,List<Long>> results, boolean coarse_locking,
-            int highest_dl_src_byte)
+            int highest_dl_src_byte,int second_highest_dl_src_byte)
         {
             this.switch_id = switch_id;
             this.num_ops_to_run = num_ops_to_run;
@@ -308,13 +310,16 @@ public class SingleControllerThroughput
             this.coarse_locking = coarse_locking;
             this.result_id = switch_id + atom_int.getAndIncrement();
             this.highest_dl_src_byte = highest_dl_src_byte;
+            this.second_highest_dl_src_byte = second_highest_dl_src_byte;
     	}
 
     	public void run() {
             ArrayList<Long> completion_times = new ArrayList<Long>();
             for (long i = 0; i < num_ops_to_run; ++i)
             {
-                int b_byte = (int) ((long)(i & 0xff00000000L) >> 32);
+                if ((i % 100) == 0)
+                    System.out.println(i + " of " + num_ops_to_run);
+
                 int c_byte = (int) ((long)(i & 0xff000000L) >> 24);
                 int d_byte = (int) ((long)(i & 0xff0000L) >> 16);
                 int e_byte = (int) ((long)(i & 0xff00L) >> 8);
@@ -322,7 +327,7 @@ public class SingleControllerThroughput
                 
                 String dl_src_to_add =
                     Integer.toHexString(highest_dl_src_byte) + ":" +
-                    Integer.toHexString(b_byte) + ":" +
+                    Integer.toHexString(second_highest_dl_src_byte) + ":" +
                     Integer.toHexString(c_byte) + ":" +
                     Integer.toHexString(d_byte) + ":" +
                     Integer.toHexString(e_byte) + ":" +

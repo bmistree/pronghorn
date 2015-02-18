@@ -49,9 +49,13 @@
       name="disk_log_config"
       location="${lib_build_path}/disk_log_config/config.properties"/>
   <property
-      name="multidisk_durability_log_config"
+      name="synced_multidisk_durability_log_config"
       location="multidisk_durability_config/config.properties"/>
+  <property
+      name="lazy_multidisk_durability_log_config"
+      location="multidisk_lazy_durability_config/config.properties"/>
 
+  
   <!-- Floodlight dependency -->
   <property
       name="floodlight_dep_dir"
@@ -361,10 +365,13 @@
                multi_controller_error,ordering,
                single_controller_fairness,read_only,multi_controller_tunnels,
                multi_controller_speculation_throughput,read_only_throughput,
-               simulated_switch_throughput, multidisk_single_controller_throughput"
+               simulated_switch_throughput,
+               synced_multidisk_single_controller_throughput,
+               lazy_multidisk_single_controller_throughput"
       description="create jars for each type of experiment">
   </target>
-      
+
+  
   <!-- Run pronghorn connected to floodlight -->
   <target
       name="make_jar"
@@ -456,19 +463,40 @@
     </target>
 
     <property
-      name="multidisk_single_controller_throughput_jar"
-      value="multidisk_single_controller_throughput.jar"/>
+      name="synced_multidisk_single_controller_throughput_jar"
+      value="synced_multidisk_single_controller_throughput.jar"/>
     <target
-      name="multidisk_single_controller_throughput"
+      name="synced_multidisk_single_controller_throughput"
       depends="compile_libs,compile_experiments"
       description="Single controller throughput with logging">
       <antcall target="make_jar">
         <param name="main_class" value="SingleControllerThroughput"/>
-        <param name="dest_jar" value="${multidisk_single_controller_throughput_jar}"/>
-        <param name="config_properties" value="${multidisk_durability_log_config}"/>
+        <param
+            name="dest_jar"
+            value="${synced_multidisk_single_controller_throughput_jar}"/>
+        <param
+            name="config_properties"
+            value="${synced_multidisk_durability_log_config}"/>
       </antcall>
     </target>
 
+    <property
+      name="lazy_multidisk_single_controller_throughput_jar"
+      value="lazy_multidisk_single_controller_throughput.jar"/>
+    <target
+      name="lazy_multidisk_single_controller_throughput"
+      depends="compile_libs,compile_experiments"
+      description="Single controller throughput with logging">
+      <antcall target="make_jar">
+        <param name="main_class" value="SingleControllerThroughput"/>
+        <param
+            name="dest_jar"
+            value="${lazy_multidisk_single_controller_throughput_jar}"/>
+        <param
+            name="config_properties"
+            value="${lazy_multidisk_durability_log_config}"/>
+      </antcall>
+    </target>
     
     <property
       name="disk_log_single_controller_throughput_jar"
@@ -720,7 +748,8 @@
     <delete file="${simulated_switch_throughput_jar}"/>
     <delete file="${disk_log_single_controller_throughput_jar}"/>
     <delete file="${in_memory_log_single_controller_throughput_jar}"/>
-    <delete file="${multidisk_single_controller_throughput_jar}"/>
+    <delete file="${synced_multidisk_single_controller_throughput_jar}"/>
+    <delete file="${lazy_multidisk_single_controller_throughput_jar}"/>
     
   </target>
 

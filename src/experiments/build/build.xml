@@ -48,12 +48,10 @@
   <property
       name="disk_log_config"
       location="${lib_build_path}/disk_log_config/config.properties"/>
-
   <property
       name="multidisk_durability_log_config"
-      location="${lib_build_path}/multidisk_durability_config/config.properties"/>
-  
-  
+      location="multidisk_durability_config/config.properties"/>
+
   <!-- Floodlight dependency -->
   <property
       name="floodlight_dep_dir"

@@ -242,6 +242,9 @@ public class MultiControllerThroughput
             ArrayList<Long> completion_times = new ArrayList<Long>();
             for (int i = 0; i < num_ops_to_run; ++i)
             {
+                if ((i % 100) == 0)
+                    System.out.println(i + " of " + num_ops_to_run);
+                
                 try {
                     mc_off_on_app.single_op_and_ask_children_for_single_op_switch_id(switch_id);
                 } catch (Exception _ex) {

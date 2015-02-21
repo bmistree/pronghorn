@@ -578,10 +578,11 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerThroughput"/>
         <param name="dest_jar" value="${multi_controller_throughput_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
 
+  
   <!--
       Ant for running test for running test to show that we handle
       reordering
@@ -699,9 +700,10 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerSpeculationThroughput"/>
         <param name="dest_jar" value="${multi_controller_speculation_throughput_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
+  
 
   <!-- Read only throughput -->
   <property

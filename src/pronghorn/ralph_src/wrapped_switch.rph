@@ -184,7 +184,8 @@ Service WrappedSwitch
             ftd.index = wrapped_switch.ftable.size();
             wrapped_switch.ftable.append(copied_to_add);
             
-            // FIXME: should filter adds then removes or removes then adds
+            // FIXME: should filter adds then removes or removes then
+            // adds
             wrapped_switch.delta.ft_deltas.append(ftd);
         }
         return True;
@@ -211,8 +212,29 @@ Service WrappedSwitch
             // actually perform remove
             wrapped_switch.ftable.remove(index_to_remove_from);
 
-            // FIXME: should filter adds then removes or removes then adds
-            wrapped_switch.delta.ft_deltas.append(ftd);
+            // Want to deal with challenge that user inserts an entry
+            // and then removes the entry in the same transaction.  In
+            // that case, just filter both.  
+            TrueFalse insert_in_deltas = True;
+            for (Number i in range(0,wrapped_switch.delta.ft_deltas.size()))
+            {
+                Struct FlowTableDelta prev_ftd =
+                    wrapped_switch.delta.ft_deltas.get(i);
+
+                if (prev_ftd.entry.cookie == ftd.entry.cookie)
+                {
+                    wrapped_switch.delta.ft_deltas.remove(i);
+                    insert_in_deltas = False;
+                    break;
+                }
+            }
+
+            if (insert_in_deltas)
+            {
+                // FIXME: should filter adds then removes or removes
+                // then adds
+                wrapped_switch.delta.ft_deltas.append(ftd);
+            }
         }
         return True;
     }

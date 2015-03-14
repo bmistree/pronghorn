@@ -187,7 +187,8 @@ public class DeltaListStateSupplier
             _InternalFlowTableDelta flow_table_delta = null;
             _InternalFlowTableEntry entry = null;
             _InternalMatch internal_match = null;
-
+            Double cookie = null;
+            
             try
             {
                 flow_table_delta = (_InternalFlowTableDelta) (ro.get_val(null));
@@ -214,7 +215,16 @@ public class DeltaListStateSupplier
                     // see above note about entry.
                     break;
                 }
-                
+
+                cookie =
+                    RalphInternalValueRemover.<Double>
+                    get_internal(entry.cookie);
+
+                if (cookie == null)
+                {
+                    // see above note about entry
+                    break;
+                }
             }
             catch (Exception ex)
             {
@@ -224,7 +234,6 @@ public class DeltaListStateSupplier
                     ex.toString());
                 assert(false);
             }
-
             // FIXME: lock tvar and don't continue in case that get
             // backout.
             
@@ -242,17 +251,17 @@ public class DeltaListStateSupplier
 
             List<OFInstruction> instruction_list =
                 instruction_list_from_internal_instructions(instructions);
-            
+
             FTableUpdate update_to_push =  null;
             if (insertion)
             {
                 update_to_push = FTableUpdate.create_insert_update(
-                    match,instruction_list);
+                    match,instruction_list,cookie.longValue());
             }
             else
             {
                 update_to_push = FTableUpdate.create_remove_update(
-                    match,instruction_list);
+                    match,instruction_list,cookie.longValue());
             }
             floodlight_updates.add(update_to_push);
         }

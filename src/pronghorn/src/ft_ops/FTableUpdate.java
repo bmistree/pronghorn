@@ -22,6 +22,7 @@ public class FTableUpdate
 {
     final private OFMatch match;
     final private List<OFInstruction> instructions;
+    final private long cookie;
     /**
        true if this is an insertion flow mod.  false if it's a
        deletion.
@@ -34,10 +35,10 @@ public class FTableUpdate
 
     // FIXME: unclear why not just using constructor.
     public static FTableUpdate create_insert_update(
-        OFMatch match, List<OFInstruction> instructions)
+        OFMatch match, List<OFInstruction> instructions, long cookie)
     {
         FTableUpdate to_return = new FTableUpdate(
-            match,instructions,true);
+            match,instructions,true,cookie);
         return to_return;
     }
 
@@ -49,10 +50,10 @@ public class FTableUpdate
        That is why we have the additional parameter below.
      */
     public static FTableUpdate create_remove_update(
-        OFMatch match, List<OFInstruction> instructions)
+        OFMatch match, List<OFInstruction> instructions, long cookie)
     {
         FTableUpdate to_return = new FTableUpdate(
-            match,instructions,false);
+            match,instructions,false, cookie);
         return to_return;
     }
 
@@ -76,6 +77,9 @@ public class FTableUpdate
             return false;
         
         if (! other.instructions.equals(instructions))
+            return false;
+
+        if (other.cookie != cookie)
             return false;
 
         return true;
@@ -106,9 +110,13 @@ public class FTableUpdate
             instructions.add(instruction);
         }
 
+        // FIXME: pass cookie through deserialization instead of 0s
+        // below.
+        assert(false);
+        
         if (insertion)
-            return create_insert_update(match,instructions);
-        return create_remove_update(match,instructions);
+            return create_insert_update(match,instructions,0);
+        return create_remove_update(match,instructions,0);
     }
     
     public static FTableUpdates.Builder serialize_update_list(
@@ -149,6 +157,10 @@ public class FTableUpdate
 
         // handle matches
         to_return.setMatch(match);
+
+        // handle cookies
+        to_return.setCookie(cookie);
+        to_return.setCookieMask(0xFFFFFFFFFFFFFFFFl);
         
         // add operations for insertions
         if (insertion)
@@ -193,7 +205,7 @@ public class FTableUpdate
      */
     public FTableUpdate create_undo()
     {
-        return new FTableUpdate(match,instructions,! insertion);
+        return new FTableUpdate(match, instructions, ! insertion, cookie);
     }
     
     /**
@@ -202,10 +214,11 @@ public class FTableUpdate
      */
     private FTableUpdate(
         OFMatch _match, List<OFInstruction> _instructions,
-        boolean _insertion)
+        boolean _insertion, long _cookie)
     {
         match = _match;
         instructions = _instructions;
         insertion = _insertion;
+        cookie = _cookie;
     }
 }

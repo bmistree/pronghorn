@@ -10,6 +10,7 @@ Struct FlowTableEntry
 {
     TVar Struct Match match = null;
     TVar Struct Instructions instructions = null;
+    TVar Number cookie = null;
 }
 
 /**
@@ -26,6 +27,7 @@ Service FlowTableUtil
         to_return.match = match_util.copy_match(to_copy.match);
         to_return.instructions =
             instructions_util.copy_instructions(to_copy.instructions);
+        to_return.cookie = to_copy.cookie;
         return to_return;
     }    
 }

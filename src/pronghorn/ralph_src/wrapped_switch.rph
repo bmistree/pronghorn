@@ -171,16 +171,13 @@ Service WrappedSwitch
     
     add_entry(Struct FlowTableEntry to_add) returns TrueFalse
     {
-        Struct FlowTableEntry copied_to_add = ft_util.copy_entry(to_add);
-        Struct FlowTableDelta ftd;
-
-        // check allowed to add this entry
-        TrueFalse permissions_allowed = check_add_remove_permissions(to_add);
-        if (not permissions_allowed)
-            return False;
-        
         atomically
         {
+            to_add.cookie = wrapped_switch.cookie_generator;
+            wrapped_switch.cookie_generator = wrapped_switch.cookie_generator + 1;
+            Struct FlowTableEntry copied_to_add = ft_util.copy_entry(to_add);
+            Struct FlowTableDelta ftd;
+            
             write_lock_switch();
             ftd.inserted = True;
             ftd.entry = copied_to_add;

@@ -18,6 +18,9 @@ Struct Switch
     TVar Number available_capacity;
     TVar List (element: Struct FlowTableEntry) ftable;
 
+    // Assign cookies to each generated command.
+    TVar Number cookie_generator = 0;
+    
     // Indices are port numbers on local switch
     TVar Map (from: Number, to: Struct Port) all_ports;
     // Ports link two switches.  available ports is a map of ports

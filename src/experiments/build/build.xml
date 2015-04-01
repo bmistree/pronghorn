@@ -407,7 +407,7 @@
     <antcall target="make_jar">
       <param name="main_class" value="SingleHost"/>
       <param name="dest_jar" value="${single_host_jar}"/>
-      <param name="config_properties" value="${no_log_config}"/>
+      <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
     </antcall>
   </target>
 
@@ -422,7 +422,7 @@
     <antcall target="make_jar">
       <param name="main_class" value="SimulatedSwitchThroughput"/>
       <param name="dest_jar" value="${simulated_switch_throughput_jar}"/>
-      <param name="config_properties" value="${no_log_config}"/>
+      <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
     </antcall>
   </target>
 
@@ -439,7 +439,7 @@
     <antcall target="make_jar">
       <param name="main_class" value="SingleControllerLatency"/>
       <param name="dest_jar" value="${single_controller_latency_jar}"/>
-      <param name="config_properties" value="${no_log_config}"/>
+      <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
     </antcall>
   </target>
 
@@ -458,7 +458,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="SingleControllerThroughput"/>
         <param name="dest_jar" value="${single_controller_throughput_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
     </target>
 
@@ -541,7 +541,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="ReadOnlyLatency"/>
         <param name="dest_jar" value="${read_only_latency_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
 
@@ -558,7 +558,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerLatency"/>
         <param name="dest_jar" value="${multi_controller_latency_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
 
@@ -598,7 +598,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="Ordering"/>
         <param name="dest_jar" value="${ordering_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
 
@@ -617,7 +617,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerFairness"/>
         <param name="dest_jar" value="${multi_controller_fairness_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
 
@@ -635,7 +635,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="SingleControllerFairness"/>
         <param name="dest_jar" value="${single_controller_fairness_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
 
@@ -651,7 +651,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="SingleControllerError"/>
         <param name="dest_jar" value="${single_controller_error_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
 
@@ -668,7 +668,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerError"/>
         <param name="dest_jar" value="${multi_controller_error_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
 
@@ -684,7 +684,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="MultiControllerTunnels"/>
         <param name="dest_jar" value="${multi_controller_tunnels_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
 
@@ -717,7 +717,7 @@
       <antcall target="make_jar">
         <param name="main_class" value="ReadOnlyThroughput"/>
         <param name="dest_jar" value="${read_only_throughput_jar}"/>
-        <param name="config_properties" value="${no_log_config}"/>
+        <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
 

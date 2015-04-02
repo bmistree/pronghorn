@@ -31,7 +31,6 @@ Service Instance implements Interface ISwitchMapProvider
         Struct AccessControl ac;
         ac.allow_writes = True;
         to_add.access_control_map.set(ROOT_PRINCIPAL_ID, ac);
-
         
         Service WrappedSwitch ws;
         ws.init(to_add,shared_ft_util,shared_port_util,ac);
@@ -92,7 +91,7 @@ Service Instance implements Interface ISwitchMapProvider
         else
             principal_switch_map = produce_switch_map_for_principal(principal_id);
 
-        app.init(self,principal_switch_map);
+        app.init(self);
         app.run();
     }
 

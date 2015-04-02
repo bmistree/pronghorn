@@ -1,0 +1,7 @@
+#include 'wrapped_switch.rph'
+alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
+
+Interface ISwitchMapProvider
+{
+    get_switch_map() returns Map(from: Text, to: Struct StructWrappedSwitch);
+}

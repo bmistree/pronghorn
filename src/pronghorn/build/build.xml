@@ -166,12 +166,20 @@
 
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${pronghorn_ralph_src_dir}/iswitch_map_provider.rph"/>
+      <arg line="-o ${pronghorn_ralph_emitted_dir}/ISwitchMapProviderJava.java"/>
+      <arg line="-p ${pronghorn_package}"/>
+      <arg line="-c ISwitchMapProviderJava"/>
+    </exec>
+    
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${pronghorn_ralph_src_dir}/instance.rph"/>
       <arg line="-o ${pronghorn_ralph_emitted_dir}/InstanceJava.java"/>
       <arg line="-p ${pronghorn_package}"/>
       <arg line="-c InstanceJava"/>
     </exec>
-
+    
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
       <arg line="-i ${pronghorn_ralph_src_dir}/iapplication.rph"/>

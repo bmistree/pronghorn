@@ -13,8 +13,10 @@ alias Service PortUtil as 'pronghorn.PortJava.PortUtil';
 alias Service FlowTableUtil as 'pronghorn.FTable.FlowTableUtil';
 alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
 
+#include 'iswitch_map_provider.rph'
+alias Interface ISwitchMapProvider as 'pronghorn.ISwitchMapProviderJava.ISwitchMapProvider';
 
-Service Instance
+Service Instance implements Interface ISwitchMapProvider
 {
     // This is switch map that gets passed to root user.
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
@@ -40,6 +42,21 @@ Service Instance
         {
             switch_map.set(to_add.switch_id,sws);
         }
+    }
+
+    get_switch_map() returns Map(from: Text, to: Struct StructWrappedSwitch)
+    {
+        // first, copy the map
+        Map(from: Text, to: Struct StructWrappedSwitch) to_return;
+        atomically
+        {
+            to_return.clear();
+            for (Text index in switch_map)
+                to_return.set(index, switch_map.get(index));
+        }
+
+        // then, return it
+        return to_return;
     }
 
     update_port_stats(

@@ -38,7 +38,6 @@ Struct ReducedTopos
 Service MultiControllerTunnelsApp implements Interface IApplication
 {
     Service Instance inst = null;
-    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
 
     // Other controllers connected to.  Connections are directional.  Eg.,
     // A -> B
@@ -46,11 +45,9 @@ Service MultiControllerTunnelsApp implements Interface IApplication
     TVar List(element : Struct ConnectionWrapper) children;
 
     // @Override: from IApplication interface
-    init(Service Instance inst_,
-        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    init(Service Instance inst_)
     {
         inst = inst_;
-        switch_map = switch_map_;
     }
 
     // @Override: from IApplication interface
@@ -107,6 +104,9 @@ Service MultiControllerTunnelsApp implements Interface IApplication
     // any flow table entry
     update_switch_ids(List (element: Text) switch_id_list)
     {
+        Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+        switch_map = inst.get_switch_map();
+
         for (Text switch_id in switch_id_list)
         {
             // if the switch has an entry, then remove it.  if it doesn't have
@@ -123,6 +123,9 @@ Service MultiControllerTunnelsApp implements Interface IApplication
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             // Produce matches
             Struct MatchField match_field_ether_type;
             match_field_ether_type.field_name = MatchFieldName.ETH_TYPE;
@@ -156,6 +159,9 @@ Service MultiControllerTunnelsApp implements Interface IApplication
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
             target_switch.wrapped_switch.remove_entry(0);
         }
@@ -225,7 +231,10 @@ Service MultiControllerTunnelsApp implements Interface IApplication
     // return topos for all internal switches
     get_topos() returns Map (from: Text, to: Struct ReducedTopos)
     {
+        Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+        switch_map = inst.get_switch_map();
         Map(from: Text, to: Struct ReducedTopos) to_return;
+
         // for (Struct StructWrappedSwitch sws in switch_map)
         for (Text switch_id in switch_map)            
         {

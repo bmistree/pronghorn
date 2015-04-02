@@ -10,14 +10,11 @@ alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSw
 Service ReadOnly implements Interface IApplication
 {
     Service Instance inst = null;
-    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
     
     // @Override --- from IApplication interface
-    init(Service Instance inst_,
-        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    init(Service Instance inst_)
     {
         inst = inst_;
-        switch_map = switch_map_;
     }
 
     // @Override --- do nothing when first installed
@@ -28,6 +25,9 @@ Service ReadOnly implements Interface IApplication
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             for (Text switch_id in switch_map)
             {
                 Struct StructWrappedSwitch sws = switch_map.get(switch_id);

@@ -17,17 +17,14 @@ Service MultiControllerOffOn
 {
     Service Instance inst = null;
     Service OffOnApplication off_on_app;
-    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
 
     TVar List(element : Struct ConnectionWrapper) children;
 
     // @Override: from IApplication interface
-    init(Service Instance inst_,
-        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    init(Service Instance inst_)
     {
         inst = inst_;
-        switch_map = switch_map_;
-        off_on_app.init(inst,switch_map);
+        off_on_app.init(inst);
     }
 
     // @Override: from IApplication interface
@@ -42,6 +39,9 @@ Service MultiControllerOffOn
         // Ask partner to perform action and perform action locally.
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+            
             @partner.called_only_by_partner_single_op();
             for (Text switch_id in switch_map)
                 off_on_app.single_op(switch_id);
@@ -72,6 +72,8 @@ Service MultiControllerOffOn
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
             for (Text switch_id in switch_map)
                 off_on_app.add_entry_switch(switch_id);
         }
@@ -79,7 +81,11 @@ Service MultiControllerOffOn
     
     single_op_and_ask_children_for_single_op()
     {
-        atomically {
+        atomically
+        {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+            
             for (Text switch_id in switch_map)
                 off_on_app.single_op(switch_id);
 

@@ -27,16 +27,13 @@ Service OffOnApplication
     implements Interface IApplication, Interface IOffOnApplication
 {
     Service Instance inst = null;
-    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
     TVar Number coarse_lock_simulator = 0;
 
     
     // @Override --- from IApplication interface
-    init(Service Instance inst_,
-        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    init(Service Instance inst_)
     {
         inst = inst_;
-        switch_map = switch_map_;
     }
 
     // @Override --- from IApplication interface; do nothing when
@@ -52,6 +49,9 @@ Service OffOnApplication
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
             if (target_switch.wrapped_switch.ftable_size() == 0)
                 add_entry_switch(switch_id);
@@ -65,6 +65,9 @@ Service OffOnApplication
         Number to_return;
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             Struct StructWrappedSwitch sws = switch_map.get(switch_id);
             to_return = sws.wrapped_switch.ftable_size();
         }
@@ -75,6 +78,9 @@ Service OffOnApplication
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
             target_switch.wrapped_switch.remove_entry(0);
         }
@@ -84,6 +90,9 @@ Service OffOnApplication
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             for (Text switch_id in switch_map)
                 add_specific_entry_switch(switch_id,dl_src);
         }
@@ -115,10 +124,13 @@ Service OffOnApplication
         entry_to_add.match = match;
         entry_to_add.instructions = instructions;
 
-        // find the switch and add the entry to it.
-        Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
+            // find the switch and add the entry to it.
+            Struct StructWrappedSwitch target_switch = switch_map.get(switch_id);
             target_switch.wrapped_switch.add_entry(entry_to_add);
         }
     }
@@ -149,6 +161,9 @@ Service OffOnApplication
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             // remove the rule to block traffic on all ports.
             for (Text switch_id in switch_map)
             {
@@ -163,6 +178,9 @@ Service OffOnApplication
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             Struct StructWrappedSwitch sws = switch_map.get(switch_id);
             sws.wrapped_switch.logical_clear_switch_do_not_flush_clear_to_hardware();
         }

@@ -10,13 +10,10 @@ alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSw
 Service GetNumberSwitches implements Interface IApplication
 {
     Service Instance inst = null;
-    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
 
-    init(Service Instance inst_,
-        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    init(Service Instance inst_)
     {
         inst = inst_;
-        switch_map = switch_map_;
     }
 
     // do nothing when first installed
@@ -27,6 +24,9 @@ Service GetNumberSwitches implements Interface IApplication
         List(element: Text) to_return;
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             List(element: Text) internal_to_return;
             for (Text switch_id in switch_map)
                 internal_to_return.append(switch_id);
@@ -37,6 +37,8 @@ Service GetNumberSwitches implements Interface IApplication
 
     num_switches() returns Number
     {
+        Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+        switch_map = inst.get_switch_map();
         return switch_map.size();
     }
 }

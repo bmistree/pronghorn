@@ -26,16 +26,12 @@ Service ErrorApplication
     implements Interface IApplication, Interface IErrorApplication
 {
     Service Instance inst = null;
-    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
     TVar Number coarse_lock_simulator = 0;
-
     
     // @Override --- from IApplication interface
-    init(Service Instance inst_,
-        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    init(Service Instance inst_)
     {
         inst = inst_;
-        switch_map = switch_map_;
     }
 
     // @Override --- from IApplication interface; do nothing when
@@ -49,6 +45,8 @@ Service ErrorApplication
         Number to_return;
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
             Struct StructWrappedSwitch sws = switch_map.get(switch_id);
             to_return = sws.wrapped_switch.ftable_size();
         }
@@ -59,6 +57,9 @@ Service ErrorApplication
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             // insert a rule to block all traffic on all ports
             for (Text switch_id in switch_map)
             {
@@ -95,6 +96,9 @@ Service ErrorApplication
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             // remove the rule to block traffic on all ports.
             for (Text switch_id in switch_map)
             {
@@ -110,6 +114,9 @@ Service ErrorApplication
     {
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+
             Struct StructWrappedSwitch sws = switch_map.get(switch_id);
             sws.wrapped_switch.logical_clear_switch_do_not_flush_clear_to_hardware();
         }

@@ -24,7 +24,6 @@ Service MultiControllerFairnessApp
 {
     Service Instance inst = null;
     Service FairnessApplication fairness_app;
-    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
 
     // Other controllers connected to.  Connections are directional.  Eg.,
     // A -> B
@@ -41,14 +40,12 @@ Service MultiControllerFairnessApp
     }
     
     // @Override: from IApplication interface
-    init(Service Instance inst_,
-        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    init(Service Instance inst_)
     {
         inst = inst_;
-        switch_map = switch_map_;
-        fairness_app.init(inst,switch_map);
+        fairness_app.init(inst);
     }
-
+    
     // @Override: from IApplication interface
     run()
     {
@@ -61,6 +58,9 @@ Service MultiControllerFairnessApp
         // Ask partner to perform action and perform action locally.
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+            
             // perform action locally
             for (Text switch_id in switch_map)
             {

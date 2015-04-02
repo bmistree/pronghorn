@@ -16,17 +16,13 @@ Service MultiControllerSpeculation implements Interface IApplication
 {
     Service Instance inst = null;
     Service OffOnApplication off_on_app;
-    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
-
     TVar List(element : Struct ConnectionWrapper) children;
 
     // @Override: from IApplication interface
-    init(Service Instance inst_,
-        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    init(Service Instance inst_)
     {
         inst = inst_;
-        switch_map = switch_map_;
-        off_on_app.init(inst,switch_map);
+        off_on_app.init(inst);
     }
 
     // @Override: from IApplication interface
@@ -41,6 +37,9 @@ Service MultiControllerSpeculation implements Interface IApplication
         // first perform action locally, then ask partner to
         atomically
         {
+            Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+            switch_map = inst.get_switch_map();
+            
             Number counter = 0;
             Text switch_id_to_use = '';
             // FIXME: this presupposes that keysets maps return for iterators in
@@ -64,7 +63,6 @@ Service MultiControllerSpeculation implements Interface IApplication
         }
     }
 
-    
     add_child_connection(Endpoint PronghornConnectionSpeculation new_child)
     {
         Struct ConnectionWrapper wrapper;

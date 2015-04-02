@@ -17,7 +17,6 @@ Service MultiControllerErrorApp
 {
     Service Instance inst = null;
     Service ErrorApplication error_app;
-    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
 
     // Other controllers connected to.  Connections are directional.  Eg.,
     // A -> B
@@ -25,12 +24,10 @@ Service MultiControllerErrorApp
     TVar List(element : Struct ConnectionWrapper) children;
 
     // @Override: from IApplication interface
-    init(Service Instance inst_,
-        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    init(Service Instance inst_)
     {
         inst = inst_;
-        switch_map = switch_map_;
-        error_app.init(inst,switch_map);
+        error_app.init(inst);
     }
 
     // @Override: from IApplication interface

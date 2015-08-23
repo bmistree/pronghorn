@@ -61,10 +61,10 @@ public class ReadOnlyThroughput
         try
         {
             prong = Instance.create_single_sided(ralph_globals);
-
+            prong.start();
             num_switches_app =
                 GetNumberSwitches.create_single_sided(ralph_globals);
-            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
+            prong.add_application(num_switches_app);
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
@@ -97,7 +97,7 @@ public class ReadOnlyThroughput
                 {
                     ReadOnly read_only =
                         ReadOnly.create_single_sided(ralph_globals);
-                    prong.add_application(read_only,Util.ROOT_APP_ID);
+                    prong.add_application(read_only);
                     if (! read_only.set_switch(switch_id).booleanValue())
                     {
                         System.out.println("Trying to set switch that does not exist");

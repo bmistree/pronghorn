@@ -34,7 +34,7 @@ public class SimulatedSwitchThroughput
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 1;
     public static final int NUMBER_OPS_TO_WARMUP_ARG_INDEX = 2;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
-    
+
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
     public static final boolean SHOULD_SPECULATE = false;
@@ -42,9 +42,9 @@ public class SimulatedSwitchThroughput
     public static final boolean COARSE_LOCKING = false;
     public static final int THREADS_PER_SWITCH = 1;
 
-    
+
     public static final AtomicBoolean had_exception = new AtomicBoolean(false);
-    
+
     public static void main (String[] args)
     {
         /* Grab arguments */
@@ -54,10 +54,10 @@ public class SimulatedSwitchThroughput
             return;
         }
 
-        int num_switches = 
+        int num_switches =
             Integer.parseInt(args[NUMBER_SWITCHES_ARG_INDEX]);
-        
-        int num_ops_to_run = 
+
+        int num_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
 
         int num_warmup_ops_to_run =
@@ -66,18 +66,18 @@ public class SimulatedSwitchThroughput
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
         RalphGlobals ralph_globals = new RalphGlobals();
-        
+
         /* Start up pronghorn */
         Instance prong = null;
         GetNumberSwitches num_switches_app = null;
         try
         {
             prong = Instance.create_single_sided(ralph_globals);
-
+            prong.start();
             num_switches_app =
                 GetNumberSwitches.create_single_sided(ralph_globals);
 
-            prong.add_application(num_switches_app,Util.ROOT_APP_ID);            
+            prong.add_application(num_switches_app);
         }
         catch (Exception _ex)
         {
@@ -109,7 +109,7 @@ public class SimulatedSwitchThroughput
 
         SimulatedFlowTableToHardware simulated_flow_table_to_hardware =
             new SimulatedFlowTableToHardware();
-        
+
         StatisticsUpdater stats_updater = new StatisticsUpdater(prong);
         for (String switch_id : switch_ids)
         {
@@ -131,7 +131,7 @@ public class SimulatedSwitchThroughput
 
         List<String> internal_switch_id_list =
             Util.get_switch_id_list ( num_switches_app);
-        
+
         List<OffOnApplication> off_on_app_list =
             SingleControllerThroughput.create_off_on_app_list(
                 num_switches,prong,ralph_globals);
@@ -140,22 +140,22 @@ public class SimulatedSwitchThroughput
             internal_switch_id_list,off_on_app_list,num_ops_to_run,
             num_warmup_ops_to_run, COARSE_LOCKING,
             THREADS_PER_SWITCH,output_filename,num_switches);
-        
+
         // actually tell shims to stop.
         shim.stop();
 
         Util.force_shutdown();
     }
 
-    
-    
+
+
     private static void print_usage()
     {
         String usage_string = "";
 
         // NUMBER_SWITCHES_ARG_INDEX
         usage_string += "\n\t<int>: Number switches to run\n";
-        
+
         // NUMBER_TIMES_TO_RUN_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number ops to run per experiment\n";
@@ -163,12 +163,12 @@ public class SimulatedSwitchThroughput
         // NUMBER_TIMES_TO_WARMUP_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number ops to use for warmup\n";
-        
+
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
 
         System.out.println(usage_string);
-        
+
     }
 
 
@@ -180,11 +180,15 @@ public class SimulatedSwitchThroughput
             return true;
         }
 
-        @Override    
+        @Override
         public boolean undo(List<FTableUpdate> to_undo)
         {
             return true;
         }
+        @Override
+        public boolean partial_undo(List<FTableUpdate> to_partially_undo) {
+            return true;
+        }
     }
-    
+
 }

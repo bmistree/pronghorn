@@ -39,7 +39,7 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
 {
     protected static final Logger log =
         LoggerFactory.getLogger(SwitchStatusHandler.class);
-    
+
     private Instance prong;
     private ISwitchFactory switch_factory;
     private final static String UNIQUE_SWITCH_FACTORY_PREFIX =
@@ -52,7 +52,7 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
        Used to update statistics for each switch.
      */
     private final StatisticsUpdater stats_updater;
-    
+
     // maps from floodlight switch ids to pronghorn switch ids and
     // vice versa.
     private HashMap<String,String> floodlight_to_pronghorn_ids =
@@ -79,7 +79,7 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
         this.ftable_to_hardware_factory = ftable_to_hardware_factory;
         this.speculate = speculate;
         stats_updater = new StatisticsUpdater(prong);
-        
+
         switch_factory =
             new SwitchFactory(
                 prong.ralph_globals,speculate,collect_statistics_period_ms);
@@ -113,7 +113,7 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
             // FIXME: should also process port down.
             if (update.getOperation() != ILinkDiscovery.UpdateOperation.LINK_UPDATED)
                 continue;
-            
+
             _InternalPort ralph_port = create_internal_port_from_update(update);
             if (ralph_port != null)
             {
@@ -151,7 +151,7 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
         }
     }
 
-    
+
     /**
        @returns --- Either null or _InternalPort.  Will return null if
        the update is not for an added port.  Will return _InternalPort
@@ -170,7 +170,7 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
                 floodlight_to_pronghorn_ids.get(src_floodlight_switch_id);
             String dst_ralph_switch_id =
                 floodlight_to_pronghorn_ids.get(dst_floodlight_switch_id);
-            
+
             int src_port_num = update.getSrcPort();
             int dst_port_num = update.getDstPort();
 
@@ -193,11 +193,11 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
                 null,new Double(src_port_num));
 
             return to_return;
-            
+
         }
         return null;
     }
-    
+
     /** IOFSwitchListener */
     @Override
     public void switchAdded(long switchId)
@@ -229,7 +229,7 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
                 "\nError: Should not generate exception from removing switch\n");
         }
     }
-    
+
     @Override
     public void switchActivated(long switch_id)
     {
@@ -238,7 +238,7 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
         // already had switch
         if (floodlight_to_pronghorn_ids.containsKey(floodlight_switch_id))
             return;
-        
+
         FlowTableToHardware ftable_to_hardware =
             ftable_to_hardware_factory.construct(
                 shim,floodlight_switch_id);
@@ -252,7 +252,7 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
             floodlight_switch_id,pronghorn_switch_id);
         pronghorn_to_floodlight_ids.put(
             pronghorn_switch_id,floodlight_switch_id);
-        
+
         try {
             prong.add_switch(new_switch);
         } catch (Exception _ex)
@@ -261,8 +261,9 @@ public class SwitchStatusHandler implements ISwitchStatusHandler
             System.out.println(
                 "\nError: Should not generate exception from adding switch\n");
         }
+        log.info("Activated switch {}", floodlight_switch_id);
     }
-    
+
     @Override
     public void switchPortChanged(
         long switch_id,ImmutablePort port, IOFSwitch.PortChangeType type)

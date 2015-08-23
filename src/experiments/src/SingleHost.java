@@ -32,7 +32,7 @@ public class SingleHost
         {
             RalphGlobals ralph_globals = new RalphGlobals();
             prong = Instance.create_single_sided(ralph_globals);
-
+            prong.start();
             app = OffOnApplication.create_single_sided(ralph_globals);
         }
         catch (Exception _ex)
@@ -55,7 +55,7 @@ public class SingleHost
 
         try
         {
-            prong.add_application(app,Util.ROOT_APP_ID);
+            prong.add_application(app);
         }
         catch (Exception ex)
         {

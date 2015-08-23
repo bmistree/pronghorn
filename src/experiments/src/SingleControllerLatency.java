@@ -28,11 +28,11 @@ public class SingleControllerLatency
     public static final int NUMBER_THREADS_ARG_INDEX = 2;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
-    
+
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
-    
-    public static void main (String[] args) 
+
+    public static void main (String[] args)
     {
         /* Grab arguments */
         if (args.length != 5)
@@ -46,17 +46,17 @@ public class SingleControllerLatency
 
         int num_warmup_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_WARMUP_ARG_INDEX]);
-        
+
         int num_threads =
             Integer.parseInt(args[NUMBER_THREADS_ARG_INDEX]);
 
         int collect_statistics_period_ms =
             Integer.parseInt(args[COLLECT_STATISTICS_ARG_INDEX]);
-        
+
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
         RalphGlobals ralph_globals = new RalphGlobals();
-        
+
         /* Start up pronghorn */
         Instance prong = null;
         GetNumberSwitches num_switches_app = null;
@@ -64,20 +64,21 @@ public class SingleControllerLatency
         try
         {
             prong = Instance.create_single_sided(ralph_globals);
+            prong.start();
             num_switches_app =
                 GetNumberSwitches.create_single_sided(ralph_globals);
             off_on_app =
                 OffOnApplication.create_single_sided(ralph_globals);
-            
-            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
-            prong.add_application(off_on_app,Util.ROOT_APP_ID);
+
+            prong.add_application(num_switches_app);
+            prong.add_application(off_on_app);
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
         }
 
         FloodlightShim shim = new FloodlightShim();
-        
+
         SwitchStatusHandler switch_status_handler =
             new SwitchStatusHandler(
                 shim,prong,
@@ -86,7 +87,7 @@ public class SingleControllerLatency
 
         shim.subscribe_switch_status_handler(switch_status_handler);
         shim.start();
-        
+
         // wait for first switch to connect
         Util.wait_on_switches(num_switches_app);
         // what's the first switch's id.
@@ -146,7 +147,7 @@ public class SingleControllerLatency
         // NUMBER_TIMES_TO_WARMUP_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number ops to use for warmup\n";
-        
+
         // NUMBER_THREADS_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number threads.\n";
@@ -155,10 +156,10 @@ public class SingleControllerLatency
         usage_string +=
             "\n\t<int> : period for collecting individual switch stastics " +
             "in ms.  < 0 if should not collect any statistics\n";
-        
+
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
-        
+
         System.out.println(usage_string);
     }
 }

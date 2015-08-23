@@ -128,10 +128,10 @@ public class DeltaListStateSupplier
                 new ArrayList<RalphObject<_InternalFlowTableDelta,IReference>>();
         }
         internal_ft_deltas_list._unlock();
-        
+
         List<FTableUpdate> to_return = produce_ftable_updates(internal_list);
 
-        
+
         // FIXME: REALLY, REALLY shouldn't have to do this here.  only
         // require it because speculate is the only place where we
         // reset deltas to be empty.  We will not reset it if
@@ -147,7 +147,7 @@ public class DeltaListStateSupplier
 
         return to_return;
     }
-    
+
     private AtomicInternalList<_InternalFlowTableDelta,IReference>
         get_internal_ft_deltas_list()
     {
@@ -165,7 +165,7 @@ public class DeltaListStateSupplier
             RalphInternalValueRemover.
             <_InternalFlowTableDelta,IReference>
             list_get_internal(ft_deltas_list);
-        
+
         return internal_ft_deltas_list;
     }
 
@@ -181,14 +181,14 @@ public class DeltaListStateSupplier
     {
         List<FTableUpdate> floodlight_updates =
             new ArrayList<FTableUpdate>();
-        
+
         for (RalphObject ro : dirty)
         {
             _InternalFlowTableDelta flow_table_delta = null;
             _InternalFlowTableEntry entry = null;
             _InternalMatch internal_match = null;
             Double cookie = null;
-            
+
             try
             {
                 flow_table_delta = (_InternalFlowTableDelta) (ro.get_val(null));
@@ -236,16 +236,16 @@ public class DeltaListStateSupplier
             }
             // FIXME: lock tvar and don't continue in case that get
             // backout.
-            
+
             // non tvar, therefore has different val.val access pattern.
             boolean insertion =
                 flow_table_delta.inserted.val.val.booleanValue();
-            
+
             OFMatch match = match_from_internal_match(internal_match);
             if (match == null)
                 break;
-            
-            _InternalInstructions instructions = 
+
+            _InternalInstructions instructions =
                 RalphInternalValueRemover.<_InternalInstructions>
                 get_internal_from_reference(entry.instructions);
 
@@ -280,7 +280,7 @@ public class DeltaListStateSupplier
             match.all_matches;
         AtomicInternalList<_InternalMatchField,IReference>
             ralph_internal_match_list = null;
-        
+
         ralph_internal_match_list =
             RalphInternalValueRemover.
                 <_InternalMatchField,IReference>
@@ -288,7 +288,7 @@ public class DeltaListStateSupplier
 
         if (ralph_internal_match_list == null)
             return null;
-        
+
         List<RalphObject<_InternalMatchField,IReference>>
             internal_match_list = null;
         internal_match_list = RalphInternalValueRemover.
@@ -303,7 +303,7 @@ public class DeltaListStateSupplier
             {
                 _InternalMatchField match_field =
                     (_InternalMatchField) (ro.get_val(null));
-                
+
                 MatchFieldName match_field_name =
                     RalphInternalValueRemover.<MatchFieldName>
                     get_internal(match_field.field_name);
@@ -311,7 +311,7 @@ public class DeltaListStateSupplier
                 String value =
                     RalphInternalValueRemover.<String>
                     get_internal(match_field.value);
-                
+
                 if ((match_field_name == null) || (value == null))
                     continue;
 
@@ -329,7 +329,7 @@ public class DeltaListStateSupplier
                 assert(false);
             }
         }
-        
+
         // means that got backout in midst of running.
         if (ofmatch_comb_str.equals(""))
             return null;
@@ -346,7 +346,7 @@ public class DeltaListStateSupplier
         }
         return null;
     }
-    
+
 
     /**
        match_field_name must not be null.
@@ -444,7 +444,7 @@ public class DeltaListStateSupplier
         }
         return null;
     }
-    
+
     /**
        Generates a list of floodlight instructions from ralph object.
      */
@@ -452,7 +452,7 @@ public class DeltaListStateSupplier
         _InternalInstructions instructions)
     {
         List<OFInstruction> to_return = new ArrayList<OFInstruction>();
-        
+
         OFInstructionGotoTable goto_instruction =
             produce_goto_from_internal(instructions);
         if (goto_instruction != null)
@@ -467,7 +467,7 @@ public class DeltaListStateSupplier
             produce_write_actions_from_internal(instructions);
         if (write_actions_instruction != null)
             to_return.add(write_actions_instruction);
-        
+
         OFInstructionApplyActions apply_actions_instruction =
             produce_apply_actions_from_internal(instructions);
         if (apply_actions_instruction != null)
@@ -482,7 +482,7 @@ public class DeltaListStateSupplier
             produce_meter_from_internal(instructions);
         if (meter_instruction != null)
             to_return.add(meter_instruction);
-        
+
         return to_return;
     }
 
@@ -490,7 +490,7 @@ public class DeltaListStateSupplier
        Take ralph InternalInstruction and produce floodlight
        instruction from it.
     */
-    
+
     private OFInstructionGotoTable produce_goto_from_internal(
         _InternalInstructions _instructions)
     {
@@ -506,7 +506,7 @@ public class DeltaListStateSupplier
         // means got a rollback as was sending
         if (table_id == null)
             return null;
-        
+
         return new OFInstructionGotoTable(table_id.byteValue());
     }
 
@@ -523,17 +523,17 @@ public class DeltaListStateSupplier
         Double metadata = null;
         Double metadata_mask = null;
 
-        metadata = 
+        metadata =
             RalphInternalValueRemover.<Double>
             get_internal(write_metadata.metadata);
 
-        metadata_mask = 
+        metadata_mask =
             RalphInternalValueRemover.<Double>
             get_internal(write_metadata.metadata_mask);
 
         if ((metadata == null) || (metadata_mask == null))
             return null;
-            
+
         return new OFInstructionWriteMetaData(
             metadata.longValue(),metadata_mask.longValue());
     }
@@ -550,7 +550,7 @@ public class DeltaListStateSupplier
 
         AtomicListVariable<_InternalAction,IReference>
             actions_list = write_actions.actions;
-        
+
         AtomicInternalList<_InternalAction,IReference>
             ralph_internal_actions_list = null;
 
@@ -562,7 +562,7 @@ public class DeltaListStateSupplier
 
         List<RalphObject<_InternalAction,IReference>>
             internal_actions_list = null;
-        
+
         internal_actions_list = RalphInternalValueRemover.
             <_InternalAction,IReference>
             internal_list_get_internal(
@@ -589,7 +589,7 @@ public class DeltaListStateSupplier
         }
         return new OFInstructionWriteActions(floodlight_action_list);
     }
-    
+
     private OFInstructionApplyActions produce_apply_actions_from_internal(
         _InternalInstructions _instructions)
     {
@@ -602,7 +602,7 @@ public class DeltaListStateSupplier
 
         AtomicListVariable<_InternalAction,IReference>
             actions_list = apply_actions.actions;
-        
+
         AtomicInternalList<_InternalAction,IReference>
             ralph_internal_actions_list = null;
 
@@ -647,13 +647,13 @@ public class DeltaListStateSupplier
         _InternalInstructionClearActions clear_actions =
             RalphInternalValueRemover.<_InternalInstructionClearActions>
             get_internal_from_reference(_instructions.clear_actions);
-        
+
         if (clear_actions == null)
             return null;
 
         return new OFInstructionClearActions();
     }
-        
+
     private OFInstructionMeter produce_meter_from_internal(
         _InternalInstructions _instructions)
     {
@@ -665,7 +665,7 @@ public class DeltaListStateSupplier
             return null;
 
         Double meter_id = null;
-        meter_id = 
+        meter_id =
             RalphInternalValueRemover.<Double>
             get_internal(meter.meter_id);
 
@@ -704,36 +704,36 @@ public class DeltaListStateSupplier
 
         // copy_ttl_out
         {
-            _InternalActionCopyTTLOut action_copy_ttl_out = 
+            _InternalActionCopyTTLOut action_copy_ttl_out =
                 RalphInternalValueRemover.<_InternalActionCopyTTLOut>
                 get_internal_from_reference(action.copy_ttl_out);
-        
+
             if (action_copy_ttl_out != null)
                 return new OFActionCopyTTLOut();
         }
 
         // copy_ttl_in
         {
-            _InternalActionCopyTTLIn action_copy_ttl_in = 
+            _InternalActionCopyTTLIn action_copy_ttl_in =
                 RalphInternalValueRemover.<_InternalActionCopyTTLIn>
                 get_internal_from_reference(action.copy_ttl_in);
-        
+
             if (action_copy_ttl_in != null)
                 return new OFActionCopyTTLIn();
         }
 
         // set_mpls_ttl
         {
-            _InternalActionSetMPLSTTL action_set_mpls_ttl = 
+            _InternalActionSetMPLSTTL action_set_mpls_ttl =
                 RalphInternalValueRemover.<_InternalActionSetMPLSTTL>
                 get_internal_from_reference(action.set_mpls_ttl);
-        
+
             if (action_set_mpls_ttl != null)
             {
                 Double mpls_ttl =
                     RalphInternalValueRemover.<Double>
                     get_internal(action_set_mpls_ttl.mpls_ttl);
-            
+
                 return new OFActionSetMPLSTTL(mpls_ttl.byteValue());
             }
         }
@@ -743,23 +743,23 @@ public class DeltaListStateSupplier
             _InternalActionDecrementMPLSTTL action_decrement_mpls_ttl =
                 RalphInternalValueRemover.<_InternalActionDecrementMPLSTTL>
                 get_internal_from_reference(action.decrement_mpls_ttl);
-        
+
             if (action_decrement_mpls_ttl != null)
                 return new OFActionDecrementMPLSTTL();
         }
 
         // push_vlan
         {
-            _InternalActionPushVLAN action_push_vlan = 
+            _InternalActionPushVLAN action_push_vlan =
                 RalphInternalValueRemover.<_InternalActionPushVLAN>
                 get_internal_from_reference(action.push_vlan);
-        
+
             if (action_push_vlan != null)
             {
                 Double ethertype =
                     RalphInternalValueRemover.<Double>
                     get_internal(action_push_vlan.ethertype);
-            
+
                 return new OFActionSetMPLSTTL(ethertype.byteValue());
             }
         }
@@ -769,23 +769,23 @@ public class DeltaListStateSupplier
             _InternalActionPopVLAN action_pop_vlan =
                 RalphInternalValueRemover.<_InternalActionPopVLAN>
                 get_internal_from_reference(action.pop_vlan);
-        
+
             if (action_pop_vlan != null)
                 return new OFActionPopVLAN();
         }
 
         // push_mpls
         {
-            _InternalActionPushMPLS action_push_mpls = 
+            _InternalActionPushMPLS action_push_mpls =
                 RalphInternalValueRemover.<_InternalActionPushMPLS>
                 get_internal_from_reference(action.push_mpls);
-        
+
             if (action_push_mpls != null)
             {
                 Double ethertype =
                     RalphInternalValueRemover.<Double>
                     get_internal(action_push_mpls.ethertype);
-            
+
                 return new OFActionPushMPLS(ethertype.byteValue());
             }
         }
@@ -795,7 +795,7 @@ public class DeltaListStateSupplier
             _InternalActionPopMPLS action_pop_mpls =
                 RalphInternalValueRemover.<_InternalActionPopMPLS>
                 get_internal_from_reference(action.pop_mpls);
-        
+
             if (action_pop_mpls != null)
                 return new OFActionPopMPLS();
         }
@@ -817,7 +817,7 @@ public class DeltaListStateSupplier
                 return to_return;
             }
         }
-        
+
         // group
         {
             _InternalActionGroup action_group =
@@ -838,16 +838,16 @@ public class DeltaListStateSupplier
 
         // set ip ttl
         {
-            _InternalActionSetNWTTL action_set_nw_ttl = 
+            _InternalActionSetNWTTL action_set_nw_ttl =
                 RalphInternalValueRemover.<_InternalActionSetNWTTL>
                 get_internal_from_reference(action.set_nw_ttl);
-        
+
             if (action_set_nw_ttl != null)
             {
                 Double ttl =
                     RalphInternalValueRemover.<Double>
                     get_internal(action_set_nw_ttl.ttl);
-            
+
                 return new OFActionSetNwTTL(ttl.byteValue());
             }
         }
@@ -857,34 +857,34 @@ public class DeltaListStateSupplier
             _InternalActionDecrementNWTTL action_decrement_nw_ttl =
                 RalphInternalValueRemover.<_InternalActionDecrementNWTTL>
                 get_internal_from_reference(action.decrement_nw_ttl);
-        
+
             if (action_decrement_nw_ttl != null)
                 return new OFActionDecrementNwTTL();
         }
 
         // set field
         {
-            _InternalActionSetField action_set_field = 
+            _InternalActionSetField action_set_field =
                 RalphInternalValueRemover.<_InternalActionSetField>
                 get_internal_from_reference(action.set_field);
-        
+
             if (action_set_field != null)
             {
                 MatchFieldName field_name =
                     RalphInternalValueRemover.<MatchFieldName>
                     get_internal(action_set_field.field_name);
-                
+
                 if (field_name == null)
                     return null;
                 String field_name_str = match_field_name_to_string(field_name);
-                
+
                 String value =
                     RalphInternalValueRemover.<String>
                     get_internal(action_set_field.value);
 
                 if (value == null)
                     return null;
-                
+
                 OFOXMField field =
                     ralph_set_field_to_floodlight_field(
                         field_name_str,value);
@@ -913,11 +913,11 @@ public class DeltaListStateSupplier
             _InternalActionPopPBB action_pop_pbb =
                 RalphInternalValueRemover.<_InternalActionPopPBB>
                 get_internal_from_reference(action.pop_pbb);
-        
+
             if (action_pop_pbb != null)
                 return new OFActionPopPBB();
         }
-        
+
         return null;
     }
 
@@ -1108,7 +1108,7 @@ public class DeltaListStateSupplier
             // FIXME: no real support for ipv6 address parsing yet.
             // Just using raw bytes.
             return new OFOXMField(
-                OFOXMFieldType.IPV6_SRC,    
+                OFOXMFieldType.IPV6_SRC,
                 field_value.getBytes(Charset.forName("UTF-8")));
         }
         if (field_name.equals(OFOXMFieldType.IPV6_DST.getName()))

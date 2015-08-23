@@ -26,10 +26,10 @@ public class ReadOnlyLatency
     public static final int NUMBER_OPS_TO_WARMUP_ARG_INDEX = 1;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 2;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
-    
+
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
-    
+
     public static void main (String[] args)
     {
         /* Grab arguments */
@@ -41,19 +41,19 @@ public class ReadOnlyLatency
 
         int num_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
-        
+
         int num_warmup_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_WARMUP_ARG_INDEX]);
-        
+
         int num_threads = 1;
 
         int collect_statistics_period_ms =
             Integer.parseInt(args[COLLECT_STATISTICS_ARG_INDEX]);
 
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
-        
+
         RalphGlobals ralph_globals = new RalphGlobals();
-        
+
         /* Start up pronghorn */
         Instance prong = null;
         GetNumberSwitches num_switches_app = null;
@@ -61,14 +61,15 @@ public class ReadOnlyLatency
         try
         {
             prong = Instance.create_single_sided(ralph_globals);
+            prong.start();
             num_switches_app =
                 GetNumberSwitches.create_single_sided(ralph_globals);
             read_only_app =
                 ReadOnly.create_single_sided(ralph_globals);
-            
-            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
-            prong.add_application(read_only_app,Util.ROOT_APP_ID);
-            
+
+            prong.add_application(num_switches_app);
+            prong.add_application(read_only_app);
+
         }
         catch (Exception _ex)
         {
@@ -77,7 +78,7 @@ public class ReadOnlyLatency
         }
 
         FloodlightShim shim = new FloodlightShim();
-        
+
         SwitchStatusHandler switch_status_handler =
             new SwitchStatusHandler(
                 shim,prong,
@@ -99,27 +100,27 @@ public class ReadOnlyLatency
             {
                 warmup_threads.add(
                     new LatencyThread(read_only_app,"",num_warmup_ops_to_run));
-            }   
+            }
             for (LatencyThread lt : warmup_threads)
                 lt.start();
             for (LatencyThread lt : warmup_threads)
                 lt.join();
-            
 
-            // real calculated values         
+
+            // real calculated values
             for (int i = 0; i < num_threads; ++i)
             {
                 all_threads.add(
                     new LatencyThread(read_only_app,"",num_ops_to_run));
             }
-            
+
             for (LatencyThread lt : all_threads)
                 lt.start();
-            
+
             // wait for all threads to finish and collect their results
             for (LatencyThread lt : all_threads)
                 lt.join();
-            
+
         } catch (Exception _ex) {
             _ex.printStackTrace();
             assert(false);
@@ -131,10 +132,10 @@ public class ReadOnlyLatency
             lt.write_times(string_buffer);
 
         Util.write_results_to_file(output_filename,string_buffer.toString());
-        
+
         // actually tell shims to stop.
         shim.stop();
-        Util.force_shutdown();        
+        Util.force_shutdown();
     }
 
     private static void print_usage()
@@ -148,15 +149,15 @@ public class ReadOnlyLatency
         // NUMBER_TIMES_TO_WARMUP_ARG_INDEX
         usage_string +=
             "\n\t<int>: Number ops to use for warmup\n";
-        
+
         // COLLECT_STATISTICS_ARG_INDEX
         usage_string +=
             "\n\t<int> : period for collecting individual switch stastics " +
             "in ms.  < 0 if should not collect any statistics\n";
-        
+
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
-        
+
         System.out.println(usage_string);
     }
 }

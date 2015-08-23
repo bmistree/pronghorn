@@ -30,7 +30,7 @@ Service OffOnApplication
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
     TVar Number coarse_lock_simulator = 0;
 
-    
+
     // @Override --- from IApplication interface
     init(Service Instance inst_,
         TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
@@ -60,6 +60,18 @@ Service OffOnApplication
         }
     }
 
+    all_flow_table_entries() returns Number {
+        Number to_return;
+        atomically {
+            to_return = 0;
+            for (Text switch_id in switch_map) {
+                Struct StructWrappedSwitch sws = switch_map.get(switch_id);
+                to_return = to_return + sws.wrapped_switch.ftable_size();
+            }
+        }
+        return to_return;
+    }
+
     num_flow_table_entries(Text switch_id) returns Number
     {
         Number to_return;
@@ -70,7 +82,7 @@ Service OffOnApplication
         }
         return to_return;
     }
-    
+
     remove_entry_switch(Text switch_id)
     {
         atomically
@@ -95,16 +107,16 @@ Service OffOnApplication
         Struct MatchField match_field_ether_type;
         match_field_ether_type.field_name = MatchFieldName.ETH_TYPE;
         match_field_ether_type.value = '0x800';
-        
+
         Struct MatchField  match_field_dl_src;
         match_field_dl_src.field_name = MatchFieldName.ETH_SRC;
         match_field_dl_src.value = dl_src;
-        
+
         Struct Match match;
         match.all_matches.append(match_field_ether_type);
         match.all_matches.append(match_field_dl_src);
 
-        
+
         // add drop instruction
         Struct InstructionApplyActions drop_action;
         Struct Instructions instructions;
@@ -122,15 +134,15 @@ Service OffOnApplication
             target_switch.wrapped_switch.add_entry(entry_to_add);
         }
     }
-    
+
     add_entry_switch(Text switch_id)
     {
         // FIXME: do not hardcode this value.  Multiple calls can lead to
         // duplicate rules on switch.
         add_specific_entry_switch(switch_id,'00:00:00:00:00:01');
-    }    
-    
-    single_op_coarse(Text switch_id) 
+    }
+
+    single_op_coarse(Text switch_id)
     {
         atomically
         {
@@ -138,7 +150,7 @@ Service OffOnApplication
             single_op(switch_id);
         }
     }
-    
+
     block_traffic_all_switches()
     {
         // inserts a rule to block all traffic on all ports
@@ -158,7 +170,7 @@ Service OffOnApplication
             }
         }
     }
-    
+
     logical_clear_switch_do_not_flush_clear_to_hardware(Text switch_id)
     {
         atomically

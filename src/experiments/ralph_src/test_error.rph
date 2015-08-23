@@ -1,0 +1,138 @@
+#include 'iapplication.rph'
+alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
+
+#include 'instance.rph'
+alias Service Instance as 'pronghorn.InstanceJava.Instance';
+
+#include 'wrapped_switch.rph'
+alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
+
+#include 'match.rph'
+alias Enum MatchFieldName as 'pronghorn.MatchJava.MatchFieldName';
+alias Struct MatchField as 'pronghorn.MatchJava.MatchField';
+alias Struct Match as 'pronghorn.MatchJava.Match';
+
+#include 'instructions.rph'
+alias Struct InstructionApplyActions as 'pronghorn.InstructionsJava.InstructionApplyActions';
+alias Struct Instructions as 'pronghorn.InstructionsJava.Instructions';
+
+#include 'actions.rph'
+alias Struct ActionOutput as 'pronghorn.ActionsJava.ActionOutput';
+
+#include 'flow_table_entry.rph'
+alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
+
+
+Service TestError implements Interface IApplication {
+
+    Service Instance inst = null;
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+
+    // @Override --- from IApplication interface
+    init(Service Instance inst_,
+        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    {
+        inst = inst_;
+        switch_map = switch_map_;
+    }
+
+    // @Override --- from IApplication interface; do nothing when
+    // first installed
+    run(){}
+
+    add_good_bad_entry(Text switch_name) {
+        TrueFalse first_time = True;
+        atomically {
+            if (first_time) {
+                add_bad_ip_entry(switch_name);
+                add_good_entry(switch_name);
+            }
+            first_time = False;
+        }
+    }
+
+    // Relies on the fact that floodlight malforms ip matches
+    add_bad_ip_entry(Text switch_name) {
+        Number port_number = 1;
+        atomically {
+            // Produce matches
+            Struct MatchField match_field_ether_type;
+            match_field_ether_type.field_name = MatchFieldName.ETH_TYPE;
+            match_field_ether_type.value = '0x800';
+
+            Struct MatchField  match_field_ip_src;
+            match_field_ip_src.field_name = MatchFieldName.IPV4_SRC;
+            match_field_ip_src.value = '18.0.0.4';
+
+            Struct Match match;
+            match.all_matches.append(match_field_ether_type);
+            match.all_matches.append(match_field_ip_src);
+
+            // add output instruction
+            Struct ActionOutput output_action;
+            output_action.port_number = port_number;
+            Struct InstructionApplyActions apply_actions;
+            Struct Action output_action_wrapper;
+            output_action_wrapper.output = output_action;
+            apply_actions.actions.append(output_action_wrapper);
+
+            Struct Instructions instructions;
+            instructions.apply_actions = apply_actions;
+
+            // Flow table entry
+            Struct FlowTableEntry entry_to_add;
+            entry_to_add.match = match;
+            entry_to_add.instructions = instructions;
+
+            // Actually add the flow table entry
+            Struct StructWrappedSwitch sws = null;
+            sws = switch_map.get(switch_name);
+            sws.wrapped_switch.add_entry(entry_to_add);
+        }
+    }
+
+    add_good_entry(Text switch_name) {
+        Number port_number = 2;
+        atomically {
+            // Produce matches
+            Struct MatchField match_field_ether_type;
+            match_field_ether_type.field_name = MatchFieldName.ETH_TYPE;
+            match_field_ether_type.value = '0x800';
+
+            Struct Match match;
+            match.all_matches.append(match_field_ether_type);
+
+            // add output instruction
+            Struct ActionOutput output_action;
+            output_action.port_number = port_number;
+            Struct InstructionApplyActions apply_actions;
+            Struct Action output_action_wrapper;
+            output_action_wrapper.output = output_action;
+            apply_actions.actions.append(output_action_wrapper);
+
+            Struct Instructions instructions;
+            instructions.apply_actions = apply_actions;
+
+            // Flow table entry
+            Struct FlowTableEntry entry_to_add;
+            entry_to_add.match = match;
+            entry_to_add.instructions = instructions;
+
+            // Actually add the flow table entry
+            Struct StructWrappedSwitch sws = null;
+            sws = switch_map.get(switch_name);
+            sws.wrapped_switch.add_entry(entry_to_add);
+        }
+    }
+
+    get_num_entries(Text switch_name) returns Number {
+        Number num_entries;
+        atomically {
+            Struct StructWrappedSwitch sws = null;
+            sws = switch_map.get(switch_name);
+            num_entries = sws.wrapped_switch.ftable_size();
+        }
+        return num_entries;
+    }
+}
+

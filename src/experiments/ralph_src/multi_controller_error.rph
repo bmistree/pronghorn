@@ -2,27 +2,22 @@
 alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
 
 alias Service Instance as 'pronghorn.InstanceJava.Instance';
-alias Endpoint PronghornConnectionError as 'experiments.PronghornConnectionErrorJava.PronghornConnectionError';
 alias Service ErrorApplication as 'experiments.ErrorApplicationJava.ErrorApplication';
 alias Interface IErrorApplication as 'experiments.IErrorApplicationJava.IErrorApplication';
+alias Service MultiControllerErrorApp as 'experiments.MultiControllerErrorJava.MultiControllerErrorApp';
 
 
-Struct ConnectionWrapper
-{
-    Endpoint PronghornConnectionError child = null;
+Struct Wrapper {
+    Remote MultiControllerErrorApp service = null;
 }
 
 Service MultiControllerErrorApp
-    implements Interface IApplication, Interface IErrorApplication
-{
-    Service Instance inst = null;
-    Service ErrorApplication error_app;
-    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+    implements Interface IApplication, Interface IErrorApplication {
 
-    // Other controllers connected to.  Connections are directional.  Eg.,
-    // A -> B
-    // where A only requests single ops on B (B cannot request single ops on A).
-    TVar List(element : Struct ConnectionWrapper) children;
+    Service Instance inst = null;
+    Service ErrorApplication local_error_app = null;
+    List(element: Struct Wrapper) partners;
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
 
     // @Override: from IApplication interface
     init(Service Instance inst_,
@@ -30,13 +25,13 @@ Service MultiControllerErrorApp
     {
         inst = inst_;
         switch_map = switch_map_;
-        error_app.init(inst,switch_map);
+        local_error_app.init(inst,switch_map);
     }
 
     // @Override: from IApplication interface
     run()
     {
-        error_app.run();
+        local_error_app.run();
     }
 
     // @Override --- from IErrorApplication
@@ -45,11 +40,11 @@ Service MultiControllerErrorApp
         atomically
         {
             // perform locally
-            error_app.block_traffic_all_switches();
+            local_error_app.block_traffic_all_switches();
 
             // tell children to perform their reads/writes
-            for (Struct ConnectionWrapper conn_wrap in children)
-                conn_wrap.child.block_traffic_all_switches();
+            for (Struct Wrapper wrapper in partners)
+                wrapper.service.block_traffic_all_switches();
         }
     }
     // @Override --- from IErrorApplication
@@ -58,11 +53,11 @@ Service MultiControllerErrorApp
         atomically
         {
             // perform locally
-            error_app.remove_first_entry_all_switches();
+            local_error_app.remove_first_entry_all_switches();
 
             // tell children to perform their reads/writes
-            for (Struct ConnectionWrapper conn_wrap in children)
-                conn_wrap.child.remove_first_entry_all_switches();
+            for (Struct Wrapper wrapper in partners)
+                wrapper.service.remove_first_entry_all_switches();
         }
     }
 
@@ -72,7 +67,7 @@ Service MultiControllerErrorApp
         atomically
         {
             // do not forward to children
-            error_app.logical_clear_switch_do_not_flush_clear_to_hardware(switch_id);
+           local_error_app.logical_clear_switch_do_not_flush_clear_to_hardware(switch_id);
         }
     }
     // @Override --- from IErrorApplication
@@ -82,15 +77,28 @@ Service MultiControllerErrorApp
         atomically
         {
             // do not forward to children
-            to_return = error_app.num_flow_table_entries(switch_id);
+            to_return = local_error_app.num_flow_table_entries(switch_id);
         }
         return to_return;
     }
-    
-    add_child_connection(Endpoint PronghornConnectionError connection)
-    {
-        Struct ConnectionWrapper connection_wrapper;
-        connection_wrapper.child = connection;
-        children.append(connection_wrapper);
+
+    install_remotes(ServiceFactory factory) {
+        // install a copy of this application on all connections
+        List(element: Text) conn_uuids;
+        conn_uuids = connected_uuids();
+        Text loc_uuid = null;
+        loc_uuid = local_uuid();
+
+        for (Text conn_uuid in conn_uuids) {
+            if (conn_uuid != loc_uuid) {
+                ServiceReference service_reference = null;
+                service_reference = install(conn_uuid, factory);
+                Remote MultiControllerErrorApp remote_partner = null;
+                remote_partner = factory.construct_remote_from_reference(service_reference);
+                Struct Wrapper wrapper;
+                wrapper.service = remote_partner;
+                partners.append(wrapper);
+            }
+        }
     }
 }

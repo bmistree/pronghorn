@@ -27,13 +27,13 @@ public class SingleControllerError
     public static final int FAILURE_PROBABILITY_ARG_INDEX = 1;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 2;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 3;
-    
+
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
     public static final boolean SHOULD_SPECULATE = true;
-    
-    
-    public static void main (String[] args) 
+
+
+    public static void main (String[] args)
     {
         /* Grab arguments */
         if (args.length != 4)
@@ -50,11 +50,11 @@ public class SingleControllerError
 
         int collect_statistics_period_ms =
             Integer.parseInt(args[COLLECT_STATISTICS_ARG_INDEX]);
-        
+
         String output_filename = args[OUTPUT_FILENAME_ARG_INDEX];
 
         RalphGlobals ralph_globals = new RalphGlobals();
-        
+
         /* Start up pronghorn */
         Instance prong = null;
         GetNumberSwitches num_switches_app = null;
@@ -62,13 +62,14 @@ public class SingleControllerError
         try
         {
             prong = Instance.create_single_sided(ralph_globals);
+            prong.start();
             num_switches_app =
                 GetNumberSwitches.create_single_sided(ralph_globals);
             error_app =
                 ErrorApplication.create_single_sided(ralph_globals);
-            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
-            prong.add_application(error_app,Util.ROOT_APP_ID);
-                        
+            prong.add_application(num_switches_app);
+            prong.add_application(error_app);
+
         }
         catch (Exception ex)
         {
@@ -78,7 +79,7 @@ public class SingleControllerError
         }
 
         FloodlightShim shim = new FloodlightShim();
-        
+
         SwitchStatusHandler switch_status_handler =
             new SwitchStatusHandler(
                 shim,prong,
@@ -97,18 +98,18 @@ public class SingleControllerError
             ex.printStackTrace();
             assert(false);
         }
-        
+
         // // wait for first switch to connect
         Util.wait_on_switches(num_switches_app);
         String faulty_switch_id = "some_switch";
         ErrorUtil.add_faulty_switch(
             ralph_globals,faulty_switch_id, SHOULD_SPECULATE,
             failure_probability,prong);
-        
+
         List<String> switch_id_list =
             Util.get_switch_id_list (num_switches_app);
 
-        
+
         // Contains trues if test succeeded, false if test failed.
         List<Boolean> results_list =
             ErrorUtil.run_operations(
@@ -120,8 +121,8 @@ public class SingleControllerError
         Util.force_shutdown();
     }
 
-        
-    
+
+
     private static void print_usage()
     {
         String usage_string = "";
@@ -138,7 +139,7 @@ public class SingleControllerError
         usage_string +=
             "\n\t<int> : period for collecting individual switch stastics " +
             "in ms.  < 0 if should not collect any statistics\n";
-        
+
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
 

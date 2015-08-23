@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.HashSet;
 import java.util.Set;
 
-import RalphConnObj.SingleSideConnection;
 import ralph.RalphGlobals;
 import ralph.NonAtomicInternalList;
 import ralph.RalphGlobals;
 import ralph.EndpointConstructorObj;
 import ralph.Endpoint;
 import ralph.Ralph;
+import ralph.InternalServiceFactory;
 import ralph.RalphObject;
 import RalphDurability.IDurabilityContext;
 import RalphDurability.DurabilityReplayContext;
@@ -24,7 +24,6 @@ import pronghorn.ft_ops.FloodlightFlowTableToHardware;
 
 import experiments.GetNumberSwitchesJava.GetNumberSwitches;
 import experiments.MultiControllerOffOnJava.MultiControllerOffOn;
-import experiments.PronghornConnectionJava.PronghornConnection;
 import experiments.Util.HostPortPair;
 import experiments.Util;
 import experiments.Util.LatencyThread;
@@ -37,16 +36,16 @@ public class MultiControllerLatency
     public static final int NUMBER_OPS_TO_RUN_ARG_INDEX = 2;
     public static final int COLLECT_STATISTICS_ARG_INDEX = 3;
     public static final int OUTPUT_FILENAME_ARG_INDEX = 4;
-    
+
     public static Instance prong = null;
     public static MultiControllerOffOn mc_off_on_app = null;
-    public static GetNumberSwitches num_switches_app = null;    
-    
+    public static GetNumberSwitches num_switches_app = null;
+
     // wait this long for pronghorn to add all switches
     public static final int SETTLING_TIME_WAIT = 5000;
 
-    public final static RalphGlobals ralph_globals = new RalphGlobals();
-    
+    public static RalphGlobals ralph_globals = null;
+
     public static void main (String[] args)
     {
         /* Grab arguments */
@@ -65,7 +64,11 @@ public class MultiControllerLatency
 
         int port_to_listen_on =
             Integer.parseInt(args[PORT_TO_LISTEN_FOR_CONNECTIONS_ON_ARG_INDEX]);
-        
+
+        RalphGlobals.Parameters params = new RalphGlobals.Parameters();
+        params.tcp_port_to_listen_for_connections_on = port_to_listen_on;
+        ralph_globals = new RalphGlobals(params);
+
         int num_ops_to_run =
             Integer.parseInt(args[NUMBER_OPS_TO_RUN_ARG_INDEX]);
 
@@ -80,20 +83,20 @@ public class MultiControllerLatency
         try
         {
             prong = Instance.create_single_sided(ralph_globals);
+            prong.start();
             mc_off_on_app =
                 MultiControllerOffOn.create_single_sided(ralph_globals);
             num_switches_app =
                 GetNumberSwitches.create_single_sided(ralph_globals);
-            
-            prong.add_application(mc_off_on_app,Util.ROOT_APP_ID);
-            prong.add_application(num_switches_app,Util.ROOT_APP_ID);
+
+            prong.add_application(mc_off_on_app);
+            prong.add_application(num_switches_app);
         }
         catch (Exception _ex)
         {
             System.out.println("\n\nERROR CONNECTING\n\n");
             return;
         }
-
 
         FloodlightShim shim = new FloodlightShim();
         SwitchStatusHandler switch_status_handler =
@@ -106,34 +109,27 @@ public class MultiControllerLatency
         shim.start();
 
 
-        // start listening for connections from parents
-        Ralph.tcp_accept(
-            new DummyConnectionConstructor(), "0.0.0.0",
-            port_to_listen_on,ralph_globals);
-        
-
-        // now actually try to conect to parent
+        // now actually try to conect to children
         for (HostPortPair hpp : children_to_contact_hpp)
         {
-            PronghornConnection connection = null;
             try {
                 System.out.println("\nConnecting to " + hpp.host + "  " + hpp.port);
-                connection = (PronghornConnection)Ralph.tcp_connect(
-                    new DummyConnectionConstructor(), hpp.host, hpp.port,ralph_globals);
 
-                connection.set_off_on_app(mc_off_on_app);
-                mc_off_on_app.add_child_connection(connection);
+                InternalServiceFactory factory =
+                        new InternalServiceFactory(MultiControllerOffOn.factory,
+                                                   ralph_globals);
+                mc_off_on_app.install_remotes(factory);
             } catch(Exception e) {
                 e.printStackTrace();
                 assert(false);
             }
         }
-        
+
         // wait for first switch to connect
         Util.wait_on_switches(num_switches_app);
         // what's the first switch's id.
         String switch_id = Util.first_connected_switch_id(num_switches_app);
-        
+
         if (num_ops_to_run != 0)
         {
             List<LatencyThread> all_threads = new ArrayList<LatencyThread>();
@@ -185,7 +181,7 @@ public class MultiControllerLatency
     {
         String usage_string = "";
 
-        // CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX 
+        // CHILDREN_TO_CONTACT_HOST_PORT_CSV_ARG_INDEX
         usage_string +=
             "\n\t<csv>: Children to contact host port csv.  Pronghorn ";
         usage_string += "controllers to connect to.  ";
@@ -206,52 +202,7 @@ public class MultiControllerLatency
 
         // OUTPUT_FILENAME_ARG_INDEX
         usage_string += "\n\t<String> : output filename\n";
-        
+
         System.out.println(usage_string);
-    }
-
-
-    private static class DummyConnectionConstructor
-        implements EndpointConstructorObj
-    {
-        private final static String canonical_name =
-            DummyConnectionConstructor.class.getName();
-        
-        @Override
-        public Endpoint construct(
-            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
-            IDurabilityContext durability_log_context,
-            DurabilityReplayContext durability_replay_context)
-        {
-            PronghornConnection to_return = null;
-            System.out.println("\nBuilt a connection\n\n");
-            try {
-                to_return =
-                    PronghornConnection.external_create(
-                        ralph_globals,conn_obj);
-                to_return.set_off_on_app(mc_off_on_app);
-            } catch (Exception _ex) {
-                _ex.printStackTrace();
-                assert(false);
-            }
-            return to_return;
-        }
-        @Override
-        public Endpoint construct(
-            RalphGlobals globals, RalphConnObj.ConnectionObj conn_obj,
-            List<RalphObject> obj_initializers,
-            IDurabilityContext durability_context)
-        {
-            System.err.println(
-                "Not performing replay on direct fairness experiment");
-            assert(false);
-            return null;
-        }
-
-        @Override
-        public String get_canonical_name()
-        {
-            return canonical_name;
-        }
     }
 }

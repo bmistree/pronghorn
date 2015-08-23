@@ -17,14 +17,10 @@ alias Service PortUtil as 'pronghorn.PortJava.PortUtil';
 #include 'port_stats.rph'
 alias Struct PortStats as 'pronghorn.PortStatsJava.PortStats';
 
-#include 'access_control.rph'
-alias Struct AccessControl as 'pronghorn.AccessControlJava.AccessControl';
-
 Struct StructWrappedSwitch
 {
     Service WrappedSwitch wrapped_switch = null;
 }
-
 
 Service WrappedSwitch
 {
@@ -32,19 +28,13 @@ Service WrappedSwitch
     Service FlowTableUtil ft_util = null;
     Service PortUtil port_util = null;
     
-    // Applications interact with a wrapped switch.  access_control should be
-    // checked to ensure operations application makes are valid.
-    Struct AccessControl access_control = null;
-
     // called by root instance only.  
-    init(
-        Struct Switch wrapped_switch_, Service FlowTableUtil ft_util_,
-        Service PortUtil port_util_, Struct AccessControl access_control_)
+    init(Struct Switch wrapped_switch_, Service FlowTableUtil ft_util_,
+         Service PortUtil port_util_)
     {
         wrapped_switch = wrapped_switch_;
         ft_util = ft_util_;
         port_util = port_util_;
-        access_control = access_control_;
     }
     // called by root instance only
     get_switch() returns Struct Switch
@@ -203,12 +193,6 @@ Service WrappedSwitch
             ftd.entry =
                 wrapped_switch.ftable.get(index_to_remove_from);
 
-            // check allowed to remove this entry
-            TrueFalse permissions_allowed =
-                check_add_remove_permissions(ftd.entry);
-            if (not permissions_allowed)
-                return False;
-
             // actually perform remove
             wrapped_switch.ftable.remove(index_to_remove_from);
 
@@ -239,20 +223,6 @@ Service WrappedSwitch
         return True;
     }
 
-    check_add_remove_permissions(Struct FlowTableEntry ft_entry)
-        returns TrueFalse
-    {
-        // check access control here
-        if (not access_control.allow_writes)
-            return False;
-
-        /**
-           FIXME: changed match fields to be more general than just ip src and
-           ip dst.  Should add logic to more generally check inserted entry.
-         */
-        return True;
-    }
-    
     /**
        Substitute method for in operator, which is currently not supported on
        lists.

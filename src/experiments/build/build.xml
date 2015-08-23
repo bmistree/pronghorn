@@ -13,7 +13,7 @@
   />
 
   <!-- global properties for this build file -->
-  
+
   <!-- Ralph dependency files -->
   <property
       name="ralph_dep_dir"
@@ -25,7 +25,7 @@
   <property
       name="lib_build_path"
       location="${ralph_dep_dir}/ralph/java_lib/build"/>
-  
+
   <property
       name="lib_class_path"
       location="${lib_build_path}/classes/"/>
@@ -33,7 +33,7 @@
   <property
       name="proto_jar_dir"
       location="${lib_build_path}/../"/>
-  
+
   <property
       name="proto_class_path"
       location="${lib_build_path}/../protobuf-java-2.5.0.jar"/>
@@ -49,13 +49,15 @@
       name="disk_log_config"
       location="${lib_build_path}/disk_log_config/config.properties"/>
   <property
+      name="disk_replayer"
+      location="disk_durability_config/config.properties"/>
+  <property
       name="synced_multidisk_durability_log_config"
       location="multidisk_durability_config/config.properties"/>
   <property
       name="lazy_multidisk_durability_log_config"
       location="multidisk_lazy_durability_config/config.properties"/>
 
-  
   <!-- Floodlight dependency -->
   <property
       name="floodlight_dep_dir"
@@ -64,13 +66,12 @@
   <property
       name="floodlight_jar_dir"
       location="${floodlight_dep_dir}/target/"/>
-  
+
   <property
       name="floodlight_class_path"
       location="${floodlight_dep_dir}/target/floodlight.jar"/>
 
 
-  
   <!-- Pronghorn libraries -->
   <property
       name="pronghorn_libs_build_path"
@@ -81,8 +82,8 @@
 
   <property
       name="pronghorn_ralph_src_path"
-      location="${pronghorn_libs_build_path}/../ralph_src/"/>  
-  
+      location="${pronghorn_libs_build_path}/../ralph_src/"/>
+
   <!-- Build files in singledummytests -->
   <property
       name="experiments_package"
@@ -114,7 +115,7 @@
   <!-- compile java libraries -->
   <target name="compile_libs" depends="init"
           description="compile library files">
-    
+
     <ant antfile="${lib_build_path}/build.xml" target="compile_all" />
     <ant antfile="${pronghorn_libs_build_path}/build.xml" target="compile_all"/>
   </target>
@@ -163,16 +164,6 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
-    <echo message="pronghorn_connection_speculation.rph"/>
-    <exec executable="python" failonerror="true">
-      <arg line="${ralph_compiler_py}"/>
-      <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_speculation.rph"/>
-      <arg line="-o ${experiments_ralph_emitted_dir}/PronghornConnectionSpeculationJava.java"/>
-      <arg line="-p ${experiments_package}"/>
-      <arg line="-c PronghornConnectionSpeculationJava"/>
-      <arg line="-I ${pronghorn_ralph_src_path}"/>
-    </exec>
-
     <echo message="multi_controller_off_on.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
@@ -180,16 +171,6 @@
       <arg line="-o ${experiments_ralph_emitted_dir}/MultiControllerOffOnJava.java"/>
       <arg line="-p ${experiments_package}"/>
       <arg line="-c MultiControllerOffOnJava"/>
-      <arg line="-I ${pronghorn_ralph_src_path}"/>
-    </exec>
-
-    <echo message="pronghorn_connection.rph"/>
-    <exec executable="python" failonerror="true">
-      <arg line="${ralph_compiler_py}"/>
-      <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection.rph"/>
-      <arg line="-o ${experiments_ralph_emitted_dir}/PronghornConnectionJava.java"/>
-      <arg line="-p ${experiments_package}"/>
-      <arg line="-c PronghornConnectionJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
@@ -202,7 +183,7 @@
       <arg line="-c OffOnApplicationJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
-    
+
     <echo message="get_number_switches.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
@@ -212,7 +193,7 @@
       <arg line="-c GetNumberSwitchesJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
-    
+
     <echo message="ifairness_application.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
@@ -232,7 +213,7 @@
       <arg line="-c FairnessApplicationJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
-    
+
     <echo message="multi_controller_fairness.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
@@ -240,16 +221,6 @@
       <arg line="-o ${experiments_ralph_emitted_dir}/MultiControllerFairnessJava.java"/>
       <arg line="-p ${experiments_package}"/>
       <arg line="-c MultiControllerFairnessJava"/>
-      <arg line="-I ${pronghorn_ralph_src_path}"/>
-    </exec>
-
-    <echo message="pronghorn_connection_fairness.rph"/>
-    <exec executable="python" failonerror="true">
-      <arg line="${ralph_compiler_py}"/>
-      <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_fairness.rph"/>
-      <arg line="-o ${experiments_ralph_emitted_dir}/PronghornConnectionFairnessJava.java"/>
-      <arg line="-p ${experiments_package}"/>
-      <arg line="-c PronghornConnectionFairnessJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
@@ -283,16 +254,6 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
-    <echo message="multi_controller_error.rph"/>
-    <exec executable="python" failonerror="true">
-      <arg line="${ralph_compiler_py}"/>
-      <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_error.rph"/>
-      <arg line="-o ${experiments_ralph_emitted_dir}/PronghornConnectionErrorJava.java"/>
-      <arg line="-p ${experiments_package}"/>
-      <arg line="-c PronghornConnectionErrorJava"/>
-      <arg line="-I ${pronghorn_ralph_src_path}"/>
-    </exec>
-
     <echo message="multi_controller_tunnels.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
@@ -303,19 +264,29 @@
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
 
-    <echo message="pronghorn_connection_tunnels.rph"/>
+    <echo message="path_application.rph"/>
     <exec executable="python" failonerror="true">
       <arg line="${ralph_compiler_py}"/>
-      <arg line="-i ${experiments_ralph_src_dir}/pronghorn_connection_tunnels.rph"/>
-      <arg line="-o ${experiments_ralph_emitted_dir}/PronghornConnectionTunnelsJava.java"/>
+      <arg line="-i ${experiments_ralph_src_dir}/path_application.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/PathApplicationJava.java"/>
       <arg line="-p ${experiments_package}"/>
-      <arg line="-c PronghornConnectionTunnelsJava"/>
+      <arg line="-c PathApplicationJava"/>
       <arg line="-I ${pronghorn_ralph_src_path}"/>
     </exec>
-    
+
+    <echo message="test_error.rph"/>
+    <exec executable="python" failonerror="true">
+      <arg line="${ralph_compiler_py}"/>
+      <arg line="-i ${experiments_ralph_src_dir}/test_error.rph"/>
+      <arg line="-o ${experiments_ralph_emitted_dir}/TestErrorJava.java"/>
+      <arg line="-p ${experiments_package}"/>
+      <arg line="-c TestErrorJava"/>
+      <arg line="-I ${pronghorn_ralph_src_path}"/>
+    </exec>
+
   </target>
 
-  
+
   <target name="ralph_to_byte_code"
           depends="init,compile_libs"
           description="compile ralph files">
@@ -329,7 +300,7 @@
         includeantruntime="false" />
   </target>
 
-    
+
   <!-- compile ralph endpoints to java programs, including translating -->
   <target
       name="compile_ralph"
@@ -367,11 +338,13 @@
                multi_controller_speculation_throughput,read_only_throughput,
                simulated_switch_throughput,
                synced_multidisk_single_controller_throughput,
-               lazy_multidisk_single_controller_throughput"
+               lazy_multidisk_single_controller_throughput,
+               single_controller_replay,single_controller_trace,
+               single_controller_reject"
       description="create jars for each type of experiment">
   </target>
 
-  
+
   <!-- Run pronghorn connected to floodlight -->
   <target
       name="make_jar"
@@ -394,8 +367,8 @@
       <zipgroupfileset dir="${floodlight_jar_dir}" includes="**/*.jar" />
     </jar>
   </target>
-  
-  
+
+
   <!-- Run pronghorn connected to floodlight -->
   <property
       name="single_host_jar"
@@ -426,8 +399,8 @@
     </antcall>
   </target>
 
-  
-  
+
+
   <!-- Single controller latency jar -->
   <property
       name="single_controller_latency_jar"
@@ -439,6 +412,21 @@
     <antcall target="make_jar">
       <param name="main_class" value="SingleControllerLatency"/>
       <param name="dest_jar" value="${single_controller_latency_jar}"/>
+      <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
+    </antcall>
+  </target>
+
+
+  <property
+      name="single_controller_reject_jar"
+      value="single_controller_reject.jar"/>
+  <target
+      name="single_controller_reject"
+      depends="compile_libs,compile_experiments"
+      description="Run test for rejected command.">
+    <antcall target="make_jar">
+      <param name="main_class" value="SingleControllerReject"/>
+      <param name="dest_jar" value="${single_controller_reject_jar}"/>
       <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
     </antcall>
   </target>
@@ -497,7 +485,7 @@
             value="${lazy_multidisk_durability_log_config}"/>
       </antcall>
     </target>
-    
+
     <property
       name="disk_log_single_controller_throughput_jar"
       value="disk_log_single_controller_throughput.jar"/>
@@ -526,6 +514,37 @@
       </antcall>
     </target>
 
+
+    <property
+      name="single_controller_replay_jar"
+      value="single_controller_replay.jar"/>
+    <target
+      name="single_controller_replay"
+      depends="compile_libs,compile_experiments"
+      description="Single controller replay">
+      <antcall target="make_jar">
+        <param name="main_class" value="SingleControllerReplay"/>
+        <param name="dest_jar" value="${single_controller_replay_jar}"/>
+        <param name="config_properties" value="${disk_replayer}"/>
+      </antcall>
+    </target>
+
+
+    <property
+      name="single_controller_trace_jar"
+      value="single_controller_trace.jar"/>
+    <target
+      name="single_controller_trace"
+      depends="compile_libs,compile_experiments"
+      description="Single controller trace">
+      <antcall target="make_jar">
+        <param name="main_class" value="SingleControllerTrace"/>
+        <param name="dest_jar" value="${single_controller_trace_jar}"/>
+        <param name="config_properties" value="${disk_replayer}"/>
+      </antcall>
+    </target>
+
+
   <!--
       Ant for running test for throughput test with fine-grained
       locking and contention
@@ -546,7 +565,7 @@
   </target>
 
 
-  <!-- Ant for running test for latency test with no contention -->  
+  <!-- Ant for running test for latency test with no contention -->
   <property
       name="multi_controller_latency_jar"
       value="multi_controller_latency.jar"/>
@@ -582,7 +601,7 @@
       </antcall>
   </target>
 
-  
+
   <!--
       Ant for running test for running test to show that we handle
       reordering
@@ -703,7 +722,7 @@
         <param name="config_properties" value="${synced_multidisk_durability_log_config}"/>
       </antcall>
   </target>
-  
+
 
   <!-- Read only throughput -->
   <property
@@ -721,13 +740,28 @@
       </antcall>
   </target>
 
-  
-  
+  <!-- Single controller mean switch -->
+  <property
+      name="single_controller_mean_switch_jar"
+      value="single_controller_mean_switch.jar"/>
+  <target
+      name="single_controller_mean_switch"
+      depends="compile_libs,compile_experiments"
+      description="Read only throughput jar">
+
+      <antcall target="make_jar">
+        <param name="main_class" value="SingleControllerMeanSwitch"/>
+        <param name="dest_jar" value="${single_controller_mean_switch_jar}"/>
+        <param name="config_properties" value="${no_log_config}"/>
+      </antcall>
+  </target>
+
+
   <!-- Delete the build directories -->
   <target name="clean" description="get rid of build dir">
     <delete dir="${experiments_build_classes_dir}"/>
     <delete dir="${experiments_ralph_emitted_dir}"/>
-    
+
     <!-- Delete ralph compiler output -->
     <delete file="parser.out"/>
     <delete file="parsetab.py"/>
@@ -752,7 +786,11 @@
     <delete file="${in_memory_log_single_controller_throughput_jar}"/>
     <delete file="${synced_multidisk_single_controller_throughput_jar}"/>
     <delete file="${lazy_multidisk_single_controller_throughput_jar}"/>
-    
+    <delete file="${single_controller_mean_switch_jar}"/>
+    <delete file="${single_controller_replay_jar}"/>
+    <delete file="${single_controller_trace_jar}"/>
+    <delete file="${single_controller_reject_jar}"/>
+
   </target>
 
   <target
@@ -762,5 +800,5 @@
     <ant antfile="${lib_build_path}/build.xml" target="clean" />
   </target>
 
-  
+
 </project>

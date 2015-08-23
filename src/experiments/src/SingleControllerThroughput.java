@@ -70,11 +70,11 @@ public class SingleControllerThroughput
         try
         {
             prong = Instance.create_single_sided(ralph_globals);
-
+            prong.start();
             num_switches_app =
                 GetNumberSwitches.create_single_sided(ralph_globals);
 
-            prong.add_application(num_switches_app,Util.ROOT_APP_ID);            
+            prong.add_application(num_switches_app);
         } catch (Exception _ex) {
             System.out.println("\n\nERROR CONNECTING\n\n");
             had_exception.set(true);
@@ -140,7 +140,7 @@ public class SingleControllerThroughput
             {
                 off_on_app =
                     OffOnApplication.create_single_sided(ralph_globals);
-                prong.add_application(off_on_app,Util.ROOT_APP_ID);
+                prong.add_application(off_on_app);
                 off_on_app_list.add(off_on_app);
             }
             // add some existing entries to all switches

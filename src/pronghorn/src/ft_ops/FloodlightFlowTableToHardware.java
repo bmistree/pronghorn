@@ -26,7 +26,7 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
 {
     protected static final Logger log =
         LoggerFactory.getLogger(FloodlightFlowTableToHardware.class);
-    
+
     private static class FloodlightFlowTableToHardwareFactory
         implements IFlowTableToHardwareFactory
     {
@@ -42,15 +42,15 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
     public final static
       FloodlightFlowTableToHardwareFactory FLOODLIGHT_FLOW_TABLE_TO_HARDWARE_FACTORY =
         new FloodlightFlowTableToHardwareFactory();
-    
-    
+
+
     /**
        Each flow table entry requires a unique name to associate it
        with flow table entries on actual switches.  This int can be
        used to generate these names.
      */
     private int unique_entry_name_generator = 0;
-    
+
     /**
        Keeps track of the associated unique name of each flow table
        entry in each element of the list.
@@ -73,15 +73,14 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
         return floodlight_switch_id + ":_:" + Integer.toString(prev);
     }
 
-        
+
     @Override
     public boolean apply(List<FTableUpdate> to_apply)
     {
         // request shim to push the changes to swithces.
-        return shim.switch_rtable_updates(
-            floodlight_switch_id,to_apply);
+        boolean result = shim.switch_rtable_updates(floodlight_switch_id,to_apply);
+        return result;
     }
-
 
     /**
        @param {List<FTableUpdate>} to_undo --- The original operations
@@ -91,9 +90,14 @@ public class FloodlightFlowTableToHardware extends FlowTableToHardware
     @Override
     public boolean undo(List<FTableUpdate> to_undo)
     {
-        List<FTableUpdate> floodlight_updates = 
+        List<FTableUpdate> floodlight_updates =
             transform_from_to_undo(to_undo);
         return shim.switch_rtable_updates(
             floodlight_switch_id,floodlight_updates);
+    }
+
+    @Override
+    public boolean partial_undo(List<FTableUpdate> full_attempted) {
+        return shim.partial_undo(floodlight_switch_id);
     }
 }

@@ -6,7 +6,6 @@ alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSw
 
 
 alias Service Instance as 'pronghorn.InstanceJava.Instance';
-alias Endpoint PronghornConnectionTunnels as 'experiments.PronghornConnectionTunnelsJava.PronghornConnectionTunnels';
 alias Service ErrorApplication as 'experiments.ErrorApplicationJava.ErrorApplication';
 alias Interface IErrorApplication as 'experiments.IErrorApplicationJava.IErrorApplication';
 
@@ -22,11 +21,11 @@ alias Struct Instructions as 'pronghorn.InstructionsJava.Instructions';
 #include 'flow_table_entry.rph'
 alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
 
+alias Service MultiControllerTunnelsApp as 'experiments.MultiControllerTunnelsJava.MultiControllerTunnelsApp';
 
-
-Struct ConnectionWrapper
+Struct Wrapper
 {
-    Endpoint PronghornConnectionTunnels child = null;
+    Remote MultiControllerTunnelsApp service = null;
 }
 
 Struct ReducedTopos
@@ -43,7 +42,7 @@ Service MultiControllerTunnelsApp implements Interface IApplication
     // Other controllers connected to.  Connections are directional.  Eg.,
     // A -> B
     // where A only requests single ops on B (B cannot request single ops on A).
-    TVar List(element : Struct ConnectionWrapper) children;
+    TVar List(element : Struct Wrapper) partners;
 
     // @Override: from IApplication interface
     init(Service Instance inst_,
@@ -64,11 +63,9 @@ Service MultiControllerTunnelsApp implements Interface IApplication
         {
             path_found = False;
             // grab neighboring topologies
-            for (Struct ConnectionWrapper wrapper in children)
-            {
-                wrapper.child.get_topos();
-            }
-            
+            for (Struct Wrapper wrapper in partners)
+                wrapper.service.get_topos();
+
             // grab own topology: do shortest path computation on it.  Keep
             // track of changes and send them to all children to install
             // themselves.
@@ -88,8 +85,8 @@ Service MultiControllerTunnelsApp implements Interface IApplication
             {
                 path_found = True;
                 update_switch_ids(switch_ids_to_update);
-                for (Struct ConnectionWrapper wrapper in children)
-                    wrapper.child.update_switch_ids(switch_ids_to_update);
+                for (Struct Wrapper wrapper in partners)
+                    wrapper.service.update_switch_ids(switch_ids_to_update);
             }
         }
 
@@ -99,7 +96,7 @@ Service MultiControllerTunnelsApp implements Interface IApplication
                 '\n\nWarning: no path found between ' + switch_id_1 +
                 ' and ' + switch_id_2 + '\n\n');
         }
-        
+
         return path_found;
     }
 
@@ -127,11 +124,11 @@ Service MultiControllerTunnelsApp implements Interface IApplication
             Struct MatchField match_field_ether_type;
             match_field_ether_type.field_name = MatchFieldName.ETH_TYPE;
             match_field_ether_type.value = '0x800';
-            
+
             Struct MatchField match_field_dl_src;
             match_field_dl_src.field_name = MatchFieldName.ETH_SRC;
             match_field_dl_src.value = '00:00:00:00:00:01';
-        
+
             Struct Match match;
             match.all_matches.append(match_field_ether_type);
             match.all_matches.append(match_field_dl_src);
@@ -151,7 +148,7 @@ Service MultiControllerTunnelsApp implements Interface IApplication
             target_switch.wrapped_switch.add_entry(entry_to_add);
         }
     }
-    
+
     remove_entry_switch(Text switch_id)
     {
         atomically
@@ -160,7 +157,7 @@ Service MultiControllerTunnelsApp implements Interface IApplication
             target_switch.wrapped_switch.remove_entry(0);
         }
     }
-    
+
     find_shortest_path(
         Text switch_id_1, Text switch_id_2,Text caller_switch,
         Map(from:Text, to: Struct ReducedTopos) reduced_topos)
@@ -170,7 +167,7 @@ Service MultiControllerTunnelsApp implements Interface IApplication
         if (( not reduced_topos.contains(switch_id_1))
             or (not reduced_topos.contains(switch_id_2)))
             return null;
-            
+
         if (switch_id_1 == switch_id_2)
             return to_return;
 
@@ -209,31 +206,43 @@ Service MultiControllerTunnelsApp implements Interface IApplication
 
         if (not found_path)
             return null;
-        
+
         to_return.append(switch_id_1);
         return to_return;
     }
-    
-    add_child_connection(Endpoint PronghornConnectionTunnels connection)
-    {
-        Struct ConnectionWrapper connection_wrapper;
-        connection_wrapper.child = connection;
-        children.append(connection_wrapper);
-    }
 
+    install_remotes(ServiceFactory factory) {
+        // install a copy of this application on all connections
+        List(element: Text) conn_uuids;
+        conn_uuids = connected_uuids();
+        Text loc_uuid = null;
+        loc_uuid = local_uuid();
+
+        for (Text conn_uuid in conn_uuids) {
+            if (conn_uuid != loc_uuid) {
+                ServiceReference service_reference = null;
+                service_reference = install(conn_uuid, factory);
+                Remote MultiControllerTunnelsApp remote_partner = null;
+                remote_partner = factory.construct_remote_from_reference(service_reference);
+                Struct Wrapper wrapper;
+                wrapper.service = remote_partner;
+                partners.append(wrapper);
+            }
+        }
+    }
 
     // return topos for all internal switches
     get_topos() returns Map (from: Text, to: Struct ReducedTopos)
     {
         Map(from: Text, to: Struct ReducedTopos) to_return;
         // for (Struct StructWrappedSwitch sws in switch_map)
-        for (Text switch_id in switch_map)            
+        for (Text switch_id in switch_map)
         {
             Struct StructWrappedSwitch sws = null;
             sws = switch_map.get(switch_id);
-            
+
             Struct ReducedTopos reduced_topo;
-            
+
             Struct Switch internal_switch = null;
             internal_switch = sws.wrapped_switch.get_switch();
 
@@ -244,7 +253,7 @@ Service MultiControllerTunnelsApp implements Interface IApplication
                 Text remote_switch_id = '-1';
                 if (port.remote_switch_id != null)
                     remote_switch_id = port.remote_switch_id;
-                
+
                 reduced_topo.ports_to_switches.set(port_num,remote_switch_id);
             }
             to_return.set(internal_switch.switch_id,reduced_topo);

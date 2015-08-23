@@ -1,0 +1,215 @@
+#include 'iapplication.rph'
+alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
+
+#include 'instance.rph'
+alias Service Instance as 'pronghorn.InstanceJava.Instance';
+
+#include 'wrapped_switch.rph'
+alias Struct StructWrappedSwitch as 'pronghorn.WrappedSwitchJava.StructWrappedSwitch';
+
+#include 'match.rph'
+alias Enum MatchFieldName as 'pronghorn.MatchJava.MatchFieldName';
+alias Struct MatchField as 'pronghorn.MatchJava.MatchField';
+alias Struct Match as 'pronghorn.MatchJava.Match';
+
+#include 'instructions.rph'
+alias Struct InstructionApplyActions as 'pronghorn.InstructionsJava.InstructionApplyActions';
+alias Struct Instructions as 'pronghorn.InstructionsJava.Instructions';
+
+#include 'actions.rph'
+alias Struct ActionOutput as 'pronghorn.ActionsJava.ActionOutput';
+
+#include 'flow_table_entry.rph'
+alias Struct FlowTableEntry as 'pronghorn.FTable.FlowTableEntry';
+
+
+Struct IpV4Packet {
+    Number in_port = null;
+    Number out_port = null;
+    Text tp_src = null;
+    Text tp_dst = null;
+}
+
+Service PathApplication implements Interface IApplication {
+
+    Service Instance inst = null;
+    TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
+
+    // @Override --- from IApplication interface
+    init(Service Instance inst_,
+        TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
+    {
+        inst = inst_;
+        switch_map = switch_map_;
+    }
+
+    // @Override --- from IApplication interface; do nothing when
+    // first installed
+    run(){}
+
+    make_ipv4_packet(Number in_port, Text tp_src, Text tp_dst)
+        returns Struct IpV4Packet {
+        Struct IpV4Packet pkt;
+        pkt.in_port = in_port;
+        pkt.tp_src = tp_src;
+        pkt.tp_dst = tp_dst;
+        return pkt;
+    }
+
+    get_output_port(Struct IpV4Packet pkt) returns Number {
+        return pkt.out_port;
+    }
+
+    trace_ipv4_packet(Text switch_name,
+                      Struct IpV4Packet packet) returns Struct IpV4Packet {
+        Struct FlowTableEntry execed_entry = null;
+        atomically {
+            execed_entry = null;
+            Struct StructWrappedSwitch sws = null;
+            sws = switch_map.get(switch_name);
+            Number num_entries = sws.wrapped_switch.ftable_size();
+
+            for (Number entry_index in range(0, num_entries)) {
+                Struct FlowTableEntry ft_entry = null;
+                ft_entry = sws.wrapped_switch.get_entry(entry_index);
+
+                if (entry_match(packet, ft_entry)) {
+                    execed_entry = ft_entry;
+                }
+            }
+        }
+
+        // Update packet
+        Number out_port = null;
+        if (execed_entry != null) {
+            Struct Instructions instruction = execed_entry.instructions;
+            if (instruction.apply_actions != null) {
+                for (Struct Action action in instruction.apply_actions.actions) {
+                    if (action.output != null) {
+                        out_port = action.output.port_number;
+                    }
+                }
+            }
+        }
+        packet.out_port = out_port;
+        return packet;
+    }
+
+    entry_match(Struct IpV4Packet packet, Struct FlowTableEntry ft_entry) returns TrueFalse {
+        TrueFalse matches_src = False;
+        TrueFalse matches_dst = False;
+
+        Struct Match match = ft_entry.match;
+
+        for (Struct MatchField match_field in match.all_matches) {
+            if (match_field.field_name == MatchFieldName.TCP_SRC) {
+                matches_src = match_field.value == packet.tp_src;
+            }
+            if (match_field.field_name == MatchFieldName.TCP_DST) {
+                matches_dst = match_field.value == packet.tp_dst;
+            }
+        }
+        return matches_src and matches_dst;
+    }
+
+
+    add_output_action_tp(Text switch_name, Number priority, Text tp_src,
+                         Text tp_dst, Number port_number) {
+        atomically {
+            // Produce matches
+            Struct MatchField match_field_ether_type;
+            match_field_ether_type.field_name = MatchFieldName.ETH_TYPE;
+            match_field_ether_type.value = '0x800';
+
+            Struct MatchField  match_field_tp_src;
+            match_field_tp_src.field_name = MatchFieldName.TCP_SRC;
+            match_field_tp_src.value = tp_src;
+
+            Struct MatchField  match_field_tp_dst;
+            match_field_tp_dst.field_name = MatchFieldName.TCP_DST;
+            match_field_tp_dst.value = tp_dst;
+
+            Struct MatchField  match_field_ip_proto;
+            match_field_ip_proto.field_name = MatchFieldName.IP_PROTO;
+            match_field_ip_proto.value = "17";
+
+            Struct Match match;
+            match.all_matches.append(match_field_ether_type);
+            match.all_matches.append(match_field_ip_proto);
+            match.all_matches.append(match_field_tp_src);
+            match.all_matches.append(match_field_tp_dst);
+
+
+            // add output instruction
+            Struct ActionOutput output_action;
+            output_action.port_number = port_number;
+            Struct InstructionApplyActions apply_actions;
+            Struct Action output_action_wrapper;
+            output_action_wrapper.output = output_action;
+            apply_actions.actions.append(output_action_wrapper);
+
+            Struct Instructions instructions;
+            instructions.apply_actions = apply_actions;
+
+            // Flow table entry
+            Struct FlowTableEntry entry_to_add;
+            entry_to_add.match = match;
+            entry_to_add.instructions = instructions;
+
+            // Actually add the flow table entry
+            Struct StructWrappedSwitch sws = null;
+            sws = switch_map.get(switch_name);
+            sws.wrapped_switch.add_entry(entry_to_add);
+        }
+    }
+
+
+    add_output_action(Text switch_name, Number priority, Text dl_src, Number port_number) {
+        atomically {
+            // Produce matches
+            Struct MatchField match_field_ether_type;
+            match_field_ether_type.field_name = MatchFieldName.ETH_TYPE;
+            match_field_ether_type.value = '0x800';
+
+            Struct MatchField  match_field_dl_src;
+            match_field_dl_src.field_name = MatchFieldName.ETH_SRC;
+            match_field_dl_src.value = dl_src;
+
+            Struct Match match;
+            match.all_matches.append(match_field_ether_type);
+            match.all_matches.append(match_field_dl_src);
+
+            // add output instruction
+            Struct ActionOutput output_action;
+            output_action.port_number = port_number;
+            Struct InstructionApplyActions apply_actions;
+            Struct Action output_action_wrapper;
+            output_action_wrapper.output = output_action;
+            apply_actions.actions.append(output_action_wrapper);
+
+            Struct Instructions instructions;
+            instructions.apply_actions = apply_actions;
+
+            // Flow table entry
+            Struct FlowTableEntry entry_to_add;
+            entry_to_add.match = match;
+            entry_to_add.instructions = instructions;
+
+            // Actually add the flow table entry
+            Struct StructWrappedSwitch sws = null;
+            sws = switch_map.get(switch_name);
+            sws.wrapped_switch.add_entry(entry_to_add);
+        }
+    }
+
+    get_num_entries(Text switch_name) returns Number {
+        Number num_entries;
+        atomically {
+            Struct StructWrappedSwitch sws = null;
+            sws = switch_map.get(switch_name);
+            num_entries = sws.wrapped_switch.ftable_size();
+        }
+        return num_entries;
+    }
+}
+

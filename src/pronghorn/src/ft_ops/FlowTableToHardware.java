@@ -28,10 +28,9 @@ public abstract class FlowTableToHardware
        implement this interface should reverse the calls themselves
        when they are undo-ing.
      */
-    @Override    
+    @Override
     public abstract boolean undo(List<FTableUpdate> to_undo);
-
-
+        
     final protected List<FTableUpdate> transform_from_to_undo(
         List<FTableUpdate> to_undo)
     {

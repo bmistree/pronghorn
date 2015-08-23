@@ -15,7 +15,7 @@ public class FloodlightShimBarrierCallback implements IPronghornBarrierCallback
     protected static final Logger log =
         LoggerFactory.getLogger(FloodlightShimBarrierCallback.class);
 
-    
+
     private Set<Integer> xids = new HashSet<Integer>();
     private Set<Integer> failed_xids = new HashSet<Integer>();
 
@@ -27,7 +27,20 @@ public class FloodlightShimBarrierCallback implements IPronghornBarrierCallback
     // object's condition.
     private AtomicBoolean has_finished = new AtomicBoolean(false);
     private boolean succeeded = false;
-    
+
+    private boolean barrier_failure;
+
+    public boolean get_barrier_failure() {
+        return barrier_failure;
+    }
+
+    public Set<Integer> get_xids() {
+        return xids;
+    }
+    public Set<Integer> get_failed_xids() {
+        return failed_xids;
+    }
+
     public synchronized void add_xid(int xid)
     {
         xids.add(xid);
@@ -63,7 +76,7 @@ public class FloodlightShimBarrierCallback implements IPronghornBarrierCallback
     {
         if (failed_xids.size() == 0)
             succeeded = true;
-        
+
         synchronized(has_finished)
         {
             has_finished.set(true);
@@ -71,9 +84,20 @@ public class FloodlightShimBarrierCallback implements IPronghornBarrierCallback
         }
     }
 
+    public Set<Integer> get_non_failed_xids() {
+        Set<Integer> to_return = new HashSet<Integer>();
+        for (Integer xid : xids) {
+            if (!failed_xids.contains(xid)) {
+                to_return.add(xid);
+            }
+        }
+        return to_return;
+    }
+
     @Override
     public void barrier_failure()
     {
+        barrier_failure = true;
         log.warn(
             "Warning: received barrier failure from floodlight.  " +
             "Could be timeout or genuine failure.");

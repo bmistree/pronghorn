@@ -2,10 +2,10 @@
 alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
 
 alias Service Instance as 'pronghorn.InstanceJava.Instance';
-alias Endpoint PronghornConnectionFairness as 'experiments.PronghornConnectionFairnessJava.PronghornConnectionFairness';
 alias Service FairnessApplication as 'experiments.FairnessApplicationJava.FairnessApplication';
 alias Interface IFairnessApplication as 'experiments.IFairnessApplicationJava.IFairnessApplication';
-
+alias Service MultiControllerFairnessApp as 'experiments.MultiControllerFairnessJava.MultiControllerFairnessApp';
+alias Struct Wrapper as 'experiments.MultiControllerFairnessJava.Wrapper';
 
 /**
    This test is supposed to run on multiple controllers.
@@ -14,9 +14,9 @@ alias Interface IFairnessApplication as 'experiments.IFairnessApplicationJava.IF
    a local switch, and fowrards the request on to all children.  If a child has
    should_write set to true, then the child performs a write on its switch.
  */
-Struct ConnectionWrapper
+Struct Wrapper
 {
-    Endpoint PronghornConnectionFairness child = null;
+    Remote MultiControllerFairnessApp service = null;
 }
 
 Service MultiControllerFairnessApp
@@ -29,7 +29,7 @@ Service MultiControllerFairnessApp
     // Other controllers connected to.  Connections are directional.  Eg.,
     // A -> B
     // where A only requests single ops on B (B cannot request single ops on A).
-    TVar List(element : Struct ConnectionWrapper) children;
+    TVar List(element : Struct Wrapper) partners;
 
     // When receive a single_op request, most nodes do not write to their local
     // switches: they only perform reads.  This flag tells us whether we should
@@ -39,7 +39,7 @@ Service MultiControllerFairnessApp
     {
         should_write = should_write_;
     }
-    
+
     // @Override: from IApplication interface
     init(Service Instance inst_,
         TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map_)
@@ -73,15 +73,28 @@ Service MultiControllerFairnessApp
                 }
             }
             // tell children to perform their reads/writes
-            for (Struct ConnectionWrapper conn_wrap in children)
-                conn_wrap.child.single_add(dl_src);
+            for (Struct Wrapper wrapper in partners)
+                wrapper.service.single_add(dl_src);
         }
     }
 
-    add_child_connection(Endpoint PronghornConnectionFairness connection)
-    {
-        Struct ConnectionWrapper connection_wrapper;
-        connection_wrapper.child = connection;
-        children.append(connection_wrapper);
+    install_remotes(ServiceFactory factory) {
+        // install a copy of this application on all connections
+        List(element: Text) conn_uuids;
+        conn_uuids = connected_uuids();
+        Text loc_uuid = null;
+        loc_uuid = local_uuid();
+
+        for (Text conn_uuid in conn_uuids) {
+            if (conn_uuid != loc_uuid) {
+                ServiceReference service_reference = null;
+                service_reference = install(conn_uuid, factory);
+                Remote MultiControllerFairnessApp remote_partner = null;
+                remote_partner = factory.construct_remote_from_reference(service_reference);
+                Struct Wrapper wrapper;
+                wrapper.service = remote_partner;
+                partners.append(wrapper);
+            }
+        }
     }
 }

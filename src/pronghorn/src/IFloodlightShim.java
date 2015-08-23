@@ -23,6 +23,8 @@ public interface IFloodlightShim
     public boolean switch_rtable_updates(
         String switch_id,List<FTableUpdate> updates);
 
+    public boolean partial_undo(String switch_id);
+    
     /**
        Can return null, eg., if switch is missing.
      */

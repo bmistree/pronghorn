@@ -39,7 +39,7 @@ public class ErrorUtil
     private static final int BASE_NUM_OPS_BEFORE_CHECK = 100;
     private static final int RANDOM_NUM_ADDITIONAL_OPS_BEFORE_CHECK = 20;
 
-    
+
     /**
        extra debugging flag: something for us to watch out for in case
        we had an exception.
@@ -67,10 +67,10 @@ public class ErrorUtil
                 ex.printStackTrace();
                 assert(false);
             }
-            
+
             // perform random number of operations
             int num_ops_to_perform =
-                BASE_NUM_OPS_BEFORE_CHECK + 
+                BASE_NUM_OPS_BEFORE_CHECK +
                 rand.nextInt(RANDOM_NUM_ADDITIONAL_OPS_BEFORE_CHECK);
 
             for (int j = 0; j < num_ops_to_perform; ++j)
@@ -135,9 +135,9 @@ public class ErrorUtil
             assert(false);
         }
     }
-        
 
-    
+
+
 
     /**
        Translate true-s to 1-s and false-s to 0-s.
@@ -155,7 +155,7 @@ public class ErrorUtil
         }
         Util.write_results_to_file(output_filename,results_buffer.toString());
     }
-    
+
     private static boolean check_logical_state(
         List<String> switch_id_list,IErrorApplication error_app,
         int num_ops_to_perform, String faulty_switch_to_skip)
@@ -196,7 +196,7 @@ public class ErrorUtil
         }
         return all_expected;
     }
-    
+
     /**
        Run through all the switches and check that they have the
        expected number of flow table entries on them.
@@ -225,7 +225,7 @@ public class ErrorUtil
         return true;
     }
 
-    
+
     private static void clear_hardware(int num_physical_switches)
     {
         List<String> ovs_switch_names =
@@ -236,7 +236,7 @@ public class ErrorUtil
     }
 
 
-    
+
     private static void logical_clear_switches(
         IErrorApplication error_app,List<String> switch_list)
     {
@@ -254,8 +254,8 @@ public class ErrorUtil
         }
     }
 
-    
-    
+
+
     static _InternalSwitch create_faulty_switch(
         RalphGlobals ralph_globals,String new_switch_id, boolean speculate,
         float error_probability)
@@ -266,13 +266,13 @@ public class ErrorUtil
             new FaultyHardwareChangeApplier(error_probability);
         SwitchSpeculateListener switch_speculate_listener =
             new SwitchSpeculateListener();
-        
+
         _InternalSwitchDelta internal_switch_delta =
             new _InternalSwitchDelta(ralph_globals,null,null);
         SwitchDelta switch_delta =
             new SwitchDelta (
                 false,internal_switch_delta,ralph_globals);
-        
+
         // override switch_lock variable: switch_lock variable serves
         // as a guard for both port_deltas and ft_deltas.
         InternalPronghornSwitchGuard faulty_switch_guard_num_var =
@@ -290,12 +290,12 @@ public class ErrorUtil
 
         // do not override port change guard.  this is because faulty
         // switch is only faulty for flow table.
-        
+
         internal_switch.delta = switch_delta;
 
         try
         {
-            internal_switch.switch_id = 
+            internal_switch.switch_id =
                 new NonAtomicTextVariable(false,new_switch_id,ralph_globals);
         }
         catch (Exception ex)
@@ -303,14 +303,14 @@ public class ErrorUtil
             ex.printStackTrace();
             assert(false);
         }
-                
 
-        
+
+
         switch_speculate_listener.init(
             internal_switch_delta,internal_switch,faulty_switch_guard_num_var);
         return internal_switch;
     }
-    
+
 
     private static class FaultyHardwareChangeApplier
         extends FlowTableToHardware implements Runnable
@@ -319,12 +319,12 @@ public class ErrorUtil
         private final float error_probability;
 
         private final static Random rand = new Random();
-        
+
         /**
            When switch fails, wait this much time before restoring it.
          */
         private final static int RESET_SLEEP_WAIT_MS = 50;
-        
+
         public FaultyHardwareChangeApplier(float _error_probability)
         {
             error_probability = _error_probability;
@@ -337,7 +337,7 @@ public class ErrorUtil
         }
 
         /** Runnable interface overrides*/
-        
+
         /**
            When switch fails applying state, we start a thread that
            waits briefly and then resets faulty switch's state
@@ -360,7 +360,7 @@ public class ErrorUtil
             }
             hardware_overrides.force_reset_clean();
         }
-        
+
         /** IHardwareChangeApplier interface methods*/
         @Override
         public boolean apply(List<FTableUpdate> to_apply)
@@ -381,6 +381,12 @@ public class ErrorUtil
         public boolean undo(List<FTableUpdate> to_undo)
         {
             // always succeed on undo
+            return true;
+        }
+
+        @Override
+        public boolean partial_undo(List<FTableUpdate> to_partially_undo) {
+            // Should never get here, so return value does not matter.
             return true;
         }
     }

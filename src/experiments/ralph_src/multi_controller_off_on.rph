@@ -5,21 +5,18 @@ alias Service Instance as 'pronghorn.InstanceJava.Instance';
 alias Endpoint PronghornConnection as 'experiments.PronghornConnectionJava.PronghornConnection';
 alias Service OffOnApplication as 'experiments.OffOnApplicationJava.OffOnApplication';
 alias Interface IOffOnApplication as 'experiments.IOffOnApplicationJava.IOffOnApplication';
+alias Service MultiControllerOffOn as 'experiments.MultiControllerOffOnJava.MultiControllerOffOn';
 
-
-Struct ConnectionWrapper
-{
-    Endpoint PronghornConnection child;
+Struct Wrapper {
+    Remote MultiControllerOffOn service = null;
 }
 
-Service MultiControllerOffOn
-    implements Interface IApplication, Interface IOffOnApplication
-{
+Service MultiControllerOffOn implements Interface IApplication, Interface IOffOnApplication {
+
     Service Instance inst = null;
     Service OffOnApplication off_on_app;
+    List(element: Struct Wrapper) partners;
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
-
-    TVar List(element : Struct ConnectionWrapper) children;
 
     // @Override: from IApplication interface
     init(Service Instance inst_,
@@ -28,6 +25,26 @@ Service MultiControllerOffOn
         inst = inst_;
         switch_map = switch_map_;
         off_on_app.init(inst,switch_map);
+    }
+
+    install_remotes(ServiceFactory factory) {
+        // install a copy of this application on all connections
+        List(element: Text) conn_uuids;
+        conn_uuids = connected_uuids();
+        Text loc_uuid = null;
+        loc_uuid = local_uuid();
+
+        for (Text conn_uuid in conn_uuids) {
+            if (conn_uuid != loc_uuid) {
+                ServiceReference service_reference = null;
+                service_reference = install(conn_uuid, factory);
+                Remote MultiControllerOffOn partner_off_on = null;
+                partner_off_on = factory.construct_remote_from_reference(service_reference);
+                Struct Wrapper wrapper;
+                wrapper.service = partner_off_on;
+                partners.append(wrapper);
+            }
+        }
     }
 
     // @Override: from IApplication interface
@@ -42,51 +59,21 @@ Service MultiControllerOffOn
         // Ask partner to perform action and perform action locally.
         atomically
         {
-            @partner.called_only_by_partner_single_op();
             for (Text switch_id in switch_map)
                 off_on_app.single_op(switch_id);
         }
     }
 
-    
-    add_child_connection(Endpoint PronghornConnection new_child)
-    {
-        Struct ConnectionWrapper wrapper;
-        wrapper.child = new_child;
-        children.append(wrapper);
-    }
-
-    insert_entry_on_all_switches_and_partners(Text dl_src)
-    {
-        atomically
-        {
-            insert_entry_on_all_switches(dl_src);
-            for (Struct ConnectionWrapper wrapper in children)
-            {
-                Endpoint PronghornConnection endpt = wrapper.child;
-                endpt.insert_entry_on_all_switches_and_partners(dl_src);
-            }
-        }
-    }
-    insert_entry_on_all_switches(Text dl_src)
-    {
-        atomically
-        {
-            for (Text switch_id in switch_map)
-                off_on_app.add_entry_switch(switch_id);
-        }
-    }
-    
     single_op_and_ask_children_for_single_op()
     {
         atomically {
             for (Text switch_id in switch_map)
                 off_on_app.single_op(switch_id);
 
-            for (Struct ConnectionWrapper wrapper in children)
-            {
-                Endpoint PronghornConnection endpt = wrapper.child;
-                endpt.single_op_and_ask_children_for_single_op();
+            for (Struct Wrapper wrapper in partners) {
+                Remote MultiControllerOffOn remote = null;
+                remote = wrapper.service;
+                remote.single_op_and_ask_children_for_single_op();
             }
         }
     }
@@ -96,11 +83,32 @@ Service MultiControllerOffOn
         atomically {
             off_on_app.single_op(switch_id);
 
-            for (Struct ConnectionWrapper wrapper in children)
-            {
-                Endpoint PronghornConnection endpt = wrapper.child;
-                endpt.single_op_and_ask_children_for_single_op_switch_id(switch_id);
+            for (Struct Wrapper wrapper in partners) {
+                Remote MultiControllerOffOn remote = null;
+                remote = wrapper.service;
+                remote.single_op_and_ask_children_for_single_op_switch_id(switch_id);
             }
+        }
+    }
+
+    insert_entry_on_all_switches_and_partners(Text dl_src)
+    {
+        atomically
+        {
+            insert_entry_on_all_switches(dl_src);
+            for (Struct Wrapper wrapper in partners) {
+                Remote MultiControllerOffOn remote = null;
+                remote = wrapper.service;
+                remote.insert_entry_on_all_switches_and_partners(dl_src);
+            }
+        }
+    }
+    insert_entry_on_all_switches(Text dl_src)
+    {
+        atomically
+        {
+            for (Text switch_id in switch_map)
+                off_on_app.add_entry_switch(switch_id);
         }
     }
 }

@@ -17,9 +17,14 @@ public class PortsAvailableToHardware
         return true;
     }
 
-    @Override    
+    @Override
     public boolean undo(List<PortUpdate> to_undo)
     {
+        return true;
+    }
+
+    @Override
+    public boolean partial_undo(List<PortUpdate> to_partially_undo) {
         return true;
     }
 }

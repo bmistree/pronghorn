@@ -2,14 +2,14 @@
 alias Interface IApplication as 'pronghorn.IApplicationJava.IApplication';
 
 alias Service Instance as 'pronghorn.InstanceJava.Instance';
-alias Endpoint PronghornConnectionSpeculation as 'experiments.PronghornConnectionSpeculationJava.PronghornConnectionSpeculation';
 alias Service OffOnApplication as 'experiments.OffOnApplicationJava.OffOnApplication';
 alias Interface IOffOnApplication as 'experiments.IOffOnApplicationJava.IOffOnApplication';
+alias Service MultiControllerSpeculation as 'experiments.MultiControllerSpeculationJava.MultiControllerSpeculation';
 
+alias Struct Wrapper as 'experiments.MultiControllerSpeculationJava.Wrapper';
 
-Struct ConnectionWrapper
-{
-    Endpoint PronghornConnectionSpeculation child;
+Struct Wrapper {
+    Remote MultiControllerSpeculation service = null;
 }
 
 Service MultiControllerSpeculation implements Interface IApplication
@@ -18,7 +18,7 @@ Service MultiControllerSpeculation implements Interface IApplication
     Service OffOnApplication off_on_app;
     TVar Map(from: Text, to: Struct StructWrappedSwitch) switch_map;
 
-    TVar List(element : Struct ConnectionWrapper) children;
+    TVar List(element : Struct Wrapper) partners;
 
     // @Override: from IApplication interface
     init(Service Instance inst_,
@@ -56,19 +56,31 @@ Service MultiControllerSpeculation implements Interface IApplication
             }
 
             off_on_app.single_op(switch_id_to_use);
-            for (Struct ConnectionWrapper wrapper in children)
-            {
-                Endpoint PronghornConnectionSpeculation endpt = wrapper.child;
+            for (Struct Wrapper wrapper in partners) {
+                Remote MultiControllerSpeculation endpt = wrapper.service;
                 endpt.single_op(which_switch);
             }
         }
     }
 
-    
-    add_child_connection(Endpoint PronghornConnectionSpeculation new_child)
-    {
-        Struct ConnectionWrapper wrapper;
-        wrapper.child = new_child;
-        children.append(wrapper);
+
+    install_remotes(ServiceFactory factory) {
+        // install a copy of this application on all connections
+        List(element: Text) conn_uuids;
+        conn_uuids = connected_uuids();
+        Text loc_uuid = null;
+        loc_uuid = local_uuid();
+
+        for (Text conn_uuid in conn_uuids) {
+            if (conn_uuid != loc_uuid) {
+                ServiceReference service_reference = null;
+                service_reference = install(conn_uuid, factory);
+                Remote MultiControllerSpeculation remote_partner = null;
+                remote_partner = factory.construct_remote_from_reference(service_reference);
+                Struct Wrapper wrapper;
+                wrapper.service = remote_partner;
+                partners.append(wrapper);
+            }
+        }
     }
 }
